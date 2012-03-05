@@ -1,2 +1,3 @@
 flamaster.sublime-*
 *.py[co]
+flamaster/static/app/node_modules/.*
