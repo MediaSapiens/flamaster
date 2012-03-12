@@ -1,10 +1,8 @@
 from flask import Blueprint
 
 
-account = Blueprint('account', __name__, template_folder='templates',
-                    url_prefix='account')
+account = Blueprint('account', __name__, template_folder='templates')
 
-try:
-    from views import *
-except ImportError:
-    pass
+from views import *
+from api import *
+
