@@ -13,8 +13,8 @@ define('views/signup', ['backbone', 'underscore', 'text!templates/signup.html'],
       },
 
       submit: function(ev) {
-        var $form = $(ev.target); //.parents('form');
-        console.log(ev.target);
+        var $form = $(ev.target).parents('form'); //.parents('form');
+        console.log($form.serialize());
         return false;
       }
   });
