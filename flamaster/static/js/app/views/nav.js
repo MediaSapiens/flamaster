@@ -10,7 +10,7 @@ define('views/nav', ['backbone', 'underscore', 'jquery',
       initialize: function(options) {
         var router = options.router;
         // have to refactor this
-        router.on("route:index", function() {
+        router.on("route:layout", function() {
           this.$el.find("li").removeClass('active');
           this.$el.find(".n-index").addClass('active');
         }, this);

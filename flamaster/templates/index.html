@@ -20,15 +20,14 @@
           underscore: "libs/underscore/underscore-min",
           hogan: "libs/hogan/hogan-1.0.5.amd",
           views: "app/views",
+          routes: "app/routes",
           models: "app/models",
           collections: "app/collections",
           templates: "app/templates"
         }
       }
-      curl(cfg, ['app/main', 'backbone'], function(App, BB)
-      {
+      curl(cfg, ['app/main', 'backbone'], function(App, BB) {
         var app = new App();
-        BB.history.start();
       });
     </script>
   </head>

@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import abort, jsonify, request, session
 from flask.views import MethodView
 from flamaster.core.utils.decorators import api_resource
 
@@ -9,13 +9,15 @@ from . import account
 class SessionResource(MethodView):
 
     def get(self, sid=None):
-        if sid is None:
-            return jsonify({'response': 'nothing'})
-        else:
-            return jsonify({'response': 'anything'})
+        session['is_anonymous'] = True
+        if session.get('uid') is not None:
+            session['is_anonymous'] = True
+        return jsonify(session)
 
     def post(self):
-        pass
+        data = request.json or abort(400)
+        print data
+        return jsonify({'status': 'updated'})
 
     def put(self, sid):
         pass
