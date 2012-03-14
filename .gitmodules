@@ -1,0 +1,6 @@
+[submodule "flamaster/static/libs/bootstrap"]
+	path = flamaster/static/libs/bootstrap
+	url = git://github.com/twitter/bootstrap.git
+[submodule "flamaster/static/libs/curl"]
+	path = flamaster/static/libs/curl
+	url = git://github.com/unscriptable/curl.git
