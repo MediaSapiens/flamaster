@@ -16,6 +16,7 @@ class SessionResource(MethodView):
 
     def post(self):
         data = request.json or abort(400)
+        # here we need to validate data
         print data
         return jsonify({'status': 'updated'})
 
