@@ -18,4 +18,4 @@ Setup requirements:
 Developer notes
 _______________
 
-We use CommonJS AMDnotation for JS modules definition
+We use CommonJS AMD notation for JS modules definition
