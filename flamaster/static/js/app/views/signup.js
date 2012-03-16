@@ -4,8 +4,15 @@ define('views/signup', ['backbone', 'underscore', 'models/session', 'text!templa
       template: _.template(template),
 
       events: {
-        // "submit #signup-form": "submit"
+        // "submit #signup-form": "submit",
         "click #submit": "submit"
+      },
+
+      initialize: function() {
+        // this.$el.find("#signup-form").submit(function() {
+        //   console.log(arguments);
+        //   return false;
+        // });
       },
 
       serializeForm: function(form) {
@@ -24,8 +31,17 @@ define('views/signup', ['backbone', 'underscore', 'models/session', 'text!templa
       submit: function(ev) {
         var $form = $(ev.target).parents('form'),
             formData = this.serializeForm($form),
-            user = new Session(formData);
-        user.save({
+            session = new Session(formData);
+        // error event listener
+        session.on('error', function(model, error) {
+          _.each(error, function(message, attr) {
+            // render error messages
+            this.renderError(attr, message);
+          }, this);
+          return false;
+        }, this);
+
+        session.save({
           success: function() {
             console.log(arguments);
           },
@@ -33,6 +49,13 @@ define('views/signup', ['backbone', 'underscore', 'models/session', 'text!templa
             console.log(arguments);
           }
         });
+        console.log(arguments);
+        return false;
+      },
+
+      renderError: function(field, message) {
+        var el = $el.find("form input[name='" + field + "']");
+        console.log(el);
         return false;
       }
   });
