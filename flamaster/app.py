@@ -19,8 +19,6 @@ for name in blueprints:
     bp_module = __import__('flamaster.core.%s' % name, {}, {}, [''])
     app.register_blueprint(vars(bp_module)[name], url_prefix="/%s" % name)
 
-print app.url_map
-
 
 @app.errorhandler(404)
 def page_not_found(e):
