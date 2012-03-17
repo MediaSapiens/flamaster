@@ -1,6 +1,24 @@
+{SignupView} = require 'views/signup_view'
 class exports.MainRouter extends Backbone.Router
   routes:
-    '': 'home'
+    '': "layout"
+    '/': "layout"
+    '/signup': "signup"
+    '/login': "login"
 
-  home: ->
-    $('body').html app.homeView.render().el
+  layout: ->
+    $('body').html app.homeView.render()
+    @$container = $ '#content'
+
+  signup: ->
+    @_ensureLayout()
+    signupView = new SignupView
+    @$container.html signupView.render()
+
+  login: ->
+    @_ensureLayout()
+    true
+
+  _ensureLayout: ->
+    if $("home-view")?
+      @layout()

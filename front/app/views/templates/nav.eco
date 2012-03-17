@@ -1,0 +1,3 @@
+<% for route, path of @routes: %>
+<li class="n-<%= route %>"><a href="/#<%= path[1] %>"><%= path[0] %></a></li>
+<% end %>

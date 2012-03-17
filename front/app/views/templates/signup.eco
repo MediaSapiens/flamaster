@@ -1,0 +1,24 @@
+<div class="container">
+  <div class="row">
+    <div class="span12"><h2>Sign up please</h2></div>
+  </div>
+  <div class="row">
+    <div class="span12">
+      <form class="form-horizontal" id="signup-form">
+        <fieldset>
+          <legend>Enter your credetials to create an account</legend>
+          <div class="control-group">
+            <label class="control-label" for="email">Email</label>
+            <div class="controls">
+              <input type="text" name="email" class="input-large" placeholder="email will be used as login"/>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+            <button class="btn">Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
