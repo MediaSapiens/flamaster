@@ -1,11 +1,22 @@
-<!-- START you can remove this -->
-<div id="content">
-  <h1>brunch</h1>
-  <h2>Welcome!</h2>
-  <ul>
-    <li><a href="http://brunch.readthedocs.org/">Documentation</a></li>
-    <li><a href="https://github.com/brunch/brunch/issues">Github Issues</a></li>
-    <li><a href="https://github.com/brunch/todos">Todos Example App</a></li>
-  </ul>
+<div class="container">
+  <div class="row">
+    <div class="span12" id="nav-container"></div>
+  </div>
+  <div class="row">
+    <div class="span12" id="content">
+      <div class="hero-unit">
+        <h1>Findevent</h1>
+        <p>Work in progress…</p>
+        <p>
+          <a href="/#/signup" class="btn btn-primary btn-large">
+            Sign Up
+          </a>
+          or
+          <a href="/#/login" class="btn btn-success btn-large">
+            Login
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
-<!-- END you can remove this -->
