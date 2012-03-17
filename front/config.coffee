@@ -1,6 +1,6 @@
 exports.config =
   # Edit the next line to change default build path.
-  buildPath: 'public'
+  buildPath: '../flamaster/static'
 
   files:
     javascripts:
@@ -12,29 +12,37 @@ exports.config =
       # * map of ('outputFilePath': /regExp that matches input path/)
       # * map of ('outputFilePath': function that takes input path)
       joinTo:
-        'javascripts/app.js': /^app/
-        'javascripts/vendor.js': /^vendor/
+        'js/app.js': /^app/
+        'js/vendor.js': /^vendor\/scripts/
       # Defines compilation order.
       # `vendor` files will be compiled before other ones
       # even if they are not present here.
       order:
         before: [
-          'vendor/scripts/console-helper.js',
-          'vendor/scripts/jquery-1.7.1.js',
-          'vendor/scripts/underscore-1.3.1.js',
+          'vendor/scripts/console-helper.js'
+          'vendor/scripts/jquery-1.7.1.js'
+          'vendor/scripts/underscore-1.3.1.js'
           'vendor/scripts/backbone-0.9.1.js'
+          'vendor/scripts/bootstrap.js'
         ]
 
     stylesheets:
-      defaultExtension: 'styl'
-      joinTo: 'stylesheets/app.css'
+      defaultExtension: 'less'
+      joinTo:
+        'css/app.css': /^app/
+        'css/bootstrap.css': /^vendor\/styles\/bootstrap/
       order:
-        before: ['vendor/styles/normalize.css']
-        after: ['vendor/styles/helpers.css']
+        before: [
+          'vendor/styles/bootstrap.css',
+          'vendor/styles/bootstrap-responsive.css'
+        ]
+        after: [
+          'app/styles/style.less'
+        ]
 
     templates:
       defaultExtension: 'eco'
-      joinTo: 'javascripts/app.js'
+      joinTo: 'js/templates.js'
 
   # Change this if you're using something other than backbone (e.g. 'ember').
   # Content of files, generated with `brunch generate` depends on the setting.
