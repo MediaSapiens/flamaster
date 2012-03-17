@@ -1,4 +1,4 @@
 flamaster.sublime-*
 *.py[co]
-flamaster/static/flamaster/node_modules/*
 .DS_Store
+front/node_modules/*
