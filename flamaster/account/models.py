@@ -4,9 +4,10 @@ from flamaster.app import db
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(20))
+    password = db.Column(db.String(20), nullable=True)
     addresses = db.relationship('Address', lazy='dynamic',
-                                backref=db.backref('user', lazy='joined'))
+                                backref=db.backref('user', lazy='joined'),
+                                cascade="all, delete, delete-orphan")
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
@@ -32,6 +33,6 @@ class Address(db.Model):
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
                             backref=db.backref('role', lazy='joined'))
