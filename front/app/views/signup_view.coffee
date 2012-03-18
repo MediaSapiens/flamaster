@@ -31,7 +31,11 @@ class exports.SignupView extends Backbone.View
         session.on 'error', (session, error) =>
           for field, message of error
             @renderError field, message
-        session.save()
+        session.save
+          success: ->
+            console.log arguments
+          error: ->
+            console.log arguments
         # error event listener
         return false
 
