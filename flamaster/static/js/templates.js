@@ -51,7 +51,7 @@
   }
 }));
 (this.require.define({
-  "views/templates/nav": function(exports, require, module) {
+  "views/templates/login": function(exports, require, module) {
     module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -91,21 +91,8 @@
   }
   (function() {
     (function() {
-      var path, route, _ref;
     
-      _ref = this.routes;
-      for (route in _ref) {
-        path = _ref[route];
-        __out.push('\n<li class="n-');
-        __out.push(__sanitize(route));
-        __out.push('"><a href="/#');
-        __out.push(__sanitize(path[1]));
-        __out.push('">');
-        __out.push(__sanitize(path[0]));
-        __out.push('</a></li>\n');
-      }
-    
-      __out.push('\n');
+      __out.push('<h2>Not implemented yet</h2>\n');
     
     }).call(this);
     
@@ -168,7 +155,7 @@
   }
 }));
 (this.require.define({
-  "views/templates/login": function(exports, require, module) {
+  "views/templates/nav": function(exports, require, module) {
     module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -208,8 +195,21 @@
   }
   (function() {
     (function() {
+      var path, route, _ref;
     
-      __out.push('<h2>Not implemented yet</h2>\n');
+      _ref = this.routes;
+      for (route in _ref) {
+        path = _ref[route];
+        __out.push('\n<li class="n-');
+        __out.push(__sanitize(route));
+        __out.push('"><a href="/#');
+        __out.push(__sanitize(path[1]));
+        __out.push('">');
+        __out.push(__sanitize(path[0]));
+        __out.push('</a></li>\n');
+      }
+    
+      __out.push('\n');
     
     }).call(this);
     
