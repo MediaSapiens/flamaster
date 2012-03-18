@@ -110,6 +110,52 @@
   }
 }));
 (this.require.define({
+  "models/session_model": function(exports, require, module) {
+    (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  exports.SessionModel = (function(_super) {
+
+    __extends(SessionModel, _super);
+
+    function SessionModel() {
+      SessionModel.__super__.constructor.apply(this, arguments);
+    }
+
+    SessionModel.prototype.urlRoot = '/account/sessions/';
+
+    SessionModel.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+    SessionModel.prototype.validate = function(attrs) {
+      var response;
+      response = {
+        status: 'success'
+      };
+      if (!this.emailRegex.test(attrs.email)) {
+        response.status = 'failed';
+        response.email = 'This is not valid email address';
+      }
+      if (attrs.password !== attrs.confirm) {
+        response.status = 'failed';
+        response.confirm = "Confirmation don't match";
+      }
+      if (response.status === 'failed') return response;
+    };
+
+    SessionModel.prototype.is_anonymous = function() {
+      return console.log(this.toJSON());
+    };
+
+    return SessionModel;
+
+  })(Backbone.Model);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
   "routers/main_router": function(exports, require, module) {
     (function() {
   var SignupView,
@@ -212,52 +258,6 @@
     return HomeView;
 
   })(Backbone.View);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "models/session_model": function(exports, require, module) {
-    (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  exports.SessionModel = (function(_super) {
-
-    __extends(SessionModel, _super);
-
-    function SessionModel() {
-      SessionModel.__super__.constructor.apply(this, arguments);
-    }
-
-    SessionModel.prototype.urlRoot = '/account/sessions/';
-
-    SessionModel.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-
-    SessionModel.prototype.validate = function(attrs) {
-      var response;
-      response = {
-        status: 'success'
-      };
-      if (!this.emailRegex.test(attrs.email)) {
-        response.status = 'failed';
-        response.email = 'This is not valid email address';
-      }
-      if (attrs.password !== attrs.confirm) {
-        response.status = 'failed';
-        response.confirm = "Confirmation don't match";
-      }
-      if (response.status === 'failed') return response;
-    };
-
-    SessionModel.prototype.is_anonymous = function() {
-      return console.log(this.toJSON());
-    };
-
-    return SessionModel;
-
-  })(Backbone.Model);
 
 }).call(this);
 
@@ -377,7 +377,14 @@
         }
         return _results;
       });
-      session.save();
+      session.save({
+        success: function() {
+          return console.log(arguments);
+        },
+        error: function() {
+          return console.log(arguments);
+        }
+      });
       return false;
     };
 

@@ -12,11 +12,8 @@ blueprints = [
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 ]
 
-from flamaster.core.account import account
-app.register_blueprint(account, url_prefix="/account")
-
 for name in blueprints:
-    bp_module = __import__('flamaster.core.%s' % name, {}, {}, [''])
+    bp_module = __import__('flamaster.%s' % name, {}, {}, [''])
     app.register_blueprint(vars(bp_module)[name], url_prefix="/%s" % name)
 
 
