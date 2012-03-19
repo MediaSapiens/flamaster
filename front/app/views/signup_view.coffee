@@ -2,6 +2,7 @@
 
 class exports.SignupView extends Backbone.View
       template: require './templates/signup'
+      className: 'signup'
 
       events:
         "click #signup-form button[type='submit']": "submit"

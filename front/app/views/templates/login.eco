@@ -1,1 +1,25 @@
-<h2>Not implemented yet</h2>
+<div class="row">
+  <div class="span12">
+    <form class="form-horizontal" id="signin-form">
+      <fieldset>
+        <legend>Enter your credetials to sign in</legend>
+        <div class="control-group">
+          <label class="control-label" for="email">Email</label>
+          <div class="controls">
+            <input type="text" name="email" class="input-large" placeholder="email will be used as login"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="password">Password</label>
+          <div class="controls">
+            <input type="password" name="password" class="input-large" placeholder="enter ypur password please"/>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Sign Ip</button>
+          <button class="btn">Cancel</button>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
