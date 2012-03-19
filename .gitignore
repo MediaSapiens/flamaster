@@ -2,3 +2,7 @@ flamaster.sublime-*
 *.py[co]
 .DS_Store
 front/node_modules/*
+*~
+env_flamaster
+.webassets-cache
+*.swp
