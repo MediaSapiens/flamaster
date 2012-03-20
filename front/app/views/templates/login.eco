@@ -1,18 +1,18 @@
 <div class="row">
   <div class="span12">
-    <form class="form-horizontal" id="signin-form">
+    <%= @formFor 'signin-form', (form) => %>
       <fieldset>
         <legend>Enter your credetials to sign in</legend>
         <div class="control-group">
-          <label class="control-label" for="email">Email</label>
+          <%= form.labelFor 'email', 'Email' %>
           <div class="controls">
-            <input type="text" name="email" class="input-large" placeholder="email will be used as login"/>
+            <%= form.textField 'email', 'enter your email to login' %>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="password">Password</label>
+          <%= form.labelFor 'password', 'Password' %>
           <div class="controls">
-            <input type="password" name="password" class="input-large" placeholder="enter ypur password please"/>
+            <%= form.passwdField 'password', 'enter ypur password please' %>
           </div>
         </div>
         <div class="form-actions">
@@ -20,6 +20,6 @@
           <button class="btn">Cancel</button>
         </div>
       </fieldset>
-    </form>
+    <% end %>
   </div>
 </div>

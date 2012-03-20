@@ -69,6 +69,39 @@
 
   })();
 
+  exports.baseContext = {
+    baseField: function(attr, type, placeholder) {
+      return this.safe("<input type='" + type + "' name='" + attr + "' id='id_" + attr + "' class='input-large' placeholder='" + placeholder + "' />");
+    },
+    formFor: function(id, yield) {
+      var body, form,
+        _this = this;
+      form = {
+        textField: function(attr, placeholder) {
+          return _this.baseField(attr, 'text', placeholder);
+        },
+        passwdField: function(attr, placeholder) {
+          return _this.baseField(attr, 'password', placeholder);
+        },
+        labelFor: function(attr, name) {
+          return _this.safe("<label class='control-label' for='id_" + attr + "'>" + name + "</label>");
+        }
+      };
+      body = yield(form);
+      return this.safe("<form class='form-horizontal' id='" + id + "' method='post'>" + body + "</form>");
+    }
+  };
+
+  exports.serializeForm = function(form) {
+    var array, attr, response, _i, _len, _ref;
+    _ref = [form.serializeArray(), {}], array = _ref[0], response = _ref[1];
+    for (_i = 0, _len = array.length; _i < _len; _i++) {
+      attr = array[_i];
+      response[attr.name] = attr.value;
+    }
+    return response;
+  };
+
 }).call(this);
 
   }
@@ -272,6 +305,106 @@
   }
 }));
 (this.require.define({
+  "views/login_view": function(exports, require, module) {
+    (function() {
+  var SessionModel, baseContext, serializeForm, _ref,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  SessionModel = require('models/session_model').SessionModel;
+
+  _ref = require('helpers'), baseContext = _ref.baseContext, serializeForm = _ref.serializeForm;
+
+  exports.LoginView = (function(_super) {
+
+    __extends(LoginView, _super);
+
+    function LoginView() {
+      LoginView.__super__.constructor.apply(this, arguments);
+    }
+
+    LoginView.prototype.className = 'login';
+
+    LoginView.prototype.template = require('./templates/login');
+
+    LoginView.prototype.events = {
+      "submit #signin-form": "submit"
+    };
+
+    LoginView.prototype.render = function() {
+      this.$el.html(this.template(baseContext));
+      return this.el;
+    };
+
+    LoginView.prototype.submit = function(ev) {
+      var data;
+      data = serializeForm($(ev.target));
+      console.log(data);
+      return false;
+    };
+
+    return LoginView;
+
+  })(Backbone.View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "views/nav_view": function(exports, require, module) {
+    (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  exports.NavView = (function(_super) {
+
+    __extends(NavView, _super);
+
+    function NavView() {
+      NavView.__super__.constructor.apply(this, arguments);
+    }
+
+    NavView.prototype.tagName = 'ul';
+
+    NavView.prototype.className = "nav nav-pills";
+
+    NavView.prototype.template = require('./templates/nav');
+
+    NavView.prototype.initialize = function(options) {
+      var router,
+        _this = this;
+      router = options.router;
+      router.on("route:layout", function() {
+        _this.$el.find("li").removeClass('active');
+        return _this.$el.find(".n-index").addClass('active');
+      });
+      router.on("route:login", function() {
+        _this.$el.find("li").removeClass('active');
+        return _this.$el.find(".n-login").addClass('active');
+      });
+      return router.on("route:signup", function() {
+        _this.$el.find("li").removeClass('active');
+        return _this.$el.find(".n-signup").addClass('active');
+      });
+    };
+
+    NavView.prototype.render = function() {
+      this.$el.html(this.template({
+        routes: this.model
+      }));
+      return this.el;
+    };
+
+    return NavView;
+
+  })(Backbone.View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
   "views/signup_view": function(exports, require, module) {
     (function() {
   var SessionModel,
@@ -359,93 +492,6 @@
     };
 
     return SignupView;
-
-  })(Backbone.View);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "views/nav_view": function(exports, require, module) {
-    (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  exports.NavView = (function(_super) {
-
-    __extends(NavView, _super);
-
-    function NavView() {
-      NavView.__super__.constructor.apply(this, arguments);
-    }
-
-    NavView.prototype.tagName = 'ul';
-
-    NavView.prototype.className = "nav nav-pills";
-
-    NavView.prototype.template = require('./templates/nav');
-
-    NavView.prototype.initialize = function(options) {
-      var router,
-        _this = this;
-      router = options.router;
-      router.on("route:layout", function() {
-        _this.$el.find("li").removeClass('active');
-        return _this.$el.find(".n-index").addClass('active');
-      });
-      router.on("route:login", function() {
-        _this.$el.find("li").removeClass('active');
-        return _this.$el.find(".n-login").addClass('active');
-      });
-      return router.on("route:signup", function() {
-        _this.$el.find("li").removeClass('active');
-        return _this.$el.find(".n-signup").addClass('active');
-      });
-    };
-
-    NavView.prototype.render = function() {
-      this.$el.html(this.template({
-        routes: this.model
-      }));
-      return this.el;
-    };
-
-    return NavView;
-
-  })(Backbone.View);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "views/login_view": function(exports, require, module) {
-    (function() {
-  var SessionModel,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  SessionModel = require('models/session_model').SessionModel;
-
-  exports.LoginView = (function(_super) {
-
-    __extends(LoginView, _super);
-
-    function LoginView() {
-      LoginView.__super__.constructor.apply(this, arguments);
-    }
-
-    LoginView.prototype.className = 'login';
-
-    LoginView.prototype.template = require('./templates/login');
-
-    LoginView.prototype.render = function() {
-      this.$el.html(this.template());
-      return this.el;
-    };
-
-    return LoginView;
 
   })(Backbone.View);
 

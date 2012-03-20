@@ -91,8 +91,25 @@
   }
   (function() {
     (function() {
+      var _this = this;
     
-      __out.push('<div class="row">\n  <div class="span12">\n    <form class="form-horizontal" id="signin-form">\n      <fieldset>\n        <legend>Enter your credetials to sign in</legend>\n        <div class="control-group">\n          <label class="control-label" for="email">Email</label>\n          <div class="controls">\n            <input type="text" name="email" class="input-large" placeholder="email will be used as login"/>\n          </div>\n        </div>\n        <div class="control-group">\n          <label class="control-label" for="password">Password</label>\n          <div class="controls">\n            <input type="password" name="password" class="input-large" placeholder="enter ypur password please"/>\n          </div>\n        </div>\n        <div class="form-actions">\n          <button type="submit" class="btn btn-primary">Sign Ip</button>\n          <button class="btn">Cancel</button>\n        </div>\n      </fieldset>\n    </form>\n  </div>\n</div>\n');
+      __out.push('<div class="row">\n  <div class="span12">\n    ');
+    
+      __out.push(__sanitize(this.formFor('signin-form', function(form) {
+        return __capture(function() {
+          __out.push('\n      <fieldset>\n        <legend>Enter your credetials to sign in</legend>\n        <div class="control-group">\n          ');
+          __out.push(__sanitize(form.labelFor('email', 'Email')));
+          __out.push('\n          <div class="controls">\n            ');
+          __out.push(__sanitize(form.textField('email', 'enter your email to login')));
+          __out.push('\n          </div>\n        </div>\n        <div class="control-group">\n          ');
+          __out.push(__sanitize(form.labelFor('password', 'Password')));
+          __out.push('\n          <div class="controls">\n            ');
+          __out.push(__sanitize(form.passwdField('password', 'enter ypur password please')));
+          return __out.push('\n          </div>\n        </div>\n        <div class="form-actions">\n          <button type="submit" class="btn btn-primary">Sign Ip</button>\n          <button class="btn">Cancel</button>\n        </div>\n      </fieldset>\n    ');
+        });
+      })));
+    
+      __out.push('\n  </div>\n</div>\n');
     
     }).call(this);
     
