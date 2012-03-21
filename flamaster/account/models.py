@@ -25,6 +25,11 @@ class User(db.Model):
         return self
 
     @classmethod
+    def authenticate(cls, email, password):
+        return cls.query.filter_by(email=email,
+                password=password).first()
+
+    @classmethod
     def create(cls, **kwargs):
         instance = cls(**kwargs)
         return instance.save()

@@ -4,7 +4,6 @@ from flask import abort, request, session
 from flask.views import MethodView
 
 import trafaret as t
-from trafaret.extras import KeysSubset
 
 from flamaster.core import jsonify
 from flamaster.core.decorators import api_resource
@@ -23,26 +22,41 @@ class SessionResource(MethodView):
     def post(self):
         data = request.json or abort(400)
         users_q = User.query.filter_by(email=data.get('email'))
+
         if users_q.count() > 0:
-            return jsonify({'error': "This email is already taken"})
+            return jsonify({'error': {
+                        'email': "This email is already taken"}})
 
         elif data.get('email'):
             user = User(data['email'], None).save()
-            session['uid'] = user.id
-            session['is_anonymous'] = False
-            return  jsonify({'object': dict(session)}, status=201)
+            session.update({'uid': user.id, 'is_anonymous': False})
+            return jsonify({'object': dict(session)}, status=201)
 
         abort(400)
 
     def put(self, sid):
         data = request.json or abort(400)
+        resp, status = {'object': data}, 200
 
-        def check_user(data):
-            basic = t.Dict({'email': t.Email, 'password': t.String})
-            print basic.check(data)
+        validation = t.Dict({'email': t.Email, 'password':
+            t.String}).append(self._check_user)
 
-        check_user(data)
-        return jsonify({}, status=500)
+        try:
+            validation.check(data)
+        except t.DataError as e:
+            resp, status = {'error': e.as_dict()}, 400
+            session.update({'is_anonymous': True})
+
+        return jsonify(resp, status=status)
 
     def delete(self, sid):
         pass
+
+    def _check_user(self, data_dict):
+        user = User.authenticate(**data_dict)
+        if user is None:
+            raise t.DataError({'email': "There is no user matching this "
+            "credentials"})
+        session.update({'uid': user.id, 'is_anonymous': False})
+
+        return data_dict
