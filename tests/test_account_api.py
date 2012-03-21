@@ -5,12 +5,13 @@ from flamaster.app import app
 
 
 def setup_module(module):
-    has_app = getattr(module, 'app', None)
-    if has_app is None:
-        app.config.from_object('flamaster.conf.test_settings')
-        db = SQLAlchemy(app)
+    test_app = getattr(module, 'app', None)
+    if test_app is None:
+        test_app.config.from_object('flamaster.conf.test_settings')
+        db = SQLAlchemy(test_app)
         db.create_all()
-        module.app = app
+        module.app = test_app
+        module.db = db
 
 
 def test_flask_invocation(flaskapp):
@@ -29,5 +30,7 @@ def test_account_api_invocation(flaskapp):
         json_response = json.loads(resp.data)
         assert json_response['object']['is_anonymous'] == True
 
-
+def teardown_module(module):
+    test_db = getattr(module, 'db', None)
+    test_db and test_db.drop_all()
 
