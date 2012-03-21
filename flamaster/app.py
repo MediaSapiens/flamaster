@@ -12,9 +12,13 @@ blueprints = [
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 ]
 
-for name in blueprints:
-    bp_module = __import__('flamaster.%s' % name, {}, {}, [''])
-    app.register_blueprint(vars(bp_module)[name], url_prefix="/%s" % name)
+
+def register_blueprints(app, *args):
+    for name in args:
+        bp_module = __import__('flamaster.%s' % name, {}, {}, [''])
+        app.register_blueprint(vars(bp_module)[name], url_prefix="/%s" % name)
+
+register_blueprints(app, *blueprints)
 
 
 @app.errorhandler(404)
