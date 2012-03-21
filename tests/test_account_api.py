@@ -1,17 +1,11 @@
 from flask import url_for
 from flask.helpers import json
-from flask.ext.sqlalchemy import SQLAlchemy
-from flamaster.app import app
+from flamaster.app import app, db
 
 
 def setup_module(module):
-    test_app = getattr(module, 'app', None)
-    if test_app is None:
-        app.config.from_object('flamaster.conf.test_settings')
-        db = SQLAlchemy(app)
-        db.create_all()
-        module.app = app
-        module.db = db
+    print(app)
+    db.create_all()
 
 
 def test_flask_invocation(flaskapp):
@@ -29,6 +23,19 @@ def test_account_api_invocation(flaskapp):
 
         json_response = json.loads(resp.data)
         assert json_response['object']['is_anonymous'] == True
+
+
+def test_session_creation(flaskapp):
+    with flaskapp.test_request_context('/'):
+        sessions_url = url_for('account.sessions')
+        with flaskapp.test_client() as c:
+            resp = c.post(sessions_url,
+                    data=json.dumps({'email': 'test@mail.com'}),
+                    content_type='application/json')
+            j_resp = json.loads(resp.data)
+            assert isinstance(j_resp['object']['uid'], int)
+            assert j_resp['object']['is_anonymous'] == False
+
 
 def teardown_module(module):
     test_db = getattr(module, 'db', None)

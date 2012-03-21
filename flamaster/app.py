@@ -1,16 +1,22 @@
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 
-
-app = Flask(__name__, static_url_path='/static', template_folder='static')
-app.config.from_object('flamaster.conf.settings')
-db = SQLAlchemy(app)
+import os
 
 blueprints = [
     'account',
     # 'category', 'delivery', 'image', 'order', 'payment',
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 ]
+
+app = Flask(__name__, static_url_path='/static', template_folder='static')
+
+if 'TESTING' in os.environ:
+    app.config.from_object('flamaster.conf.test_settings')
+else:
+    app.config.from_object('flamaster.conf.settings')
+
+db = SQLAlchemy(app)
 
 
 def register_blueprints(app, *args):
@@ -34,3 +40,5 @@ def access_denied(e):
 @app.route('/')
 def app_index():
     return render_template('index.html', **{})
+
+
