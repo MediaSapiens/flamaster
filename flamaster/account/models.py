@@ -24,6 +24,11 @@ class User(db.Model):
             db.session.commit()
         return self
 
+    @classmethod
+    def authenticate(cls, email, password):
+        return cls.query.filter_by(email=email,
+                password=password).first()
+
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
