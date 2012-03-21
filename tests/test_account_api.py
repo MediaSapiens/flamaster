@@ -7,10 +7,10 @@ from flamaster.app import app
 def setup_module(module):
     test_app = getattr(module, 'app', None)
     if test_app is None:
-        test_app.config.from_object('flamaster.conf.test_settings')
-        db = SQLAlchemy(test_app)
+        app.config.from_object('flamaster.conf.test_settings')
+        db = SQLAlchemy(app)
         db.create_all()
-        module.app = test_app
+        module.app = app
         module.db = db
 
 
