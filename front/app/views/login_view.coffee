@@ -1,28 +1,35 @@
 {SessionModel} = require 'models/session_model'
+{GenericView} = require 'views/generic_view'
+
 {baseContext, serializeForm} = require 'helpers'
 
-class exports.LoginView extends Backbone.View
+class exports.LoginView extends GenericView
   className: 'login'
   template: require './templates/login'
   events:
-    "submit #signin-form": "submit"
     "click #signin-form [type='submit']": "submit"
-    "click button": "submit"
 
   initialize: ->
+    console.log 'initialized'
     @$el.find("form").submit ->
       return false
 
   render: ->
+    #console.log 'test'
     @$el.html @template(baseContext)
     @el
 
   submit: (ev) ->
-    try
-      $form = $(ev.target).parents 'form'
-      data = serializeForm $form
-      session = new SessionModel data
-      console.log session.toJSON()
-    catch error
-      console.log error
+    $form = $(ev.target).parents 'form'
+    @clearErrors()
+    session = new SessionModel(serializeForm $form)
+    session.on 'error', (session, error) =>
+      for field, message of error
+        @renderError field, message
+    session.save
+      success: ->
+        console.log 'success', arguments
+      error: ->
+        console.log 'error', arguments
     return false
+

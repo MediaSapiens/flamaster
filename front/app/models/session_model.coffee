@@ -9,6 +9,9 @@ class exports.SessionModel extends Backbone.Model
       if !this.emailRegex.test(attrs.email)
         response.status = 'failed'
         response.email = 'This is not valid email address'
+      if attrs.password? and attrs.password.length is 0
+        response.status = 'failed'
+        response.password = 'You forgot to specify password'
       if attrs.confirm? and (attrs.password isnt attrs.confirm)
         response.status = 'failed'
         response.confirm = "Confirmation don't match"
