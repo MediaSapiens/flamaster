@@ -216,7 +216,33 @@ exports.serializeForm = function(form) {
 
     SessionModel.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 
-    SessionModel.prototype.validate = function(attrs) {
+    SessionModel.prototype.initial = {
+      is_anonymous: true
+    };
+
+    SessionModel.prototype.save = function() {
+      console.log('save', arguments);
+      return SessionModel.__super__.save.call(this, arguments);
+    };
+
+    return SessionModel;
+
+  })(Backbone.Model);
+
+  exports.LoginModel = (function(_super) {
+
+    __extends(LoginModel, _super);
+
+    function LoginModel() {
+      LoginModel.__super__.constructor.apply(this, arguments);
+    }
+
+    LoginModel.prototype.defaults = {
+      email: '',
+      password: ''
+    };
+
+    LoginModel.prototype.validate = function(attrs) {
       var response;
       response = {
         status: 'success'
@@ -225,24 +251,16 @@ exports.serializeForm = function(form) {
         response.status = 'failed';
         response.email = 'This is not valid email address';
       }
-      if ((attrs.password != null) && attrs.password.length === 0) {
+      if (attrs.password.length === 0) {
         response.status = 'failed';
         response.password = 'You forgot to specify password';
-      }
-      if ((attrs.confirm != null) && (attrs.password !== attrs.confirm)) {
-        response.status = 'failed';
-        response.confirm = "Confirmation don't match";
       }
       if (response.status === 'failed') return response;
     };
 
-    SessionModel.prototype.is_anonymous = function() {
-      return console.log(this.toJSON());
-    };
+    return LoginModel;
 
-    return SessionModel;
-
-  })(Backbone.Model);
+  })(exports.SessionModel);
 
 }).call(this);
 
@@ -350,90 +368,19 @@ exports.serializeForm = function(form) {
       return this.el;
     };
 
-    HomeView.prototype.getCurrentUser = function() {
+    HomeView.prototype.getCurrentUser = function(options) {
       this.session = new SessionModel;
-      this.session.fetch();
-      return this.session;
+      if (options != null) {
+        return this.session.fetch({
+          success: options.success,
+          error: options.error
+        });
+      }
     };
 
     return HomeView;
 
   })(Backbone.View);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "views/login_view": function(exports, require, module) {
-    (function() {
-  var GenericView, SessionModel, baseContext, serializeForm, _ref,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  SessionModel = require('models/session_model').SessionModel;
-
-  GenericView = require('views/generic_view').GenericView;
-
-  _ref = require('helpers'), baseContext = _ref.baseContext, serializeForm = _ref.serializeForm;
-
-  exports.LoginView = (function(_super) {
-
-    __extends(LoginView, _super);
-
-    function LoginView() {
-      LoginView.__super__.constructor.apply(this, arguments);
-    }
-
-    LoginView.prototype.className = 'login';
-
-    LoginView.prototype.template = require('./templates/login');
-
-    LoginView.prototype.events = {
-      "click #signin-form [type='submit']": "submit"
-    };
-
-    LoginView.prototype.initialize = function() {
-      console.log('initialized');
-      return this.$el.find("form").submit(function() {
-        return false;
-      });
-    };
-
-    LoginView.prototype.render = function() {
-      this.$el.html(this.template(baseContext));
-      return this.el;
-    };
-
-    LoginView.prototype.submit = function(ev) {
-      var $form, session,
-        _this = this;
-      $form = $(ev.target).parents('form');
-      this.clearErrors();
-      session = new SessionModel(serializeForm($form));
-      session.on('error', function(session, error) {
-        var field, message, _results;
-        _results = [];
-        for (field in error) {
-          message = error[field];
-          _results.push(_this.renderError(field, message));
-        }
-        return _results;
-      });
-      session.save({
-        success: function() {
-          return console.log('success', arguments);
-        },
-        error: function() {
-          return console.log('error', arguments);
-        }
-      });
-      return false;
-    };
-
-    return LoginView;
-
-  })(GenericView);
 
 }).call(this);
 
@@ -598,6 +545,85 @@ exports.serializeForm = function(form) {
     return GenericView;
 
   })(Backbone.View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "views/login_view": function(exports, require, module) {
+    (function() {
+  var GenericView, LoginModel, baseContext, serializeForm, _ref,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  LoginModel = require('models/session_model').LoginModel;
+
+  GenericView = require('views/generic_view').GenericView;
+
+  _ref = require('helpers'), baseContext = _ref.baseContext, serializeForm = _ref.serializeForm;
+
+  exports.LoginView = (function(_super) {
+
+    __extends(LoginView, _super);
+
+    function LoginView() {
+      LoginView.__super__.constructor.apply(this, arguments);
+    }
+
+    LoginView.prototype.className = 'login';
+
+    LoginView.prototype.template = require('./templates/login');
+
+    LoginView.prototype.events = {
+      "click #signin-form [type='submit']": "submit"
+    };
+
+    LoginView.prototype.initialize = function() {
+      var _this = this;
+      this.model = new LoginModel;
+      this.model.on('error', function(model, response) {
+        var field, message, _results;
+        _results = [];
+        for (field in response) {
+          message = response[field];
+          _results.push(_this.renderError(field, message));
+        }
+        return _results;
+      });
+      return app.homeView.getCurrentUser({
+        success: function(model, resp) {
+          return _this.model.set(model.toJSON(), {
+            silent: true
+          });
+        }
+      });
+    };
+
+    LoginView.prototype.render = function() {
+      this.$el.html(this.template(baseContext));
+      return this.el;
+    };
+
+    LoginView.prototype.submit = function(ev) {
+      var data,
+        _this = this;
+      this.clearErrors();
+      data = serializeForm($(ev.target).parents('form'));
+      this.model.save(data, {
+        success: function() {
+          return console.log('success');
+        },
+        error: function() {
+          return console.log('error');
+        }
+      });
+      return false;
+    };
+
+    return LoginView;
+
+  })(GenericView);
 
 }).call(this);
 

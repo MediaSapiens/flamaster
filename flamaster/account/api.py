@@ -12,12 +12,13 @@ from . import account
 from .models import User
 
 
-@api_resource(account, '/sessions/', 'sessions', {'sid': int})
+@api_resource(account, '/sessions/', 'sessions', {'id': int})
 class SessionResource(MethodView):
 
-    def get(self, sid=None):
+    def get(self, id=None):
         session['is_anonymous'] = session.get('uid') and False or True
-        return jsonify({'object': dict(session)})
+        session['id'] = session.get('id', uuid.uuid4().hex)
+        return jsonify(dict(session))
 
     def post(self):
         data = request.json or abort(400)
@@ -34,7 +35,7 @@ class SessionResource(MethodView):
 
         abort(400)
 
-    def put(self, sid):
+    def put(self, id):
         data = request.json or abort(400)
         resp, status = {'object': data}, 200
 
@@ -49,7 +50,7 @@ class SessionResource(MethodView):
 
         return jsonify(resp, status=status)
 
-    def delete(self, sid):
+    def delete(self, id):
         pass
 
     def _check_user(self, data_dict):
