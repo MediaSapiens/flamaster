@@ -9,9 +9,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/templates.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% assets "js_vendor" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
+  {% assets "js_templates" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
+  {% assets "js_app" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
   <script>require('initialize');</script>
 </head>
 <body>
