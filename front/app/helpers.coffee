@@ -19,7 +19,7 @@ exports.baseContext =
       labelFor: (attr, name) =>
         @safe "<label class='control-label' for='id_#{attr}'>#{name}</label>"
     body = yield form
-    @safe "<form class='form-horizontal' id='#{id}' method='post'>#{body}</form>"
+    @safe "<form class='form-horizontal' id='#{id}'>#{body}</form>"
 
 
 exports.serializeForm = (form) ->

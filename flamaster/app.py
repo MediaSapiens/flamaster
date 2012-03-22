@@ -1,5 +1,7 @@
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.assets import Environment, Bundle
+
 
 import os
 
@@ -10,6 +12,11 @@ blueprints = [
 ]
 
 app = Flask(__name__, static_url_path='/static', template_folder='static')
+assets = Environment(app)
+
+assets.register('js_vendor', Bundle('js/vendor.js', output='gen/v.js'))
+assets.register('js_templates', Bundle('js/templates.js', output='gen/t.js'))
+assets.register('js_app', Bundle('js/app.js', output='gen/a.js'))
 
 if 'TESTING' in os.environ:
     app.config.from_object('flamaster.conf.test_settings')
