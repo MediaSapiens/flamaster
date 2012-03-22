@@ -1,7 +1,9 @@
 {SessionModel} = require 'models/session_model'
+{GenericView} = require 'views/generic_view'
+
 {baseContext, serializeForm} = require 'helpers'
 
-class exports.SignupView extends Backbone.View
+class exports.SignupView extends GenericView
       template: require './templates/signup'
       className: 'signup'
 
@@ -34,14 +36,3 @@ class exports.SignupView extends Backbone.View
             console.log arguments
         # error event listener
         return false
-
-      renderError: (field, message) ->
-        $el = @$el.find "form input[name='#{field}']"
-        $el.parents(".control-group").addClass 'error'
-        error = $(document.createElement('span')).addClass('help-inline error').text message
-        $el.after error
-
-      clearErrors: ->
-        @$el.find(".control-group").removeClass 'error'
-        @$el.find("span.help-inline.error").remove()
-
