@@ -1,4 +1,5 @@
 {SessionModel} = require 'models/session_model'
+{baseContext, serializeForm} = require 'helpers'
 
 class exports.SignupView extends Backbone.View
       template: require './templates/signup'
@@ -14,20 +15,14 @@ class exports.SignupView extends Backbone.View
           console.log arguments
           return false
 
-      serializeForm: (form) ->
-        [array, response] = [form.serializeArray(), {}]
-        for attr in array
-          response[attr.name] = attr.value
-        response
-
       render: ->
-        @$el.html @template()
+        @$el.html @template(baseContext)
         @el
 
       submit: (ev) ->
         $form = $(ev.target).parents 'form'
         @clearErrors()
-        formData = this.serializeForm $form
+        formData = serializeForm $form
         session = new SessionModel formData
         session.on 'error', (session, error) =>
           for field, message of error
