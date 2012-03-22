@@ -3,3 +3,4 @@ flamaster.sublime-*
 .DS_Store
 front/node_modules/*
 *.swp
+*.webassets-cache
