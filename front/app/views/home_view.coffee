@@ -19,7 +19,9 @@ class exports.HomeView extends Backbone.View
     @$el.find("#nav-container").html @navView.render()
     @el
 
-  getCurrentUser: ->
+  getCurrentUser: (options) ->
     @session = new SessionModel
-    @session.fetch()
-    @session
+    if options?
+      @session.fetch
+        success: options.success
+        error: options.error

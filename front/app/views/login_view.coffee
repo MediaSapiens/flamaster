@@ -1,4 +1,4 @@
-{SessionModel} = require 'models/session_model'
+{LoginModel} = require 'models/session_model'
 {GenericView} = require 'views/generic_view'
 
 {baseContext, serializeForm} = require 'helpers'
@@ -10,26 +10,25 @@ class exports.LoginView extends GenericView
     "click #signin-form [type='submit']": "submit"
 
   initialize: ->
-    console.log 'initialized'
-    @$el.find("form").submit ->
-      return false
+    @model = new LoginModel
+    @model.on 'error', (model, response) =>
+      for field, message of response
+        @renderError field, message
+
+    app.homeView.getCurrentUser
+      success: (model, resp) =>
+        @model.set model.toJSON(), silent: true
 
   render: ->
-    #console.log 'test'
     @$el.html @template(baseContext)
     @el
 
   submit: (ev) ->
-    $form = $(ev.target).parents 'form'
     @clearErrors()
-    session = new SessionModel(serializeForm $form)
-    session.on 'error', (session, error) =>
-      for field, message of error
-        @renderError field, message
-    session.save
-      success: ->
-        console.log 'success', arguments
-      error: ->
-        console.log 'error', arguments
+    data = serializeForm($(ev.target).parents 'form')
+    @model.save data,
+      success: -> console.log 'success'
+      error: () =>
+        console.log 'error'
     return false
 
