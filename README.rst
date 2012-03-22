@@ -15,7 +15,7 @@ Setup requirements:
 - `flask-sqlalchemy <http://packages.python.org/Flask-SQLAlchemy/>`__ >= 0.15
 - `SQLAlchemy <http://www.sqlalchemy.org/>`__ >= 0.7.5
 
-Developer notes
+Frontent development
 _______________
 
-We use CommonJS AMD notation for JS modules definition
+We use `brunch.io <http://brunch.io>`__ for frontend client-side with coffee-script and eco templates
