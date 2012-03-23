@@ -6,10 +6,6 @@ class exports.SessionModel extends Backbone.Model
     initial:
       is_anonymous: true
 
-    save: ->
-      console.log 'save', arguments
-      super arguments
-
 
 class exports.LoginModel extends exports.SessionModel
   defaults:
@@ -19,9 +15,11 @@ class exports.LoginModel extends exports.SessionModel
   validate: (attrs) ->
     response =
       status: 'success'
-    if !this.emailRegex.test(attrs.email)
+    console.log attrs.email, @emailRegex.test attrs.email
+    if !@emailRegex.test(attrs.email)
       response.status = 'failed'
       response.email = 'This is not valid email address'
+      console.log 'email failed'
     if attrs.password.length is 0
       response.status = 'failed'
       response.password = 'You forgot to specify password'

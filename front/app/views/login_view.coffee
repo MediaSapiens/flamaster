@@ -11,9 +11,6 @@ class exports.LoginView extends GenericView
 
   initialize: ->
     @model = new LoginModel
-    @model.on 'error', (model, response) =>
-      for field, message of response
-        @renderError field, message
 
     app.homeView.getCurrentUser
       success: (model, resp) =>
@@ -26,9 +23,19 @@ class exports.LoginView extends GenericView
   submit: (ev) ->
     @clearErrors()
     data = serializeForm($(ev.target).parents 'form')
+    # @model.set data, silent: true
     @model.save data,
-      success: -> console.log 'success'
-      error: () =>
-        console.log 'error'
+      success: (model, response) ->
+        if !response.is_anonymous
+          app.router.navigate "!/profile/#{response.uid}", trigger: true
+      error: (model, response) =>
+        if response.responseText?
+          for field, message of JSON.parse(response.responseText)
+            @renderError field, message
+        else
+          for field, message of response
+            @renderError field, message
+
+        console.log response
     return false
 

@@ -4,9 +4,10 @@
 class exports.MainRouter extends Backbone.Router
   routes:
     '': "layout"
-    '/': "layout"
-    '/signup': "signup"
-    '/login': "login"
+    '!/': "layout"
+    '!/signup': "signup"
+    '!/login': "login"
+    '!/profile/:id': "layout"
 
   layout: ->
     $('body').html app.homeView.render()

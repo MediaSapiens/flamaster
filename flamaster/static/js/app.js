@@ -220,11 +220,6 @@ exports.serializeForm = function(form) {
       is_anonymous: true
     };
 
-    SessionModel.prototype.save = function() {
-      console.log('save', arguments);
-      return SessionModel.__super__.save.call(this, arguments);
-    };
-
     return SessionModel;
 
   })(Backbone.Model);
@@ -247,9 +242,11 @@ exports.serializeForm = function(form) {
       response = {
         status: 'success'
       };
+      console.log(attrs.email, this.emailRegex.test(attrs.email));
       if (!this.emailRegex.test(attrs.email)) {
         response.status = 'failed';
         response.email = 'This is not valid email address';
+        console.log('email failed');
       }
       if (attrs.password.length === 0) {
         response.status = 'failed';
@@ -287,9 +284,10 @@ exports.serializeForm = function(form) {
 
     MainRouter.prototype.routes = {
       '': "layout",
-      '/': "layout",
-      '/signup': "signup",
-      '/login': "login"
+      '!/': "layout",
+      '!/signup': "signup",
+      '!/login': "login",
+      '!/profile/:id': "layout"
     };
 
     MainRouter.prototype.layout = function() {
@@ -328,6 +326,41 @@ exports.serializeForm = function(form) {
   }
 }));
 (this.require.define({
+  "views/generic_view": function(exports, require, module) {
+    (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  exports.GenericView = (function(_super) {
+
+    __extends(GenericView, _super);
+
+    function GenericView() {
+      GenericView.__super__.constructor.apply(this, arguments);
+    }
+
+    GenericView.prototype.renderError = function(field, message) {
+      var $el, error;
+      $el = this.$el.find("form input[name='" + field + "']");
+      $el.parents(".control-group").addClass('error');
+      error = $(document.createElement('span')).addClass('help-inline error').text(message);
+      return $el.after(error);
+    };
+
+    GenericView.prototype.clearErrors = function() {
+      this.$el.find(".control-group").removeClass('error');
+      return this.$el.find("span.help-inline.error").remove();
+    };
+
+    return GenericView;
+
+  })(Backbone.View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
   "views/home_view": function(exports, require, module) {
     (function() {
   var NavView, SessionModel,
@@ -353,9 +386,9 @@ exports.serializeForm = function(form) {
     HomeView.prototype.initialize = function() {
       return this.navView = new NavView({
         model: {
-          index: ["Index", '/'],
-          signup: ["Sign Up", '/signup'],
-          login: ["Login", '/login']
+          index: ["Index", '!/'],
+          signup: ["Sign Up", '!/signup'],
+          login: ["Login", '!/login']
         },
         router: app.router,
         session: this.getCurrentUser()
@@ -381,6 +414,93 @@ exports.serializeForm = function(form) {
     return HomeView;
 
   })(Backbone.View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "views/login_view": function(exports, require, module) {
+    (function() {
+  var GenericView, LoginModel, baseContext, serializeForm, _ref,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  LoginModel = require('models/session_model').LoginModel;
+
+  GenericView = require('views/generic_view').GenericView;
+
+  _ref = require('helpers'), baseContext = _ref.baseContext, serializeForm = _ref.serializeForm;
+
+  exports.LoginView = (function(_super) {
+
+    __extends(LoginView, _super);
+
+    function LoginView() {
+      LoginView.__super__.constructor.apply(this, arguments);
+    }
+
+    LoginView.prototype.className = 'login';
+
+    LoginView.prototype.template = require('./templates/login');
+
+    LoginView.prototype.events = {
+      "click #signin-form [type='submit']": "submit"
+    };
+
+    LoginView.prototype.initialize = function() {
+      var _this = this;
+      this.model = new LoginModel;
+      return app.homeView.getCurrentUser({
+        success: function(model, resp) {
+          return _this.model.set(model.toJSON(), {
+            silent: true
+          });
+        }
+      });
+    };
+
+    LoginView.prototype.render = function() {
+      this.$el.html(this.template(baseContext));
+      return this.el;
+    };
+
+    LoginView.prototype.submit = function(ev) {
+      var data,
+        _this = this;
+      this.clearErrors();
+      data = serializeForm($(ev.target).parents('form'));
+      this.model.save(data, {
+        success: function(model, response) {
+          if (!response.is_anonymous) {
+            return app.router.navigate("!/profile/" + response.uid, {
+              trigger: true
+            });
+          }
+        },
+        error: function(model, response) {
+          var field, message, _ref2;
+          if (response.responseText != null) {
+            _ref2 = JSON.parse(response.responseText);
+            for (field in _ref2) {
+              message = _ref2[field];
+              _this.renderError(field, message);
+            }
+          } else {
+            for (field in response) {
+              message = response[field];
+              _this.renderError(field, message);
+            }
+          }
+          return console.log(response);
+        }
+      });
+      return false;
+    };
+
+    return LoginView;
+
+  })(GenericView);
 
 }).call(this);
 
@@ -508,120 +628,6 @@ exports.serializeForm = function(form) {
     };
 
     return SignupView;
-
-  })(GenericView);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "views/generic_view": function(exports, require, module) {
-    (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  exports.GenericView = (function(_super) {
-
-    __extends(GenericView, _super);
-
-    function GenericView() {
-      GenericView.__super__.constructor.apply(this, arguments);
-    }
-
-    GenericView.prototype.renderError = function(field, message) {
-      var $el, error;
-      $el = this.$el.find("form input[name='" + field + "']");
-      $el.parents(".control-group").addClass('error');
-      error = $(document.createElement('span')).addClass('help-inline error').text(message);
-      return $el.after(error);
-    };
-
-    GenericView.prototype.clearErrors = function() {
-      this.$el.find(".control-group").removeClass('error');
-      return this.$el.find("span.help-inline.error").remove();
-    };
-
-    return GenericView;
-
-  })(Backbone.View);
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "views/login_view": function(exports, require, module) {
-    (function() {
-  var GenericView, LoginModel, baseContext, serializeForm, _ref,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  LoginModel = require('models/session_model').LoginModel;
-
-  GenericView = require('views/generic_view').GenericView;
-
-  _ref = require('helpers'), baseContext = _ref.baseContext, serializeForm = _ref.serializeForm;
-
-  exports.LoginView = (function(_super) {
-
-    __extends(LoginView, _super);
-
-    function LoginView() {
-      LoginView.__super__.constructor.apply(this, arguments);
-    }
-
-    LoginView.prototype.className = 'login';
-
-    LoginView.prototype.template = require('./templates/login');
-
-    LoginView.prototype.events = {
-      "click #signin-form [type='submit']": "submit"
-    };
-
-    LoginView.prototype.initialize = function() {
-      var _this = this;
-      this.model = new LoginModel;
-      this.model.on('error', function(model, response) {
-        var field, message, _results;
-        _results = [];
-        for (field in response) {
-          message = response[field];
-          _results.push(_this.renderError(field, message));
-        }
-        return _results;
-      });
-      return app.homeView.getCurrentUser({
-        success: function(model, resp) {
-          return _this.model.set(model.toJSON(), {
-            silent: true
-          });
-        }
-      });
-    };
-
-    LoginView.prototype.render = function() {
-      this.$el.html(this.template(baseContext));
-      return this.el;
-    };
-
-    LoginView.prototype.submit = function(ev) {
-      var data,
-        _this = this;
-      this.clearErrors();
-      data = serializeForm($(ev.target).parents('form'));
-      this.model.save(data, {
-        success: function() {
-          return console.log('success');
-        },
-        error: function() {
-          return console.log('error');
-        }
-      });
-      return false;
-    };
-
-    return LoginView;
 
   })(GenericView);
 

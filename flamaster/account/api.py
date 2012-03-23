@@ -12,7 +12,7 @@ from . import account
 from .models import User
 
 
-@api_resource(account, '/sessions/', 'sessions', {'id': int})
+@api_resource(account, '/sessions/', 'sessions', {'id': None})
 class SessionResource(MethodView):
 
     def get(self, id=None):
@@ -36,19 +36,21 @@ class SessionResource(MethodView):
         abort(400)
 
     def put(self, id):
-        data = request.json or abort(400)
-        resp, status = {'object': data}, 200
+        data, status = request.json or abort(400), 200
 
         validation = t.Dict({'email': t.Email, 'password':
             t.String}).append(self._check_user)
 
         try:
+            data = {'email': data.get('email'), 'password':
+                    data.get('password')}
             validation.check(data)
+            data.update(session)
         except t.DataError as e:
-            resp, status = {'error': e.as_dict()}, 400
+            data, status = e.as_dict(), 404
             session.update({'is_anonymous': True})
 
-        return jsonify(resp, status=status)
+        return jsonify(data, status=status)
 
     def delete(self, id):
         pass
