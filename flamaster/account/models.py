@@ -2,6 +2,9 @@ from flamaster.app import db
 
 
 class User(db.Model):
+
+    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(20), nullable=True)
@@ -36,7 +39,16 @@ class User(db.Model):
 
 
 class Address(db.Model):
+
+    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
+    sity = db.Column(db.String(25))
+    street = db.Column(db.String(25))
+    home = db.Column(db.String(20))
+    apartment = db.Column(db.String(20), nullable=False)
+    post_index = db.Column(db.String(20), nullable=False)
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     sity = db.Column(db.String(25))
     street = db.Column(db.String(25))
@@ -62,47 +74,39 @@ class Address(db.Model):
     def delete(self):
         return ''
 
+    def __init__(self, sity, street, home, apartment=None, post_index=None):
+        self.sity = sity
+        self.street = street
+        self.home = home
+        self.apartment = apartment
+        self.post_index = post_index
+
+    def __repr__(self):
+        return "<Address:('%s','%s', '%s')>" % (self.sity, self.street, self.home)
+
+    def create(self, commit=True):
+        db.session.add(self)
+        if commit:
+            db.session.commit()
+        return self
+
+    def delete(self, commit=True):
+        db.session.delete(self)
+        if commit:
+            db.session.commit()
+
+    def update(self, commit=True):
+        db.session.add(self)
+        if commit:
+            db.session.commit()
+        return self
+
 
 class Role(db.Model):
+
+    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
                             backref=db.backref('role', lazy='joined'))
-
-# class Address(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     user = db.Column(db.Integer, db.ForeignKey('user.id'))
-#     sity = db.Column(db.String(25))
-#     street = db.Column(db.String(25))
-#     home = db.Column(db.String(20))
-#     apartment = db.Column(db.String(20), nullable=False)
-#     post_index = db.Column(db.String(20), nullable=False)
-# 
-#     def __init__(self, sity, street, home, apartment, post_index):
-#         self.sity = sity
-#         self.street = street
-#         self.home = home
-#         self.apartment = apartment
-#         self.post_index = post_index
-# 
-#     def __repr__(self):
-#         return "<Address:('%s','%s', '%s')>" % (self.sity, self.street, self.home)
-# 
-#     def create(self, commit=True):
-#         db.session.add(self)
-#         if commit:
-#             db.session.commit()
-#         return self
-# 
-#     def update(self, commit=True):
-#         db.session.add_all(self)
-#         if commit:
-#             db.session.commit()
-#         return self
-# 
-#     def delete(self, commit=True):
-#         db.session.delete(self)
-#         if commit:
-#             db.session.commit()
-
-db.create_all()

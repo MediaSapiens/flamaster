@@ -5,3 +5,8 @@ SECRET_KEY = "ZmxhbWFzdGVyMzEybmltbnVsbEBmb3gtbGFwdG9wOnN0YXRpYyQgY29tcGFzcyBjb2
 #SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 SQLALCHEMY_DATABASE_URI = "mysql://root:root@localhost/flamaster"
 SQLALCHEMY_ECHO = True
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
