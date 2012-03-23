@@ -8,9 +8,9 @@ class exports.HomeView extends Backbone.View
   initialize: ->
     @navView = new NavView
       model:
-        index: ["Index", '/']
-        signup: ["Sign Up", '/signup']
-        login: ["Login", '/login']
+        index: ["Index", '!/']
+        signup: ["Sign Up", '!/signup']
+        login: ["Login", '!/login']
       router: app.router,
       session: @getCurrentUser()
 
