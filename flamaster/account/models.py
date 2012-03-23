@@ -2,7 +2,6 @@ from flamaster.app import db
 
 
 class User(db.Model):
-
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
@@ -43,51 +42,27 @@ class Address(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    sity = db.Column(db.String(25))
+    city = db.Column(db.String(25))
     street = db.Column(db.String(25))
     home = db.Column(db.String(20))
     apartment = db.Column(db.String(20), nullable=False)
     post_index = db.Column(db.String(20), nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    sity = db.Column(db.String(25))
-    street = db.Column(db.String(25))
-    home = db.Column(db.String(20))
-    apartment = db.Column(db.String(20), nullable=False)
-    post_index = db.Column(db.String(20), nullable=False)
 
-    def __init__(self, sity, street, home, apartment):
-        self.sity = sity
-        self.street = street
-        self.home = home
-        self.apartment = apartment
-
-    def __repr__(self):
-        return "<Address:('%s','%s', '%s')>" % (self.sity, self.street, self.home)
-
-    def create(self):
-        return ''
-
-    def update(self):
-        return ''
-
-    def delete(self):
-        return ''
-
-    def __init__(self, sity, street, home, apartment=None, post_index=None):
-        self.sity = sity
+    def __init__(self, city, street, home, apartment=None, post_index=None):
+        self.city = city
         self.street = street
         self.home = home
         self.apartment = apartment
         self.post_index = post_index
 
     def __repr__(self):
-        return "<Address:('%s','%s', '%s')>" % (self.sity, self.street, self.home)
+        return "<Address:('%s','%s', '%s')>" % (self.city, self.street, self.home)
 
     def create(self, commit=True):
         db.session.add(self)
-        if commit:
-            db.session.commit()
+        commit and db.session.commit()
         return self
 
     def delete(self, commit=True):
@@ -102,10 +77,10 @@ class Address(db.Model):
         return self
 
 
+
+
 class Role(db.Model):
-
     __table_args__ = {'extend_existing': True}
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',

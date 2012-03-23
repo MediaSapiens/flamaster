@@ -6,7 +6,4 @@ front/node_modules/*
 env_flamaster
 .webassets-cache
 *.swp
-*.webassets-cache
-env_flamaster
-*~
 *local_settings.py
