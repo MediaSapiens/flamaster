@@ -1,3 +1,4 @@
+# from __future__ import absolute_import
 import uuid
 
 from flask import abort, request, session
@@ -10,6 +11,9 @@ from flamaster.core.decorators import api_resource
 
 from . import account
 from .models import User
+
+
+__all__ = ['SessionResource']
 
 
 @api_resource(account, '/sessions/', 'sessions', {'id': None})
