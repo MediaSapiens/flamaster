@@ -1,5 +1,5 @@
 from flask.helpers import json, _assert_have_json
-from flask import current_app, request
+from flask import current_app, request, Blueprint
 
 from sqlalchemy.orm import class_mapper
 
@@ -18,3 +18,7 @@ def jsonify(*args, **kwargs):
 def as_dict(obj):
     return dict((c.name, getattr(obj, c.name))
               for c in class_mapper(obj.__class__).mapped_table.c)
+
+core = Blueprint('core', __name__, url_prefix='')
+
+from views import *

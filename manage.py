@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from flamaster.app import app
+from flamaster.app import db, init_all
 from flask.ext.script import Manager
 from flamaster.core.commands import CreateAll, DropAll
 
-manager = Manager(app)
+manager = Manager(init_all(db))
 
 
 if __name__ == '__main__':
