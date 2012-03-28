@@ -43,23 +43,24 @@ class Address(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    city = db.Column(db.String(25))
-    street = db.Column(db.String(25))
-    home = db.Column(db.String(20))
-    apartment = db.Column(db.String(20), nullable=False)
-    post_index = db.Column(db.String(20), nullable=False)
+    city = db.Column(db.String(255))
+    street = db.Column(db.String(255))
+    home = db.Column(db.String(255))
+    apartment = db.Column(db.String(20))
+    zip_code = db.Column(db.String(20))
+    type = db.Column(db.Enum('billing', 'delivery', name='addr_types'))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, city, street, home, apartment=None, post_index=None):
+    def __init__(self, city, street, home, apartment=None, zip_code=None):
         self.city = city
         self.street = street
         self.home = home
         self.apartment = apartment
-        self.post_index = post_index
+        self.zip_code = zip_code
 
     def __repr__(self):
-        return "<Address:('%s','%s', '%s')>" % (self.city, self.street, self.home)
+        return "<Address:('%s','%s', '%s')>" % (self.user.email, self.type, self.home)
 
     def create(self, commit=True):
         db.session.add(self)
