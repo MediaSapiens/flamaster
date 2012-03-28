@@ -77,10 +77,10 @@ class Address(db.Model):
         return self
 
 
-
-
 class Role(db.Model):
+
     __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',

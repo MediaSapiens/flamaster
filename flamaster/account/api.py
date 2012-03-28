@@ -5,8 +5,8 @@ from flask.views import MethodView
 
 import trafaret as t
 
-from ..core import jsonify
-from ..core.decorators import api_resource
+from flamaster.core import jsonify
+from flamaster.core.decorators import api_resource
 
 from . import account
 from .models import User
