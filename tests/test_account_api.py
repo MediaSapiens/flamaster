@@ -85,4 +85,3 @@ def test_authorization_failed():
 
 def teardown_module(module):
     db.drop_all()
-
