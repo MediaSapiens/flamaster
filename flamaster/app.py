@@ -37,5 +37,3 @@ register_blueprints(app, *blueprints)
 @app.route('/')
 def app_index():
     return render_template('index.html', **{})
-
-
