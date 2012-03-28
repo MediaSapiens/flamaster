@@ -19,7 +19,7 @@ assets.register('js_templates', Bundle('js/templates.js', output='gen/t.js'))
 assets.register('js_app', Bundle('js/app.js', output='gen/a.js'))
 
 if 'TESTING' in os.environ:
-    app.config.from_object('flamaster.conf.test_settings')
+    app.config.from_object('flamaster.conf.local_test_settings')
 else:
     app.config.from_object('flamaster.conf.settings')
 

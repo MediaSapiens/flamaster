@@ -1,1 +1,13 @@
-SQLALCHEMY_DATABASE_URI = "mysql://root:root@localhost/test_flamaster"
+from .settings import *
+
+
+DEBUG = True
+TESTING = True
+DEBUG = True
+SQLALCHEMY_ECHO = False
+
+SQLALCHEMY_DATABASE_URI = "mysql://root@localhost/test_flamaster"
+try:
+    from test_local_settings import *
+except ImportError:
+    pass

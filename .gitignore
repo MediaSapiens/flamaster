@@ -1,9 +1,9 @@
 flamaster.sublime-*
-*.py[co]
-.DS_Store
-front/node_modules/*
-*~
-env_flamaster
-.webassets-cache
 *.swp
-*local_settings.py
+*~
+.DS_Store
+*.py[co]
+env_flamaster
+front/node_modules/*
+.webassets-cache
+flamaster/conf/local_*
