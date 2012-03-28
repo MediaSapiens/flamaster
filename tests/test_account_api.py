@@ -20,7 +20,7 @@ def setup_module(module):
 
 
 def login(email, passwd, client):
-    auth_url = url_for('account.sessions', sid=1)
+    auth_url = url_for('account.sessions', id=1)
     return client.put(auth_url, content_type='application/json',
             data=json.dumps({'email': 'test@email.com', 'password': 'test'}))
 
@@ -34,12 +34,11 @@ def test_flask_invocation():
 @request_context
 def test_account_api_invocation():
     sessions_url = url_for('account.sessions')
-    c = app.test_client()
-    resp = c.get(sessions_url)
-    assert resp.content_type == 'application/json'
+    with app.test_client() as c:
+        resp = c.get(sessions_url)
+        json_response = json.loads(resp.data)
 
-    json_response = json.loads(resp.data)
-    assert json_response['object']['is_anonymous'] == True
+        assert json_response['is_anonymous'] == True
 
 
 @request_context
@@ -49,10 +48,11 @@ def test_session_creation():
         resp = c.post(sessions_url,
                 data=json.dumps({'email': 'test@email.com'}),
                 content_type='application/json')
+        print resp.data
         j_resp = json.loads(resp.data)
 
-        assert isinstance(j_resp['object']['uid'], int)
-        assert j_resp['object']['is_anonymous'] == False
+        assert isinstance(j_resp['uid'], int)
+        assert j_resp['is_anonymous'] == False
 
 
 @request_context
@@ -69,7 +69,7 @@ def test_authorization():
         resp = login('test@email.com', 'test', c)
         j_resp = json.loads(resp.data)
 
-        assert 'email' in j_resp['object']
+        assert 'email' in j_resp
         assert isinstance(session['uid'], long)
         assert session['is_anonymous'] == False
 
@@ -79,8 +79,7 @@ def test_authorization_failed():
     with app.test_client() as c:
         resp = login('test@email.com', 'pass', c)
         j_resp = json.loads(resp.data)
-        assert 'error' in j_resp
-        assert 'email' in j_resp['error']
+        assert 'email' in j_resp
         assert session['is_anonymous'] == True
 
 def teardown_module(module):

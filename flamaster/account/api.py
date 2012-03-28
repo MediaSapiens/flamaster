@@ -25,13 +25,12 @@ class SessionResource(MethodView):
         users_q = User.query.filter_by(email=data.get('email'))
 
         if users_q.count() > 0:
-            return jsonify({'error': {
-                        'email': "This email is already taken"}})
+            return jsonify({'email': "This email is already taken"})
 
         elif data.get('email'):
             user = User(data['email'], None).save()
             session.update({'uid': user.id, 'is_anonymous': False})
-            return jsonify({'object': dict(session)}, status=201)
+            return jsonify(dict(session), status=201)
 
         abort(400)
 
