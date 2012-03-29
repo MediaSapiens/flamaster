@@ -4,35 +4,37 @@
 {baseContext, serializeForm} = require 'helpers'
 
 class exports.SignupView extends GenericView
-      template: require './templates/signup'
-      className: 'signup'
+  className: 'signup'
+  template: require './templates/signup'
+  events:
+    "click #signup-form button[type='submit']": "submit"
 
-      events:
-        "click #signup-form button[type='submit']": "submit"
-        # "submit #signup-form": "submit"
+  initialize: ->
+    @model = new SessionModel
 
+    # app.homeView.getCurrentUser
+    #   success: (model, resp) =>
+    #     @model.set model.toJSON(), silent: true
 
-      initialize: ->
-        @$el.find("#signup-form").submit ->
-          console.log arguments
-          return false
+  render: ->
+    @$el.html @template(baseContext)
+    @el
 
-      render: ->
-        @$el.html @template(baseContext)
-        @el
-
-      submit: (ev) ->
-        $form = $(ev.target).parents 'form'
-        @clearErrors()
-        formData = serializeForm $form
-        session = new SessionModel formData
-        session.on 'error', (session, error) =>
-          for field, message of error
+  submit: (ev) ->
+    $form = $(ev.target).parents 'form'
+    @clearErrors()
+    formData = serializeForm $form
+    @model.save formData,
+      success: (model, response) ->
+        if !response.is_anonymous
+          app.router.navigate "!/profile/#{response.uid}", trigger: true
+      error: (model, response) =>
+        if response.responseText?
+          for field, message of JSON.parse(response.responseText)
             @renderError field, message
-        session.save
-          success: ->
-            console.log arguments
-          error: ->
-            console.log arguments
-        # error event listener
-        return false
+        else
+          for field, message of response
+            @renderError field, message
+
+    # error event listener
+    return false

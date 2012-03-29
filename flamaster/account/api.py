@@ -2,12 +2,12 @@
 import uuid
 
 from flask import abort, request, session
-from flask.views import MethodView
 
 import trafaret as t
 
-from flamaster.core import jsonify
+from flamaster.core import jsonify, as_dict
 from flamaster.core.decorators import api_resource
+from flamaster.core.resource_base import BaseResource
 
 from . import account
 
@@ -15,10 +15,10 @@ __all__ = ['SessionResource']
 
 
 @api_resource(account, '/sessions/', 'sessions', {'id': None})
-class SessionResource(MethodView):
+class SessionResource(BaseResource):
 
     def get(self, id=None):
-        session['is_anonymous'] = session.get('uid') and False or True
+        session['is_anonymous'] = session.get('uid', True) and False
         session['id'] = session.get('id', uuid.uuid4().hex)
         return jsonify(dict(session))
 
@@ -41,7 +41,7 @@ class SessionResource(MethodView):
         data, status = request.json or abort(400), 200
 
         validation = t.Dict({'email': t.Email, 'password':
-            t.String}).append(self._check_user)
+            t.String}).append(self._authenticate)
 
         try:
             data = {'email': data.get('email'), 'password':
@@ -57,7 +57,7 @@ class SessionResource(MethodView):
     def delete(self, id):
         pass
 
-    def _check_user(self, data_dict):
+    def _authenticate(self, data_dict):
         from .models import User
         user = User.authenticate(**data_dict)
         if user is None:
@@ -66,3 +66,25 @@ class SessionResource(MethodView):
         session.update({'uid': user.id, 'is_anonymous': False})
 
         return data_dict
+
+
+@api_resource(account, '/profiles/', 'profiles', {'id': int})
+class ProfileResource(BaseResource):
+
+    def get(self, id=None):
+        from .models import User
+        user = User.query.filter_by(id=self.current_user).first()
+        if user is None:
+            abort(404)
+        response = as_dict(user)
+        response['password'] = ''
+        return jsonify(response)
+
+    def post(self):
+        pass
+
+    def put(self, id):
+        pass
+
+    def delete(self, id):
+        pass

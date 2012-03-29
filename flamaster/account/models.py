@@ -8,11 +8,14 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(20), nullable=True)
+    password = db.Column(db.String(20))
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
+    phone = db.Column(db.String(15))
+
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
                                 cascade="all, delete, delete-orphan")
-
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
     def __init__(self, email, password):
@@ -44,23 +47,23 @@ class Address(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    city = db.Column(db.String(25))
-    street = db.Column(db.String(25))
-    home = db.Column(db.String(20))
-    apartment = db.Column(db.String(20), nullable=False)
-    post_index = db.Column(db.String(20), nullable=False)
+    city = db.Column(db.String(255), nullable=False)
+    street = db.Column(db.String(255), nullable=False)
+    apartment = db.Column(db.String(20))
+    zip_code = db.Column(db.String(20))
+    type = db.Column(db.Enum('billing', 'delivery', name='addr_types'))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, city, street, home, apartment=None, post_index=None):
+    def __init__(self, city, street, apartment, zip_code):
         self.city = city
         self.street = street
-        self.home = home
         self.apartment = apartment
-        self.post_index = post_index
+        self.zip_code = zip_code
 
     def __repr__(self):
-        return "<Address:('%s','%s', '%s')>" % (self.city, self.street, self.home)
+        return "<Address:('%s','%s', '%s')>" % (self.user and self.user.email \
+                                                or 'N/A', self.type)
 
     def create(self, commit=True):
         db.session.add(self)

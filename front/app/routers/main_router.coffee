@@ -1,5 +1,6 @@
 {SignupView} = require 'views/signup_view'
 {LoginView} = require 'views/login_view'
+{ProfileView} = require 'views/profile_view'
 
 class exports.MainRouter extends Backbone.Router
   routes:
@@ -7,7 +8,7 @@ class exports.MainRouter extends Backbone.Router
     '!/': "layout"
     '!/signup': "signup"
     '!/login': "login"
-    '!/profile/:id': "layout"
+    '!/profile/:id': "profile"
 
   layout: ->
     $('body').html app.homeView.render()
@@ -19,12 +20,16 @@ class exports.MainRouter extends Backbone.Router
   login: ->
     loginView = @_render(LoginView)
 
+  profile: (id) ->
+    profileView = @_render(ProfileView, {id: id})
+
+
   _ensureLayout: ->
     if $("home-view")?
       @layout()
 
-  _render: (ViewClass) ->
+  _render: (ViewClass, options=undefined) ->
     @_ensureLayout()
-    classView = new ViewClass
+    classView = options? and new ViewClass(options) or new ViewClass
     @$container.html classView.render()
     classView

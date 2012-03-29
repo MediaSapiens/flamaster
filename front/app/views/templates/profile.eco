@@ -1,0 +1,14 @@
+<div class="row">
+  <div class="span2">
+    <ul class="nav nav-list">
+      <li><a href="#"><i class="icon-user"></i> Profile</a></li>
+      <li><a href="#"><i class="icon-list-alt"></i> Orders</a></li>
+      <li><a href="#"><i class="icon-envelope"></i> Messages</a></li>
+      <li><a href="#"><i class="icon-cog"></i> Settings</a></li>
+    </ul>
+  </div>
+  <div class="span10">
+    <h3>Hello, <%= @username %>. <small><sup><a href="#" id="edit-profile">edit</a></sup></small></h3>
+    <div id="profile-info"></div>
+  </div>
+</div>
