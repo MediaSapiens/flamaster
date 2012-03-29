@@ -8,6 +8,7 @@
     </ul>
   </div>
   <div class="span10">
-    <h3>Hello, <%= @username %>!</h3>
+    <h3>Hello, <%= @username %>. <small><sup><a href="#" id="edit-profile">edit</a></sup></small></h3>
+    <div id="profile-info"></div>
   </div>
 </div>

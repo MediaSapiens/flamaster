@@ -84,62 +84,6 @@
 }));
 (this.require.define({
   "helpers": function(exports, require, module) {
-    
-exports.BrunchApplication = (function() {
-
-  function BrunchApplication() {
-    var _this = this;
-    $(function() {
-      _this.initialize(_this);
-      return Backbone.history.start();
-    });
-  }
-
-  BrunchApplication.prototype.initialize = function() {
-    return null;
-  };
-
-  return BrunchApplication;
-
-})();
-
-exports.baseContext = {
-  baseField: function(attr, type, placeholder) {
-    return this.safe("<input type='" + type + "' name='" + attr + "' id='id_" + attr + "' class='input-large' placeholder='" + placeholder + "' />");
-  },
-  formFor: function(id, yield) {
-    var body, form,
-      _this = this;
-    form = {
-      textField: function(attr, placeholder) {
-        return _this.baseField(attr, 'text', placeholder);
-      },
-      passwdField: function(attr, placeholder) {
-        return _this.baseField(attr, 'password', placeholder);
-      },
-      labelFor: function(attr, name) {
-        return _this.safe("<label class='control-label' for='id_" + attr + "'>" + name + "</label>");
-      }
-    };
-    body = yield(form);
-    return this.safe("<form class='form-horizontal' id='" + id + "'>" + body + "</form>");
-  }
-};
-
-exports.serializeForm = function(form) {
-  var array, attr, response, _i, _len, _ref;
-  _ref = [form.serializeArray(), {}], array = _ref[0], response = _ref[1];
-  for (_i = 0, _len = array.length; _i < _len; _i++) {
-    attr = array[_i];
-    response[attr.name] = attr.value;
-  }
-  return response;
-};
-
-  }
-}));
-(this.require.define({
-  "helpers": function(exports, require, module) {
     (function() {
 
   exports.BrunchApplication = (function() {
@@ -198,6 +142,42 @@ exports.serializeForm = function(form) {
   }
 }));
 (this.require.define({
+  "initialize": function(exports, require, module) {
+    (function() {
+  var BrunchApplication, HomeView, MainRouter,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  BrunchApplication = require('helpers').BrunchApplication;
+
+  MainRouter = require('routers/main_router').MainRouter;
+
+  HomeView = require('views/home_view').HomeView;
+
+  exports.Application = (function(_super) {
+
+    __extends(Application, _super);
+
+    function Application() {
+      Application.__super__.constructor.apply(this, arguments);
+    }
+
+    Application.prototype.initialize = function() {
+      this.router = new MainRouter;
+      return this.homeView = new HomeView;
+    };
+
+    return Application;
+
+  })(BrunchApplication);
+
+  window.app = new exports.Application;
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
   "models/profile_model": function(exports, require, module) {
     (function() {
   var __hasProp = Object.prototype.hasOwnProperty,
@@ -220,6 +200,71 @@ exports.serializeForm = function(form) {
     return ProfileModel;
 
   })(Backbone.Model);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "models/session_model": function(exports, require, module) {
+    (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  exports.SessionModel = (function(_super) {
+
+    __extends(SessionModel, _super);
+
+    function SessionModel() {
+      SessionModel.__super__.constructor.apply(this, arguments);
+    }
+
+    SessionModel.prototype.urlRoot = '/account/sessions/';
+
+    SessionModel.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+    SessionModel.prototype.initial = {
+      is_anonymous: true
+    };
+
+    return SessionModel;
+
+  })(Backbone.Model);
+
+  exports.LoginModel = (function(_super) {
+
+    __extends(LoginModel, _super);
+
+    function LoginModel() {
+      LoginModel.__super__.constructor.apply(this, arguments);
+    }
+
+    LoginModel.prototype.defaults = {
+      email: '',
+      password: ''
+    };
+
+    LoginModel.prototype.validate = function(attrs) {
+      var response;
+      response = {
+        status: 'success'
+      };
+      console.log(attrs.email, this.emailRegex.test(attrs.email));
+      if (!this.emailRegex.test(attrs.email)) {
+        response.status = 'failed';
+        response.email = 'This is not valid email address';
+        console.log('email failed');
+      }
+      if (attrs.password.length === 0) {
+        response.status = 'failed';
+        response.password = 'You forgot to specify password';
+      }
+      if (response.status === 'failed') return response;
+    };
+
+    return LoginModel;
+
+  })(exports.SessionModel);
 
 }).call(this);
 
@@ -298,103 +343,58 @@ exports.serializeForm = function(form) {
   }
 }));
 (this.require.define({
-  "models/session_model": function(exports, require, module) {
-    (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+  "helpers": function(exports, require, module) {
+    
+exports.BrunchApplication = (function() {
 
-  exports.SessionModel = (function(_super) {
-
-    __extends(SessionModel, _super);
-
-    function SessionModel() {
-      SessionModel.__super__.constructor.apply(this, arguments);
-    }
-
-    SessionModel.prototype.urlRoot = '/account/sessions/';
-
-    SessionModel.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-
-    SessionModel.prototype.initial = {
-      is_anonymous: true
-    };
-
-    return SessionModel;
-
-  })(Backbone.Model);
-
-  exports.LoginModel = (function(_super) {
-
-    __extends(LoginModel, _super);
-
-    function LoginModel() {
-      LoginModel.__super__.constructor.apply(this, arguments);
-    }
-
-    LoginModel.prototype.defaults = {
-      email: '',
-      password: ''
-    };
-
-    LoginModel.prototype.validate = function(attrs) {
-      var response;
-      response = {
-        status: 'success'
-      };
-      console.log(attrs.email, this.emailRegex.test(attrs.email));
-      if (!this.emailRegex.test(attrs.email)) {
-        response.status = 'failed';
-        response.email = 'This is not valid email address';
-        console.log('email failed');
-      }
-      if (attrs.password.length === 0) {
-        response.status = 'failed';
-        response.password = 'You forgot to specify password';
-      }
-      if (response.status === 'failed') return response;
-    };
-
-    return LoginModel;
-
-  })(exports.SessionModel);
-
-}).call(this);
-
+  function BrunchApplication() {
+    var _this = this;
+    $(function() {
+      _this.initialize(_this);
+      return Backbone.history.start();
+    });
   }
-}));
-(this.require.define({
-  "initialize": function(exports, require, module) {
-    (function() {
-  var BrunchApplication, HomeView, MainRouter,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  BrunchApplication = require('helpers').BrunchApplication;
+  BrunchApplication.prototype.initialize = function() {
+    return null;
+  };
 
-  MainRouter = require('routers/main_router').MainRouter;
+  return BrunchApplication;
 
-  HomeView = require('views/home_view').HomeView;
+})();
 
-  exports.Application = (function(_super) {
-
-    __extends(Application, _super);
-
-    function Application() {
-      Application.__super__.constructor.apply(this, arguments);
-    }
-
-    Application.prototype.initialize = function() {
-      this.router = new MainRouter;
-      return this.homeView = new HomeView;
+exports.baseContext = {
+  baseField: function(attr, type, placeholder) {
+    return this.safe("<input type='" + type + "' name='" + attr + "' id='id_" + attr + "' class='input-large' placeholder='" + placeholder + "' />");
+  },
+  formFor: function(id, yield) {
+    var body, form,
+      _this = this;
+    form = {
+      textField: function(attr, placeholder) {
+        return _this.baseField(attr, 'text', placeholder);
+      },
+      passwdField: function(attr, placeholder) {
+        return _this.baseField(attr, 'password', placeholder);
+      },
+      labelFor: function(attr, name) {
+        return _this.safe("<label class='control-label' for='id_" + attr + "'>" + name + "</label>");
+      }
     };
+    body = yield(form);
+    return this.safe("<form class='form-horizontal' id='" + id + "'>" + body + "</form>");
+  }
+};
 
-    return Application;
-
-  })(BrunchApplication);
-
-  window.app = new exports.Application;
-
-}).call(this);
+exports.serializeForm = function(form) {
+  var array, attr, response, _i, _len, _ref;
+  _ref = [form.serializeArray(), {}], array = _ref[0], response = _ref[1];
+  for (_i = 0, _len = array.length; _i < _len; _i++) {
+    attr = array[_i];
+    response[attr.name] = attr.value;
+  }
+  return response;
+};
 
   }
 }));
@@ -659,7 +659,7 @@ exports.serializeForm = function(form) {
             username = $.trim("" + _this.model.first_name + " " + _this.model.last_name);
           }
           if (!(username != null) || username.length === 0) {
-            username = _this.model.get('email');
+            username = "please, fill your profile data";
           }
           return username;
         })()
