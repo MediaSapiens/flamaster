@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.assets import Environment, Bundle
 
@@ -28,13 +28,11 @@ def register_blueprints(app, *args):
     for name in args:
         bp_module = __import__('flamaster.%s' % name, {}, {}, [''])
         app.register_blueprint(vars(bp_module)[name])
-    print app.url_map
     return app
 
 
 def register_assets(app):
     assets = Environment(app)
-
     assets.register('js_vendor', Bundle('js/vendor.js', output='gen/v.js'))
     assets.register('js_templates', Bundle('js/templates.js', output='gen/t.js'))
     assets.register('js_app', Bundle('js/app.js', output='gen/a.js'))
@@ -48,4 +46,3 @@ def init_all(db):
                     *blueprints))
 
 # register_blueprints(app, *blueprints)
-
