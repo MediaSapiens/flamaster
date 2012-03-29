@@ -10,8 +10,6 @@ from flamaster.core import jsonify
 from flamaster.core.decorators import api_resource
 
 from . import account
-from .models import User
-
 
 __all__ = ['SessionResource']
 
@@ -25,6 +23,7 @@ class SessionResource(MethodView):
         return jsonify(dict(session))
 
     def post(self):
+        from .models import User
         data = request.json or abort(400)
         users_q = User.query.filter_by(email=data.get('email'))
 
@@ -59,6 +58,7 @@ class SessionResource(MethodView):
         pass
 
     def _check_user(self, data_dict):
+        from .models import User
         user = User.authenticate(**data_dict)
         if user is None:
             raise t.DataError({'email': "There is no user matching this "
