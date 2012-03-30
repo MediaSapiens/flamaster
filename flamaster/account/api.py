@@ -5,11 +5,11 @@ from flask import abort, request, session
 
 import trafaret as t
 
-from flamaster.core import jsonify, as_dict
+from flamaster.core.views import jsonify, as_dict
 from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
-
-from . import account
+from .models import User
+from .views import account
 
 __all__ = ['SessionResource']
 
@@ -23,7 +23,6 @@ class SessionResource(BaseResource):
         return jsonify(dict(session))
 
     def post(self):
-        from .models import User
         data = request.json or abort(400)
         users_q = User.query.filter_by(email=data.get('email'))
 
@@ -58,7 +57,6 @@ class SessionResource(BaseResource):
         pass
 
     def _authenticate(self, data_dict):
-        from .models import User
         user = User.authenticate(**data_dict)
         if user is None:
             raise t.DataError({'email': "There is no user matching this "
@@ -72,7 +70,6 @@ class SessionResource(BaseResource):
 class ProfileResource(BaseResource):
 
     def get(self, id=None):
-        from .models import User
         user = User.query.filter_by(id=self.current_user).first()
         if user is None:
             abort(404)

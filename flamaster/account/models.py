@@ -1,4 +1,3 @@
-
 # from __future__ import absolute_import
 from flamaster.app import db
 
@@ -27,8 +26,7 @@ class User(db.Model):
 
     def save(self, commit=True):
         db.session.add(self)
-        if commit:
-            db.session.commit()
+        commit and db.session.commit()
         return self
 
     @classmethod
@@ -62,25 +60,30 @@ class Address(db.Model):
         self.zip_code = zip_code
 
     def __repr__(self):
-        return "<Address:('%s','%s', '%s')>" % (self.user and self.user.email \
-                                                or 'N/A', self.type)
-
-    def create(self, commit=True):
+        return "<Address:('%s','%s')>" % (self.city, self.street)
+        #return "<Address:('%s','%s', '%s')>" % (self.user and self.user.email \
+        #                               or 'N/A', self.type)
+    def save(self, commit=True):
         db.session.add(self)
         commit and db.session.commit()
         return self
 
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls(**kwargs)
+        return instance.save()
+
     def delete(self, commit=True):
         db.session.delete(self)
-        if commit:
-            db.session.commit()
+        commit and db.session.commit()
 
-    def update(self, commit=True):
-        db.session.add(self)
-        if commit:
-            db.session.commit()
-        return self
+    def update(self, commit=True, **kwargs):
+        print type(self), dir(self), self.apartment, self.city, self.street, self.user_id, self.zip_code, self.type
 
+        # db.session.add(self)
+        # if commit:
+        #     db.session.commit()
+        # return self
 
 class Role(db.Model):
 

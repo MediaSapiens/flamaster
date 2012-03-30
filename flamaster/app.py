@@ -4,12 +4,6 @@ from flask.ext.assets import Environment, Bundle
 
 import os
 
-blueprints = ['core', 'account',
-    # 'category', 'delivery', 'image', 'order', 'payment',
-    # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
-]
-
-
 app = Flask(__name__, static_url_path='/static', template_folder='static')
 if 'TESTING' in os.environ:
     app.config.from_object('flamaster.conf.local_test_settings')
@@ -18,10 +12,11 @@ else:
 
 db = SQLAlchemy(app)
 
-for blueprint in blueprints:
-    bp_module = __import__('flamaster.%s' % blueprint, {}, {}, [''])
-    app.register_blueprint(getattr(bp_module, blueprint))
+from flamaster.account.views import account as accountModule
+from flamaster.core.views import core as coreModule
 
+app.register_blueprint(accountModule)
+app.register_blueprint(coreModule)
 
 assets = Environment(app)
 

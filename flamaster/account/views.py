@@ -1,9 +1,11 @@
 from flask import render_template
-from . import account
+from flask import Blueprint
 
 
-__all__ = ['index']
+account = Blueprint('account', __name__, template_folder='templates',
+                    url_prefix='/account')
 
+#__all__ = ['index', 'account']
 
 @account.route('/')
 def index():
