@@ -1,17 +1,18 @@
-# from __future__ import absolute_import
 import uuid
 
-from flask import abort, request, session
+from flask import Blueprint, abort, request, session
 
 import trafaret as t
 
-from flamaster.core.views import jsonify, as_dict
+from flamaster.core.utils import jsonify, as_dict
 from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
-from .models import User
-from .views import account
 
-__all__ = ['SessionResource']
+from .models import User
+
+
+account = Blueprint('account', __name__, template_folder='templates',
+                    url_prefix='/account')
 
 
 @api_resource(account, '/sessions/', 'sessions', {'id': None})
