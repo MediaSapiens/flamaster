@@ -15,8 +15,9 @@ class exports.HomeView extends Backbone.View
 
     @getCurrentUser
       success: (model, resp) ->
-        console.log model
-
+        if not model.get 'is_anonymous'
+          uid = model.get 'uid'
+          app.router.navigate "!/profiles/#{uid}"
 
   render: ->
     @$el.html @template

@@ -12,7 +12,15 @@ class exports.ProfileView extends GenericView
   events:
     "click a#edit-profile": "editProfile"
 
+  actions: ->
+    show: =>
+      baseContext = _.extend baseContext,
+        profile: @model
+      @$el.html @template(baseContext)
+      @el
+
   initialize: (options) ->
+    console.log 'profile view:', options
     @session = new SessionModel
     @model = new ProfileModel id: options.id
 
@@ -23,12 +31,9 @@ class exports.ProfileView extends GenericView
           success: =>
             @render()
 
-  render: ->
-    baseContext = _.extend baseContext,
-      profile: @model
-    console.log @model.get 'email'
-    @$el.html @template(baseContext)
-    @el
+  render: (action) ->
+    @actions[action]()
+
 
   editProfile: (args...) ->
     console args

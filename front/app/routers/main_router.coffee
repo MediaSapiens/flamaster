@@ -15,27 +15,25 @@ class exports.MainRouter extends Backbone.Router
     @profileRouter = new ProfileRouter mainRouter: @
         # @model.set model.toJSON(), silent: true
 
-
   layout: ->
     $('body').html app.homeView.render()
     @$container = $ '#content'
 
   signup: ->
-    signupView = @_render(SignupView)
+    signupView = @renderDefault(SignupView)
 
   login: ->
-    loginView = @_render(LoginView)
-
-  profile: (id) ->
-    profileView = @_render(ProfileView, {id: id})
-
+    loginView = @renderDefault(LoginView)
 
   _ensureLayout: ->
     if $("home-view")?
       @layout()
 
-  _render: (ViewClass, options=undefined) ->
+  renderDefault: (ViewClass, options=undefined) ->
     @_ensureLayout()
     classView = options? and new ViewClass(options) or new ViewClass
-    @$container.html classView.render()
+    @inject classView.render()
     classView
+
+  inject: (html) ->
+    @$container.html html
