@@ -27,7 +27,7 @@ class exports.LoginView extends GenericView
     @model.save data,
       success: (model, response) ->
         if !response.is_anonymous
-          app.router.navigate "!/profile/#{response.uid}", trigger: true
+          app.router.navigate "!/profiles/#{response.uid}", trigger: true
       error: (model, response) =>
         if response.responseText?
           for field, message of JSON.parse(response.responseText)

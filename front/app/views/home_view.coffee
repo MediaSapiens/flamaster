@@ -11,8 +11,12 @@ class exports.HomeView extends Backbone.View
         index: ["Index", '!/']
         signup: ["Sign Up", '!/signup']
         login: ["Login", '!/login']
-      router: app.router,
       session: @getCurrentUser()
+
+    @getCurrentUser
+      success: (model, resp) ->
+        console.log model
+
 
   render: ->
     @$el.html @template

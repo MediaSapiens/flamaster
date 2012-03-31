@@ -194,7 +194,21 @@
     ProfileModel.prototype.urlRoot = '/account/profiles/';
 
     ProfileModel.prototype.initialize = function() {
+      this.front = {
+        edit: "/#!/profile/" + this.id + "/edit"
+      };
       return true;
+    };
+
+    ProfileModel.prototype.getUsername = function() {
+      var username;
+      if ((this.first_name != null) || (this.last_name != null)) {
+        username = $.trim("" + this.first_name + " " + this.last_name);
+      }
+      if (!(username != null) || username.length === 0) {
+        username = "please, fill your profile data";
+      }
+      return username;
     };
 
     return ProfileModel;
@@ -273,9 +287,11 @@
 (this.require.define({
   "routers/main_router": function(exports, require, module) {
     (function() {
-  var LoginView, ProfileView, SignupView,
+  var LoginView, ProfileRouter, ProfileView, SignupView,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  ProfileRouter = require('routers/profile_router').ProfileRouter;
 
   SignupView = require('views/signup_view').SignupView;
 
@@ -295,8 +311,13 @@
       '': "layout",
       '!/': "layout",
       '!/signup': "signup",
-      '!/login': "login",
-      '!/profile/:id': "profile"
+      '!/login': "login"
+    };
+
+    MainRouter.prototype.initialize = function() {
+      return this.profileRouter = new ProfileRouter({
+        mainRouter: this
+      });
     };
 
     MainRouter.prototype.layout = function() {
@@ -422,14 +443,18 @@ exports.serializeForm = function(form) {
     HomeView.prototype.template = require('./templates/home');
 
     HomeView.prototype.initialize = function() {
-      return this.navView = new NavView({
+      this.navView = new NavView({
         model: {
           index: ["Index", '!/'],
           signup: ["Sign Up", '!/signup'],
           login: ["Login", '!/login']
         },
-        router: app.router,
         session: this.getCurrentUser()
+      });
+      return this.getCurrentUser({
+        success: function(model, resp) {
+          return console.log(model);
+        }
       });
     };
 
@@ -511,7 +536,7 @@ exports.serializeForm = function(form) {
       this.model.save(data, {
         success: function(model, response) {
           if (!response.is_anonymous) {
-            return app.router.navigate("!/profile/" + response.uid, {
+            return app.router.navigate("!/profiles/" + response.uid, {
               trigger: true
             });
           }
@@ -565,18 +590,16 @@ exports.serializeForm = function(form) {
     NavView.prototype.template = require('./templates/nav');
 
     NavView.prototype.initialize = function(options) {
-      var router,
-        _this = this;
-      router = options.router;
-      router.on("route:layout", function() {
+      var _this = this;
+      app.router.on("route:layout", function() {
         _this.$el.find("li").removeClass('active');
         return _this.$el.find(".n-index").addClass('active');
       });
-      router.on("route:login", function() {
+      app.router.on("route:login", function() {
         _this.$el.find("li").removeClass('active');
         return _this.$el.find(".n-login").addClass('active');
       });
-      return router.on("route:signup", function() {
+      return app.router.on("route:signup", function() {
         _this.$el.find("li").removeClass('active');
         return _this.$el.find(".n-signup").addClass('active');
       });
@@ -625,16 +648,15 @@ exports.serializeForm = function(form) {
 
     ProfileView.prototype.template = require('./templates/profile');
 
+    ProfileView.prototype.events = {
+      "click a#edit-profile": "editProfile"
+    };
+
     ProfileView.prototype.initialize = function(options) {
       var _this = this;
       this.session = new SessionModel;
       this.model = new ProfileModel({
         id: options.id
-      });
-      this.session.on('all', function() {
-        var args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        return console.log(args);
       });
       return app.homeView.getCurrentUser({
         success: function(model, resp) {
@@ -651,22 +673,18 @@ exports.serializeForm = function(form) {
     };
 
     ProfileView.prototype.render = function() {
-      var _this = this;
       baseContext = _.extend(baseContext, {
-        username: (function() {
-          var username;
-          if ((_this.model.first_name != null) || (_this.model.last_name != null)) {
-            username = $.trim("" + _this.model.first_name + " " + _this.model.last_name);
-          }
-          if (!(username != null) || username.length === 0) {
-            username = "please, fill your profile data";
-          }
-          return username;
-        })()
+        profile: this.model
       });
       console.log(this.model.get('email'));
       this.$el.html(this.template(baseContext));
       return this.el;
+    };
+
+    ProfileView.prototype.editProfile = function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return console(args);
     };
 
     return ProfileView;
@@ -755,6 +773,54 @@ exports.serializeForm = function(form) {
     return SignupView;
 
   })(GenericView);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "routers/profile_router": function(exports, require, module) {
+    (function() {
+  var __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  exports.ProfileRouter = (function(_super) {
+
+    __extends(ProfileRouter, _super);
+
+    function ProfileRouter() {
+      ProfileRouter.__super__.constructor.apply(this, arguments);
+    }
+
+    ProfileRouter.prototype.routes = {
+      '!/profiles/': "index",
+      '!/profiles/:id': "show",
+      '!/profiles/:id/edit': "edit"
+    };
+
+    ProfileRouter.prototype.initialize = function(options) {
+      return this.mainRouter = options.mainRouter;
+    };
+
+    ProfileRouter.prototype.index = function() {
+      return console.log('index');
+    };
+
+    ProfileRouter.prototype.show = function(id) {
+      var profileView;
+      profileView = this._render(ProfileView, {
+        id: id
+      });
+      return console.log('index');
+    };
+
+    ProfileRouter.prototype.edit = function() {
+      return console.log('index');
+    };
+
+    return ProfileRouter;
+
+  })(Backbone.Router);
 
 }).call(this);
 

@@ -25,12 +25,7 @@ class exports.ProfileView extends GenericView
 
   render: ->
     baseContext = _.extend baseContext,
-      username: do =>
-        if @model.first_name? or @model.last_name?
-          username = $.trim "#{@model.first_name} #{@model.last_name}"
-        if not username? or username.length == 0
-          username = "please, fill your profile data"
-        username
+      profile: @model
     console.log @model.get 'email'
     @$el.html @template(baseContext)
     @el

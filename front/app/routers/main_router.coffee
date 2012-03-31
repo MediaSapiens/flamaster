@@ -1,3 +1,5 @@
+{ProfileRouter} = require 'routers/profile_router'
+
 {SignupView} = require 'views/signup_view'
 {LoginView} = require 'views/login_view'
 {ProfileView} = require 'views/profile_view'
@@ -8,7 +10,11 @@ class exports.MainRouter extends Backbone.Router
     '!/': "layout"
     '!/signup': "signup"
     '!/login': "login"
-    '!/profile/:id': "profile"
+
+  initialize: ->
+    @profileRouter = new ProfileRouter mainRouter: @
+        # @model.set model.toJSON(), silent: true
+
 
   layout: ->
     $('body').html app.homeView.render()

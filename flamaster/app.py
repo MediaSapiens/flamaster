@@ -12,7 +12,7 @@ blueprints = {
 
 
 def register_blueprints(app, **blueprints):
-    for bp, module in blueprints.itervalues():
+    for bp, module in blueprints.iteritems():
         bp_module = __import__(module, {}, {}, [''])
         app.register_blueprint(vars(bp_module)[bp])
     return app
