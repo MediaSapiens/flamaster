@@ -38,7 +38,7 @@ def test_account_api_invocation():
         resp = c.get(sessions_url)
         json_response = json.loads(resp.data)
 
-        assert json_response['is_anonymous'] == True
+        assert 'id' in json_response
 
 
 @request_context
@@ -48,7 +48,6 @@ def test_session_creation():
         resp = c.post(sessions_url,
                 data=json.dumps({'email': 'test@email.com'}),
                 content_type='application/json')
-        print resp.data
         j_resp = json.loads(resp.data)
 
         assert isinstance(j_resp['uid'], int)
@@ -64,7 +63,7 @@ def test_authorization():
             'test'})
         db.session.commit()
 
-        assert session['is_anonymous'] == True
+        # assert session['is_anonymous'] == True
 
         resp = login('test@email.com', 'test', c)
         j_resp = json.loads(resp.data)
@@ -81,6 +80,7 @@ def test_authorization_failed():
         j_resp = json.loads(resp.data)
         assert 'email' in j_resp
         assert session['is_anonymous'] == True
+
 
 def teardown_module(module):
     db.drop_all()

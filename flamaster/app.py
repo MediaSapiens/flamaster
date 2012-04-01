@@ -5,6 +5,9 @@ from flask.ext.assets import Environment, Bundle
 import os
 
 
+app = Flask(__name__, static_url_path='/static', template_folder='static')
+db = SQLAlchemy(app)
+
 blueprints = {
     'core': 'flamaster.core.views',
     'account': 'flamaster.account.api'
@@ -25,7 +28,7 @@ def register_assets(app):
     assets.register('js_app', Bundle('js/app.js', output='gen/a.js'))
     return app
 
-app = Flask(__name__, static_url_path='/static', template_folder='static')
+
 if 'TESTING' in os.environ:
     app.config.from_object('flamaster.conf.local_test_settings')
 else:
@@ -35,4 +38,4 @@ else:
 
 app = register_blueprints(app, **blueprints)
 app = register_assets(app)
-db = SQLAlchemy(app)
+

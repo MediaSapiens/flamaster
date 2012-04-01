@@ -363,13 +363,6 @@
       return loginView = this.renderDefault(LoginView);
     };
 
-    MainRouter.prototype.profile = function(id) {
-      var profileView;
-      return profileView = this.renderDefault(ProfileView, {
-        id: id
-      });
-    };
-
     MainRouter.prototype._ensureLayout = function() {
       if ($("home-view") != null) return this.layout();
     };
