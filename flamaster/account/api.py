@@ -92,11 +92,13 @@ class ProfileResource(BaseResource):
 class AddressResource(BaseResource):
 
     def get(self, id=None):
-        data = request.json or abort(400)
-        address = Address.query.filter_by(id=data.get('uid')).first()
-        if address is None:
-            abort(404)
-        response = as_dict(address)
+        if id is None:
+            uid = session.get('uid') or abort(403)
+            addresses = Address.query.filter_by(user_id=uid)
+            response = as_dict(addresses)
+        else:
+            address = Address.query.filter_by(id=id).first() or abort(404)
+            response = as_dict(address)
         return jsonify(response)
 
     def post(self):
