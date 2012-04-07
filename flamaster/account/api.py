@@ -95,37 +95,30 @@ class AddressResource(BaseResource):
         if id is None:
             uid = session.get('uid') or abort(403)
             addresses = Address.query.filter_by(user_id=uid)
-            response = as_dict(addresses)
+            response = [as_dict(addr) for addr in addresses]
+
         else:
-            address = Address.query.filter_by(id=id).first() or abort(404)
-            response = as_dict(address)
+            addr = Address.query.filter_by(id=id).first() or abort(404)
+            response = as_dict(addr)
         return jsonify(response)
 
     def post(self):
+        uid = session.get('uid') or abort(403)
         data = request.json or abort(400)
-        users_q = User.query.filter_by(email=data.get('email', ''))
-        if users_q.count() == 0 and data.get('email', ''):
-            users_q = User(data['email'], None).save()
+        data.update({'user_id': uid})
+        validation = t.Dict({'city': t.String, 'street': t.String,
+                            'apartment': t.String(regex='^.{,20}$'),
+                            'zip_code': t.String(regex='^.{,20}$'),
+                            'type': t.String(regex="(billing|delivery)"),
+                            'user_id': t.Int})
+        try:
+            validation.check(data)
+            addr = Address.create(**data)
+            data, status = as_dict(addr), 201
+        except t.DataError as e:
+            data, status = e.as_dict(), 400
 
-        address_q = Address.query.filter_by(user_id=users_q.id,
-                                          type=data.get('type'))
-
-        if address_q.count() > 0:
-            return jsonify({'address': "This address is already taken"})
-
-        elif data.get('email', '') and data.get('type', ''):
-            address = Address.create(**{'city': data.get('city'),
-                                        'street': data.get('street'),
-                                        'apartment': data.get('apartment'),
-                                        'zip_code': data.get('zip_code'),
-                                        'type': data.get('type'),
-                                        'user_id': users_q.id})
-            session.update({'uid': users_q.id,
-                            'is_anonymous': False,
-                            'address_id': address.id})
-            return jsonify(dict(session), status=201)
-
-        abort(400)
+        return jsonify(data, status=status)
 
     def put(self, id):
         data, status = request.json or abort(400), 200
@@ -147,7 +140,10 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def delete(self, id):
-        pass
+        t.Int.check(id)
+        address = Address.query.filter_by(id=id)
+        address.delete()
+        return jsonify({}, status=200)
 
     def _authenticate(self, data_dict):
         user = User.authenticate(**data_dict)

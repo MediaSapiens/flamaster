@@ -51,7 +51,8 @@ class Address(db.Model):
     street = db.Column(db.String(255), nullable=False)
     apartment = db.Column(db.String(20))
     zip_code = db.Column(db.String(20))
-    type = db.Column(db.Enum('billing', 'delivery', name='addr_types'))
+    type = db.Column(db.Enum('billing', 'delivery', name='addr_types'),
+                     nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
