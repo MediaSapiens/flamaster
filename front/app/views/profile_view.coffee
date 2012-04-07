@@ -1,4 +1,3 @@
-{SessionModel} = require 'models/session_model'
 {ProfileModel} = require 'models/profile_model'
 
 {GenericView} = require 'views/generic_view'
@@ -10,30 +9,28 @@ class exports.ProfileView extends GenericView
   template: require './templates/profile'
 
   events:
-    "click a#edit-profile": "editProfile"
+    "click a#edit-profile": "edit"
 
   actions: ->
     show: =>
-      baseContext = _.extend baseContext,
-        profile: @model
-      @$el.html @template(baseContext)
-      @el
+
+  edit: (ev) ->
+    false
 
   initialize: (options) ->
-    console.log 'profile view:', options
-    @session = new SessionModel
-    @model = new ProfileModel id: options.id
+    console.log 'routes', options.routes
+    # @model = new ProfileModel id: options.id
 
-    app.homeView.getCurrentUser
-      success: (model, resp) =>
-        @session.set model.toJSON(), silent: true
-        @model.fetch
-          success: =>
-            @render()
+  render: () ->
+    baseContext = _.extend baseContext,
+      profile: @model
+    @$el.html @template(baseContext)
+    @el
 
-  render: (action) ->
-    @actions[action]()
+  push: (options) ->
+    console.log 'pushed': options
 
-
-  editProfile: (args...) ->
-    console args
+    if typeof(options.id) isnt 'undefined'
+      @model = new ProfileModel id: options.id
+      @model.fetch
+        success: => @trigger options.action

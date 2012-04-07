@@ -1,5 +1,8 @@
 {BrunchApplication} = require 'helpers'
+
 {MainRouter} = require 'routers/main_router'
+{ProfileRouter} = require 'routers/profile_router'
+
 {HomeView} = require 'views/home_view'
 
 class exports.Application extends BrunchApplication
@@ -7,7 +10,28 @@ class exports.Application extends BrunchApplication
   # If you have a big application, perhaps it's a good idea to
   # group things by their type e.g. `@views = {}; @views.home = new HomeView`.
   initialize: ->
+    # router section
     @router = new MainRouter
-    @homeView = new HomeView
+    @profileRouter = new ProfileRouter
+
+  render: (ViewClass, options=undefined) ->
+    @layout()
+    if typeof(ViewClass) is 'function'
+      classView = options? and new ViewClass(options) or new ViewClass
+      @inject classView.render()
+      classView
+
+  inject: (html) ->
+    @layout()
+    console.log @$container
+    @$container.html html
+
+  layout: ->
+    if typeof(@homeView) is 'undefined'
+      @homeView = new HomeView
+      $('body').html @homeView.render()
+      console.log @
+      @$container = $ '#content'
+
 
 window.app = new exports.Application

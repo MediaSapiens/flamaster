@@ -48,63 +48,35 @@
     };
   }
 }).call(this);(this.require.define({
-  "routers/profile_router": function(exports, require, module) {
+  "views/generic_view": function(exports, require, module) {
     (function() {
-  var ProfileView,
-    __hasProp = Object.prototype.hasOwnProperty,
+  var __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  ProfileView = require('views/profile_view').ProfileView;
+  exports.GenericView = (function(_super) {
 
-  exports.ProfileRouter = (function(_super) {
+    __extends(GenericView, _super);
 
-    __extends(ProfileRouter, _super);
-
-    function ProfileRouter() {
-      ProfileRouter.__super__.constructor.apply(this, arguments);
+    function GenericView() {
+      GenericView.__super__.constructor.apply(this, arguments);
     }
 
-    ProfileRouter.prototype.routes = {
-      '!/profiles/': "index",
-      '!/profiles/:id': "show",
-      '!/profiles/:id/edit': "edit"
+    GenericView.prototype.renderError = function(field, message) {
+      var $el, error;
+      $el = this.$el.find("form input[name='" + field + "']");
+      $el.parents(".control-group").addClass('error');
+      error = $(document.createElement('span')).addClass('help-inline error').text(message);
+      return $el.after(error);
     };
 
-    ProfileRouter.prototype.initialize = function(options) {
-      return this.mainRouter = options.mainRouter;
+    GenericView.prototype.clearErrors = function() {
+      this.$el.find(".control-group").removeClass('error');
+      return this.$el.find("span.help-inline.error").remove();
     };
 
-    ProfileRouter.prototype.index = function() {
-      this.ensureView();
-      app.router.inject(this.profileView.render('index'));
-      return console.log('index');
-    };
+    return GenericView;
 
-    ProfileRouter.prototype.show = function(id) {
-      this.ensureView();
-      app.router.inject(this.profileView.render('show'));
-      return console.log('show');
-    };
-
-    ProfileRouter.prototype.edit = function() {
-      this.ensureView();
-      app.router.inject(this.profileView.render('edit'));
-      return console.log('edit');
-    };
-
-    ProfileRouter.prototype.ensureView = function() {
-      console.log(this.profileView != null);
-      if (!(this.profileView != null)) {
-        this.profileView = app.router.renderDefault(ProfileView, {
-          id: id
-        });
-      }
-      return this.profileView;
-    };
-
-    return ProfileRouter;
-
-  })(Backbone.Router);
+  })(Backbone.View);
 
 }).call(this);
 
@@ -164,42 +136,6 @@
     }
     return response;
   };
-
-}).call(this);
-
-  }
-}));
-(this.require.define({
-  "initialize": function(exports, require, module) {
-    (function() {
-  var BrunchApplication, HomeView, MainRouter,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  BrunchApplication = require('helpers').BrunchApplication;
-
-  MainRouter = require('routers/main_router').MainRouter;
-
-  HomeView = require('views/home_view').HomeView;
-
-  exports.Application = (function(_super) {
-
-    __extends(Application, _super);
-
-    function Application() {
-      Application.__super__.constructor.apply(this, arguments);
-    }
-
-    Application.prototype.initialize = function() {
-      this.router = new MainRouter;
-      return this.homeView = new HomeView;
-    };
-
-    return Application;
-
-  })(BrunchApplication);
-
-  window.app = new exports.Application;
 
 }).call(this);
 
@@ -315,17 +251,13 @@
 (this.require.define({
   "routers/main_router": function(exports, require, module) {
     (function() {
-  var LoginView, ProfileRouter, ProfileView, SignupView,
+  var LoginView, SignupView,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
-
-  ProfileRouter = require('routers/profile_router').ProfileRouter;
 
   SignupView = require('views/signup_view').SignupView;
 
   LoginView = require('views/login_view').LoginView;
-
-  ProfileView = require('views/profile_view').ProfileView;
 
   exports.MainRouter = (function(_super) {
 
@@ -343,41 +275,19 @@
     };
 
     MainRouter.prototype.initialize = function() {
-      return this.profileRouter = new ProfileRouter({
-        mainRouter: this
-      });
+      return true;
     };
 
     MainRouter.prototype.layout = function() {
-      $('body').html(app.homeView.render());
-      return this.$container = $('#content');
+      return app.render();
     };
 
     MainRouter.prototype.signup = function() {
-      var signupView;
-      return signupView = this.renderDefault(SignupView);
+      return app.render(SignupView);
     };
 
     MainRouter.prototype.login = function() {
-      var loginView;
-      return loginView = this.renderDefault(LoginView);
-    };
-
-    MainRouter.prototype._ensureLayout = function() {
-      if ($("home-view") != null) return this.layout();
-    };
-
-    MainRouter.prototype.renderDefault = function(ViewClass, options) {
-      var classView;
-      if (options == null) options = void 0;
-      this._ensureLayout();
-      classView = (options != null) && new ViewClass(options) || new ViewClass;
-      this.inject(classView.render());
-      return classView;
-    };
-
-    MainRouter.prototype.inject = function(html) {
-      return this.$container.html(html);
+      return app.render(LoginView);
     };
 
     return MainRouter;
@@ -389,91 +299,132 @@
   }
 }));
 (this.require.define({
-  "helpers": function(exports, require, module) {
-    
-exports.BrunchApplication = (function() {
+  "routers/profile_router": function(exports, require, module) {
+    (function() {
+  var ProfileView,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
+    __slice = Array.prototype.slice;
 
-  function BrunchApplication() {
-    var _this = this;
-    $(function() {
-      _this.initialize(_this);
-      return Backbone.history.start();
-    });
-  }
+  ProfileView = require('views/profile_view').ProfileView;
 
-  BrunchApplication.prototype.initialize = function() {
-    return null;
-  };
+  exports.ProfileRouter = (function(_super) {
 
-  return BrunchApplication;
+    __extends(ProfileRouter, _super);
 
-})();
+    function ProfileRouter() {
+      ProfileRouter.__super__.constructor.apply(this, arguments);
+    }
 
-exports.baseContext = {
-  baseField: function(attr, type, placeholder) {
-    return this.safe("<input type='" + type + "' name='" + attr + "' id='id_" + attr + "' class='input-large' placeholder='" + placeholder + "' />");
-  },
-  formFor: function(id, yield) {
-    var body, form,
-      _this = this;
-    form = {
-      textField: function(attr, placeholder) {
-        return _this.baseField(attr, 'text', placeholder);
-      },
-      passwdField: function(attr, placeholder) {
-        return _this.baseField(attr, 'password', placeholder);
-      },
-      labelFor: function(attr, name) {
-        return _this.safe("<label class='control-label' for='id_" + attr + "'>" + name + "</label>");
-      }
+    ProfileRouter.prototype.routes = {
+      '!/profiles/': "index",
+      '!/profiles/:id': "show",
+      '!/profiles/:id/edit': "edit"
     };
-    body = yield(form);
-    return this.safe("<form class='form-horizontal' id='" + id + "'>" + body + "</form>");
-  }
-};
 
-exports.serializeForm = function(form) {
-  var array, attr, response, _i, _len, _ref;
-  _ref = [form.serializeArray(), {}], array = _ref[0], response = _ref[1];
-  for (_i = 0, _len = array.length; _i < _len; _i++) {
-    attr = array[_i];
-    response[attr.name] = attr.value;
-  }
-  return response;
-};
+    ProfileRouter.prototype.initialize = function() {
+      if (this.view == null) return this.view = new ProfileView(this.routes);
+    };
+
+    ProfileRouter.prototype.index = function() {
+      this.bindInject(this.view, 'index');
+      return this.view.push({
+        action: 'index'
+      });
+    };
+
+    ProfileRouter.prototype.show = function(id) {
+      this.bindInject(this.view, 'show');
+      return this.view.push({
+        id: id,
+        action: 'show'
+      });
+    };
+
+    ProfileRouter.prototype.edit = function(id) {
+      this.bindInject(this.view, 'edit');
+      return app.inject(this.view.push({
+        id: id,
+        action: 'edit'
+      }));
+    };
+
+    ProfileRouter.prototype.bindInject = function(view, action) {
+      var _this = this;
+      return view.on(action, function() {
+        var args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        return app.inject(view.render());
+      });
+    };
+
+    return ProfileRouter;
+
+  })(Backbone.Router);
+
+}).call(this);
 
   }
 }));
 (this.require.define({
-  "views/generic_view": function(exports, require, module) {
+  "initialize": function(exports, require, module) {
     (function() {
-  var __hasProp = Object.prototype.hasOwnProperty,
+  var BrunchApplication, HomeView, MainRouter, ProfileRouter,
+    __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  exports.GenericView = (function(_super) {
+  BrunchApplication = require('helpers').BrunchApplication;
 
-    __extends(GenericView, _super);
+  MainRouter = require('routers/main_router').MainRouter;
 
-    function GenericView() {
-      GenericView.__super__.constructor.apply(this, arguments);
+  ProfileRouter = require('routers/profile_router').ProfileRouter;
+
+  HomeView = require('views/home_view').HomeView;
+
+  exports.Application = (function(_super) {
+
+    __extends(Application, _super);
+
+    function Application() {
+      Application.__super__.constructor.apply(this, arguments);
     }
 
-    GenericView.prototype.renderError = function(field, message) {
-      var $el, error;
-      $el = this.$el.find("form input[name='" + field + "']");
-      $el.parents(".control-group").addClass('error');
-      error = $(document.createElement('span')).addClass('help-inline error').text(message);
-      return $el.after(error);
+    Application.prototype.initialize = function() {
+      this.router = new MainRouter;
+      return this.profileRouter = new ProfileRouter;
     };
 
-    GenericView.prototype.clearErrors = function() {
-      this.$el.find(".control-group").removeClass('error');
-      return this.$el.find("span.help-inline.error").remove();
+    Application.prototype.render = function(ViewClass, options) {
+      var classView;
+      if (options == null) options = void 0;
+      this.layout();
+      if (typeof ViewClass === 'function') {
+        classView = (options != null) && new ViewClass(options) || new ViewClass;
+        this.inject(classView.render());
+        return classView;
+      }
     };
 
-    return GenericView;
+    Application.prototype.inject = function(html) {
+      this.layout();
+      console.log(this.$container);
+      return this.$container.html(html);
+    };
 
-  })(Backbone.View);
+    Application.prototype.layout = function() {
+      if (typeof this.homeView === 'undefined') {
+        this.homeView = new HomeView;
+        $('body').html(this.homeView.render());
+        console.log(this);
+        return this.$container = $('#content');
+      }
+    };
+
+    return Application;
+
+  })(BrunchApplication);
+
+  window.app = new exports.Application;
 
 }).call(this);
 
@@ -516,6 +467,7 @@ exports.serializeForm = function(form) {
           var uid;
           if (!model.get('is_anonymous')) {
             uid = model.get('uid');
+            console.log(uid);
             return app.router.navigate("!/profiles/" + uid);
           }
         }
@@ -687,12 +639,9 @@ exports.serializeForm = function(form) {
 (this.require.define({
   "views/profile_view": function(exports, require, module) {
     (function() {
-  var GenericView, ProfileModel, SessionModel, baseContext, serializeForm, _ref,
+  var GenericView, ProfileModel, baseContext, serializeForm, _ref,
     __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
-    __slice = Array.prototype.slice;
-
-  SessionModel = require('models/session_model').SessionModel;
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   ProfileModel = require('models/profile_model').ProfileModel;
 
@@ -713,51 +662,47 @@ exports.serializeForm = function(form) {
     ProfileView.prototype.template = require('./templates/profile');
 
     ProfileView.prototype.events = {
-      "click a#edit-profile": "editProfile"
+      "click a#edit-profile": "edit"
     };
 
     ProfileView.prototype.actions = function() {
       var _this = this;
       return {
-        show: function() {
-          baseContext = _.extend(baseContext, {
-            profile: _this.model
-          });
-          _this.$el.html(_this.template(baseContext));
-          return _this.el;
-        }
+        show: function() {}
       };
     };
 
+    ProfileView.prototype.edit = function(ev) {
+      return false;
+    };
+
     ProfileView.prototype.initialize = function(options) {
+      return console.log('routes', options.routes);
+    };
+
+    ProfileView.prototype.render = function() {
+      baseContext = _.extend(baseContext, {
+        profile: this.model
+      });
+      this.$el.html(this.template(baseContext));
+      return this.el;
+    };
+
+    ProfileView.prototype.push = function(options) {
       var _this = this;
-      console.log('profile view:', options);
-      this.session = new SessionModel;
-      this.model = new ProfileModel({
-        id: options.id
+      console.log({
+        'pushed': options
       });
-      return app.homeView.getCurrentUser({
-        success: function(model, resp) {
-          _this.session.set(model.toJSON(), {
-            silent: true
-          });
-          return _this.model.fetch({
-            success: function() {
-              return _this.render();
-            }
-          });
-        }
-      });
-    };
-
-    ProfileView.prototype.render = function(action) {
-      return this.actions[action]();
-    };
-
-    ProfileView.prototype.editProfile = function() {
-      var args;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return console(args);
+      if (typeof options.id !== 'undefined') {
+        this.model = new ProfileModel({
+          id: options.id
+        });
+        return this.model.fetch({
+          success: function() {
+            return _this.trigger(options.action);
+          }
+        });
+      }
     };
 
     return ProfileView;

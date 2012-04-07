@@ -19,7 +19,7 @@ account = Blueprint('account', __name__, template_folder='templates',
 class SessionResource(BaseResource):
 
     def get(self, id=None):
-        session['is_anonymous'] = session.get('uid', True) and False
+        session['is_anonymous'] = not bool(session.get('uid'))
         session['id'] = session.get('id', uuid.uuid4().hex)
         return jsonify(dict(session))
 

@@ -6,26 +6,22 @@ class exports.ProfileRouter extends Backbone.Router
     '!/profiles/:id': "show"
     '!/profiles/:id/edit': "edit"
 
-  initialize: (options) ->
-    @mainRouter = options.mainRouter
+  initialize: ->
+    unless @view?
+      @view = new ProfileView({routes: @routes})
 
   index: ->
-    @ensureView()
-    app.router.inject @profileView.render('index')
-    console.log 'index'
+    @bindInject @view, 'index'
+    @view.push({action: 'index'})
 
   show: (id) ->
-    @ensureView()
-    app.router.inject @profileView.render('show')
-    console.log 'show'
+    @bindInject @view, 'show'
+    @view.push({id: id, action: 'show'})
 
-  edit: ->
-    @ensureView()
-    app.router.inject @profileView.render('edit')
-    console.log 'edit'
+  edit: (id) ->
+    @bindInject @view, 'edit'
+    app.inject(@view.push({id: id, action: 'edit'}))
 
-  ensureView: ->
-    console.log @profileView?
-    if not @profileView?
-      @profileView = app.router.renderDefault(ProfileView, {id: id})
-    @profileView
+  bindInject: (view, action) ->
+    view.on action, (args...) =>
+      app.inject view.render()

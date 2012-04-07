@@ -38,4 +38,3 @@ else:
 
 app = register_blueprints(app, **blueprints)
 app = register_assets(app)
-
