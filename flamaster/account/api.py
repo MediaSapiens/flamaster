@@ -19,8 +19,8 @@ account = Blueprint('account', __name__, template_folder='templates',
 class SessionResource(BaseResource):
 
     def get(self, id=None):
-        session['is_anonymous'] = not bool(session.get('uid'))
-        session['id'] = session.get('id', uuid.uuid4().hex)
+        session.update({'is_anonymous': not bool(session.get('uid')),
+                        'id': session.get('id', uuid.uuid4().hex)})
         return jsonify(dict(session))
 
     def post(self):
@@ -55,7 +55,9 @@ class SessionResource(BaseResource):
         return jsonify(data, status=status)
 
     def delete(self, id):
-        pass
+        session['is_anonymous'] = True
+        del session['uid']
+        return jsonify(dict(session), status=200)
 
     def _authenticate(self, data_dict):
         user = User.authenticate(**data_dict)
@@ -106,11 +108,13 @@ class AddressResource(BaseResource):
         uid = session.get('uid') or abort(403)
         data = request.json or abort(400)
         data.update({'user_id': uid})
-        validation = t.Dict({'city': t.String, 'street': t.String,
-                            'apartment': t.String(regex='^.{,20}$'),
-                            'zip_code': t.String(regex='^.{,20}$'),
-                            'type': t.String(regex="(billing|delivery)"),
-                            'user_id': t.Int})
+        validation = t.Dict({'city': t.String,
+                             'street': t.String,
+                             'apartment': t.String(regex='^.{,20}$'),
+                             'zip_code': t.String(regex='^.{,20}$'),
+                             'type': t.String(regex="(billing|delivery)"),
+                             'user_id': t.Int})
+        validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
             validation.check(data)
             addr = Address.create(**data)

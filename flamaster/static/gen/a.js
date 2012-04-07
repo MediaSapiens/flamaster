@@ -323,7 +323,11 @@
     };
 
     ProfileRouter.prototype.initialize = function() {
-      if (this.view == null) return this.view = new ProfileView(this.routes);
+      if (this.view == null) {
+        return this.view = new ProfileView({
+          routes: this.routes
+        });
+      }
     };
 
     ProfileRouter.prototype.index = function() {

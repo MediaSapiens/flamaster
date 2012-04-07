@@ -25,6 +25,11 @@ def login(client, email='test@email.com', passwd='test'):
             data=json.dumps({'email': email, 'password': passwd}))
 
 
+def logout(client, uid=1):
+    auth_url = url_for('account.sessions', id=uid)
+    return client.delete(auth_url)
+
+
 def url_client(endpoint):
     """ Helper decorator for an address resource invocation
     """
