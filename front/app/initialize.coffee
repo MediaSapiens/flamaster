@@ -33,5 +33,4 @@ class exports.Application extends BrunchApplication
       console.log @
       @$container = $ '#content'
 
-
 window.app = new exports.Application

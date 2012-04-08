@@ -21,7 +21,7 @@ class exports.ProfileView extends GenericView
     console.log 'routes', options.routes
     # @model = new ProfileModel id: options.id
 
-  render: () ->
+  render: ->
     baseContext = _.extend baseContext,
       profile: @model
     @$el.html @template(baseContext)

@@ -30,7 +30,7 @@ def logout(client, uid=1):
     return client.delete(auth_url)
 
 
-def url_client(endpoint):
+def url_client(endpoint, **url_kwargs):
     """ Helper decorator for an address resource invocation
     """
     def decorate(func):
@@ -39,7 +39,7 @@ def url_client(endpoint):
         def wrapper(*args, **kwargs):
             with app.test_request_context('/'):
                 with app.test_client() as c:
-                    url_path = url_for(endpoint)
+                    url_path = url_for(endpoint, **url_kwargs)
                     kwargs.update({'url': url_path, 'client': c})
                     response = func(*args, **kwargs)
             return response

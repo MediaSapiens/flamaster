@@ -7,6 +7,7 @@ class exports.ProfileModel extends Backbone.Model
     true
 
   getUsername: ->
+    console.log @first_name, @last_name
     if @first_name? or @last_name?
       username = $.trim "#{@first_name} #{@last_name}"
     if not username? or username.length == 0

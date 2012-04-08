@@ -166,6 +166,7 @@
 
     ProfileModel.prototype.getUsername = function() {
       var username;
+      console.log(this.first_name, this.last_name);
       if ((this.first_name != null) || (this.last_name != null)) {
         username = $.trim("" + this.first_name + " " + this.last_name);
       }

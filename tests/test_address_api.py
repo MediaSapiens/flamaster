@@ -1,8 +1,9 @@
+from flask import url_for
 from flask.helpers import json
-from flamaster.app import db
-from flamaster.account.models import User
+from flamaster.app import db, app
+from flamaster.account.models import User, Address
 
-from conftest import url_client, login, logout
+from conftest import url_client, login, logout, request_context
 
 
 first_address = {'city': 'Kharkov',
@@ -74,6 +75,19 @@ def test_addresses_get_success(url, client):
     assert resp.status_code == 200
     logout(client, uid)
 
+
+@request_context
+def test_address_get_success():
+    addr = Address.create(**first_address)
+    addr_url = url_for('account.address', id=addr.id)
+    with app.test_client() as c:
+
+        uid = json.loads(login(c).data)['uid']
+        resp = c.get(addr_url, content_type='application/json')
+
+        # assert json.loads(resp.data) == {}
+        assert resp.status_code == 200
+        logout(c, uid)
 
 
 def teardown_module(module):

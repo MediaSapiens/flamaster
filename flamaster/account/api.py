@@ -38,7 +38,7 @@ class SessionResource(BaseResource):
         abort(400)
 
     def put(self, id):
-        data, status = request.json or abort(400), 200
+        data, status = request.json or abort(400), 202
 
         validation = t.Dict({'email': t.Email, 'password':
             t.String}).append(self._authenticate)
@@ -94,18 +94,18 @@ class ProfileResource(BaseResource):
 class AddressResource(BaseResource):
 
     def get(self, id=None):
+        uid = session.get('uid') or abort(401)
         if id is None:
-            uid = session.get('uid') or abort(403)
             addresses = Address.query.filter_by(user_id=uid)
             response = [as_dict(addr) for addr in addresses]
 
         else:
-            addr = Address.query.filter_by(id=id).first() or abort(404)
+            addr = Address.query.filter_by(id=id, user_id=uid).first() or abort(404)
             response = as_dict(addr)
         return jsonify(response)
 
     def post(self):
-        uid = session.get('uid') or abort(403)
+        uid = session.get('uid') or abort(401)
         data = request.json or abort(400)
         data.update({'user_id': uid})
         validation = t.Dict({'city': t.String,
@@ -125,7 +125,7 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        data, status = request.json or abort(400), 200
+        data, status = request.json or abort(400), 202
 
         validation = t.Dict({'email': t.Email, 'password':
             t.String}).append(self._authenticate)

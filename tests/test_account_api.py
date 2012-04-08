@@ -3,16 +3,7 @@ from flask.helpers import json
 from flamaster.app import app, db
 from flamaster.account.models import User
 
-from functools import wraps
-
-
-def request_context(func):
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        with app.test_request_context('/'):
-            return func(*args, **kwargs)
-    return wrapper
+from .conftest import request_context
 
 
 def setup_module(module):
