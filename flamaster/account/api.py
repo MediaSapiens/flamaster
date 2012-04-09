@@ -93,6 +93,13 @@ class ProfileResource(BaseResource):
 @api_resource(account, '/address/', 'address', {'id': int})
 class AddressResource(BaseResource):
 
+    validation = t.Dict({'city': t.String,
+                         'street': t.String,
+                         'apartment': t.String(regex='^.{,20}$'),
+                         'zip_code': t.String(regex='^.{,20}$'),
+                         'type': t.String(regex="(billing|delivery)"),
+                         'user_id': t.Int})
+
     def get(self, id=None):
         uid = session.get('uid') or abort(401)
         if id is None:
@@ -108,15 +115,9 @@ class AddressResource(BaseResource):
         uid = session.get('uid') or abort(401)
         data = request.json or abort(400)
         data.update({'user_id': uid})
-        validation = t.Dict({'city': t.String,
-                             'street': t.String,
-                             'apartment': t.String(regex='^.{,20}$'),
-                             'zip_code': t.String(regex='^.{,20}$'),
-                             'type': t.String(regex="(billing|delivery)"),
-                             'user_id': t.Int})
-        validation.make_optional('apartment', 'zip_code', 'user_id')
+        self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            validation.check(data)
+            self.validation.check(data)
             addr = Address.create(**data)
             data, status = as_dict(addr), 201
         except t.DataError as e:
@@ -125,34 +126,27 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        data, status = request.json or abort(400), 202
-
-        validation = t.Dict({'email': t.Email, 'password':
-            t.String}).append(self._authenticate)
+        uid = session.get('uid') or abort(401)
+        data = request.json or abort(400)
+        data.update({'user_id': uid})
+        self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            data = {'email': data.get('email'), 'password':
-                    data.get('password')}
-            validation.check(data)
-            address = Address.query.filter_by(id=id).one()
-            address.update(request.json)
-            session['address_id'] = address.id
-            data.update(session)
+            self.validation.check(data)
+            addr = Address.query.filter_by(id=id, user_id=uid).one()
+            addr.update(**data)
+            data, status = as_dict(addr), 201
         except t.DataError as e:
-            data, status = e.as_dict(), 404
-            session.update({'is_anonymous': True})
-
+            data, status = e.as_dict(), 400
+            print data
         return jsonify(data, status=status)
 
     def delete(self, id):
-        t.Int.check(id)
-        address = Address.query.filter_by(id=id)
-        address.delete()
-        return jsonify({}, status=200)
+        uid = session.get('uid') or abort(401)
+        try:
+            t.Dict({'id': t.Int}).check({'id': id})
+            Address.query.filter_by(id=id, user_id=uid).delete()
+            data, status = {}, 200
+        except t.DataError as e:
+            data, status = e.as_dict(), 400
 
-    def _authenticate(self, data_dict):
-        user = User.authenticate(**data_dict)
-        if user is None:
-            raise t.DataError({'email': "There is no user matching this "
-            "credentials"})
-        session.update({'uid': user.id, 'is_anonymous': False})
-        return data_dict
+        return jsonify(data, status=status)

@@ -12,27 +12,17 @@ first_address = {'city': 'Kharkov',
                  'zip_code': '626262',
                  'type': 'billing'}
 
+dafault_address = {'user_id': 1,
+                   'city': 'Test_city',
+                   'street': 'Test_street',
+                   'apartment': '12',
+                   'zip_code': '121212',
+                   'type': 'billing'}
+
 
 def setup_module(module):
     db.create_all()
     User.create(email='test@email.com', password='test')
-
-
-# @url_client('account.address')
-# def test_address_creation_success(url, client):
-#     resp = client.post(url, data=json.dumps({
-#                             'email': 'test@email.com',
-#                             'city': 'Test_city',
-#                             'street': 'Test_street',
-#                             'apartment': '12',
-#                             'zip_code': '121212',
-#                             'type': 'billing'}),
-#                         content_type='application/json')
-#     j_resp = json.loads(resp.data)
-
-#     assert isinstance(j_resp['uid'], int)
-#     assert j_resp['is_anonymous'] == False
-#     assert isinstance(j_resp['address_id'], int)
 
 
 @url_client('account.address')
@@ -41,7 +31,7 @@ def test_address_creation_failed_unauth(url, client):
     resp = client.post(url, data=json.dumps(data),
                        content_type='application/json')
 
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 @url_client('account.address')
@@ -63,7 +53,7 @@ def test_address_creation_failed_no_data(url, client):
 @url_client('account.address')
 def test_addresses_get_failed(url, client):
     resp = client.get(url, content_type='application/json')
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 @url_client('account.address')
@@ -76,18 +66,61 @@ def test_addresses_get_success(url, client):
     logout(client, uid)
 
 
-@request_context
-def test_address_get_success():
-    addr = Address.create(**first_address)
-    addr_url = url_for('account.address', id=addr.id)
-    with app.test_client() as c:
+@url_client('account.address', id=1)
+def test_addresses_put_401(url, client):
+    Address.create(**dafault_address)
+    resp = client.put(url, content_type='application/json')
+    assert resp.status_code == 401
 
-        uid = json.loads(login(c).data)['uid']
-        resp = c.get(addr_url, content_type='application/json')
 
-        # assert json.loads(resp.data) == {}
-        assert resp.status_code == 200
-        logout(c, uid)
+@url_client('account.address', id=1)
+def test_addresses_put_400(url, client):
+    uid = json.loads(login(client).data)['uid']
+    resp = client.put(url, content_type='application/json')
+
+    assert resp.status_code == 400
+    logout(client, uid)
+
+
+@url_client('account.address', id=1)
+def test_addresses_put_not_valid_data(url, client):
+    uid = json.loads(login(client).data)['uid']
+    address_data = first_address.copy()
+    address_data.update({'citys': 'Kharrr'})
+    resp = client.put(url, data=json.dumps(address_data),
+                      content_type='application/json')
+
+    assert json.loads(resp.data) == {u'citys': u'citys is not allowed key'}
+    assert resp.status_code == 400
+    logout(client, uid)
+
+
+@url_client('account.address', id=1)
+def test_addresses_put_201(url, client):
+    uid = json.loads(login(client).data)['uid']
+    resp = client.put(url, data=json.dumps(first_address),
+                      content_type='application/json')
+
+    address_data = first_address.copy()
+    address_data.update({'id': 1, 'user_id': uid})
+    assert json.loads(resp.data) == address_data
+    assert resp.status_code == 201
+    logout(client, uid)
+
+
+@url_client('account.address', id=1)
+def test_addresses_delete_401(url, client):
+    resp = client.delete(url, content_type='application/json')
+    assert resp.status_code == 401
+
+
+@url_client('account.address', id=1)
+def test_addresses_delete_400(url, client):
+    uid = json.loads(login(client).data)['uid']
+    resp = client.delete(url, content_type='application/json')
+
+    assert resp.status_code == 200
+    logout(client, uid)
 
 
 def teardown_module(module):
