@@ -38,4 +38,5 @@ def test_profile_updates(url, client):
                              content_type='application/json')
 
     assert update_resp.status_code == 202
-    assert 'John' == json.loads(update_resp.data)['first_name']
+    for key, value in profile_data.items():
+        assert value == json.loads(update_resp.data)[key]

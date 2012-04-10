@@ -25,5 +25,5 @@ class exports.MainRouter extends Backbone.Router
     console.log app.profileRouter
     app.homeView.getCurrentUser
       success: (model, resp) ->
-        if model.get('is_anonymous')?
+        unless model.get('is_anonymous')
           app.router.navigate "!/profiles/#{model.get 'uid'}", trigger: true

@@ -1,10 +1,17 @@
 class exports.ProfileModel extends Backbone.Model
   urlRoot: '/account/profiles/'
 
-  initialize: ->
+  events:
+    'change:id': "updateLinks"
+
+  updateLinks: (model, attr) ->
     @front =
-      edit: "/#!/profiles/#{@id}/edit"
-      show: "/#!/profiles/#{@id}"
+      edit: "/#!/profiles/#{attr}/edit"
+      show: "/#!/profiles/#{attr}"
+
+  initialize: ->
+    for event, func of @events
+      @on event, @[func]
 
   getUsername: ->
     [first, last] = [@get('first_name'), @get('last_name')]

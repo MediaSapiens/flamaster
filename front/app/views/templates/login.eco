@@ -4,15 +4,15 @@
       <fieldset>
         <legend>Enter your credetials to sign in</legend>
         <div class="control-group">
-          <%= form.labelFor 'email', 'Email' %>
+          <%= form.labelFor name: 'email', text: 'Email' %>
           <div class="controls">
-            <%= form.textField 'email', 'enter your email to login' %>
+            <%= form.textField name: 'email', placeholder: 'enter your email to login' %>
           </div>
         </div>
         <div class="control-group">
-          <%= form.labelFor 'password', 'Password' %>
+          <%= form.labelFor name: 'password', text: 'Password' %>
           <div class="controls">
-            <%= form.passwdField 'password', 'enter ypur password please' %>
+            <%= form.passwdField name: 'password', placeholder: 'enter your password please' %>
           </div>
         </div>
         <div class="form-actions">

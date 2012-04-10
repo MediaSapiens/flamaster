@@ -8,18 +8,19 @@ class exports.ProfileView extends GenericView
   className: 'profile'
   template: require './templates/profile'
 
+  events:
+    "click #profile-form [type='submit']": "saveProfile"
+
   actions:
-    'profile:show': (id) ->
-      (new ProfileModel id: id).fetch
-        success: (model, data) -> mediator.trigger 'profile:show', model
-        error: (args...) -> console.log args
-    'profile:edit': (id) ->
-      (new ProfileModel id: id).fetch
-        success: (model, data) -> mediator.trigger 'profile:edit', model
-        error: (args...) -> console.log args
+    'profile:show': (model) ->
+        mediator.trigger 'profile:show', model
+    'profile:edit': (model) ->
+        mediator.trigger 'profile:edit', model
+
+  initialize: ->
+    @model = new ProfileModel
 
   render: (options) ->
-    console.log 'render', options
     baseContext = _.extend baseContext,
       profile: options.model
 
@@ -32,4 +33,20 @@ class exports.ProfileView extends GenericView
     @el
 
   push: (options) ->
-    @actions[options.action](options.id)
+    if options.id?
+      @model.set id: options.id
+      @model.fetch
+        success: (model, data) =>
+          @actions[options.action](model)
+        error: (args...) ->
+          console.log 'error', args
+
+  saveProfile: (ev) ->
+    data = serializeForm($(ev.target).parents 'form')
+    @model.save data,
+      success: (args...) ->
+        console.log 'success:', args
+      error: (args...) ->
+        console.log 'error:', args
+    console.log data
+    return false

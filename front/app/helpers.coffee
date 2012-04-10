@@ -9,16 +9,21 @@ class exports.BrunchApplication
 
 
 exports.baseContext =
-  baseField: (attr, type, placeholder) ->
-    @safe "<input type='#{type}' name='#{attr}' id='id_#{attr}' class='input-large' placeholder='#{placeholder}' />"
+  baseField: (options) ->
+    {name, type, placeholder, value} = options
+    console.log value
+    @safe "<input type='#{type}' name='#{name}' value='#{value or ''}' id='id_#{name}' class='input-large' placeholder='#{placeholder}' />"
   formFor: (id, yield) ->
     form =
-      textField: (attr, placeholder) =>
-        @baseField attr, 'text', placeholder
-      passwdField: (attr, placeholder) =>
-        @baseField attr, 'password', placeholder
-      labelFor: (attr, name) =>
-        @safe "<label class='control-label' for='id_#{attr}'>#{name}</label>"
+      textField: (options) =>
+        options.type = 'text'
+        @baseField options
+      passwdField: (options) =>
+        options.type = 'password'
+        @baseField options
+      labelFor: (options) =>
+        {name, text} = options
+        @safe "<label class='control-label' for='id_#{name}'>#{text}</label>"
     body = yield form
     @safe "<form class='form-horizontal' id='#{id}'>#{body}</form>"
 

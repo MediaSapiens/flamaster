@@ -4,9 +4,9 @@
       <fieldset>
         <legend>Enter your credetials to create an account</legend>
         <div class="control-group">
-          <%= form.labelFor 'email', 'Email' %>
+          <%= form.labelFor name: 'email', text: 'Email' %>
           <div class="controls">
-            <%= form.textField 'email', "email will be used as login" %>
+            <%= form.textField name: 'email', placeholder: "email will be used as login" %>
           </div>
         </div>
         <div class="form-actions">
