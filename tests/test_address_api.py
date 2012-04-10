@@ -25,7 +25,7 @@ def setup_module(module):
     User.create(email='test@email.com', password='test')
 
 
-@url_client('account.address')
+@url_client('account.addresses')
 def test_address_creation_failed_unauth(url, client):
     data = first_address.copy()
     resp = client.post(url, data=json.dumps(data),
@@ -34,7 +34,7 @@ def test_address_creation_failed_unauth(url, client):
     assert resp.status_code == 401
 
 
-@url_client('account.address')
+@url_client('account.addresses')
 def test_address_creation_failed_no_data(url, client):
     data = first_address.copy()
     del data['type'], data['city'], data['street']
@@ -50,7 +50,7 @@ def test_address_creation_failed_no_data(url, client):
     logout(client, uid)
 
 
-@url_client('account.address')
+@url_client('account.addresses')
 def test_addresses_get_failed(url, client):
     resp = client.get(url, content_type='application/json')
     assert resp.status_code == 401
@@ -66,14 +66,14 @@ def test_addresses_get_success(url, client):
     logout(client, uid)
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_put_401(url, client):
     Address.create(**dafault_address)
     resp = client.put(url, content_type='application/json')
     assert resp.status_code == 401
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_put_400(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.put(url, content_type='application/json')
@@ -82,7 +82,7 @@ def test_addresses_put_400(url, client):
     logout(client, uid)
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_put_not_valid_data(url, client):
     uid = json.loads(login(client).data)['uid']
     address_data = first_address.copy()
@@ -95,7 +95,7 @@ def test_addresses_put_not_valid_data(url, client):
     logout(client, uid)
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_put_201(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.put(url, data=json.dumps(first_address),
@@ -108,13 +108,13 @@ def test_addresses_put_201(url, client):
     logout(client, uid)
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_delete_401(url, client):
     resp = client.delete(url, content_type='application/json')
     assert resp.status_code == 401
 
 
-@url_client('account.address', id=1)
+@url_client('account.addresses', id=1)
 def test_addresses_delete_400(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.delete(url, content_type='application/json')

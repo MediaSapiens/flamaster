@@ -15,7 +15,7 @@ account = Blueprint('account', __name__, template_folder='templates',
                     url_prefix='/account')
 
 
-@api_resource(account, '/sessions/', 'sessions', {'id': None})
+@api_resource(account, 'sessions', {'id': None})
 class SessionResource(BaseResource):
 
     def get(self, id=None):
@@ -69,7 +69,7 @@ class SessionResource(BaseResource):
         return data_dict
 
 
-@api_resource(account, '/profiles/', 'profiles', {'id': int})
+@api_resource(account, 'profiles', {'id': int})
 class ProfileResource(BaseResource):
 
     def get(self, id=None):
@@ -90,7 +90,7 @@ class ProfileResource(BaseResource):
         pass
 
 
-@api_resource(account, '/address/', 'address', {'id': int})
+@api_resource(account, 'addresses', {'id': int})
 class AddressResource(BaseResource):
 
     validation = t.Dict({'city': t.String,

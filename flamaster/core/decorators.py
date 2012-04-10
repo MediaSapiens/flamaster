@@ -1,6 +1,8 @@
-def api_resource(bp, url, endpoint, pk_def):
+def api_resource(bp, endpoint, pk_def):
     pk = pk_def.keys()[0]
     pk_type = pk_def[pk] and pk_def[pk].__name__ or None
+    # building url from the endpoint
+    url = "/{}/".format(endpoint)
 
     def wrapper(resource_class):
         resource = resource_class().as_view(endpoint)
