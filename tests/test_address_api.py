@@ -1,9 +1,8 @@
-from flask import url_for
 from flask.helpers import json
-from flamaster.app import db, app
+from flamaster.app import db
 from flamaster.account.models import User, Address
 
-from conftest import url_client, login, logout, request_context
+from conftest import url_client, login, logout
 
 
 first_address = {'city': 'Kharkov',
@@ -56,7 +55,7 @@ def test_addresses_get_failed(url, client):
     assert resp.status_code == 401
 
 
-@url_client('account.address')
+@url_client('account.addresses')
 def test_addresses_get_success(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.get(url, content_type='application/json')
