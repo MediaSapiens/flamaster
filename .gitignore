@@ -7,3 +7,4 @@ env_flamaster
 front/node_modules/*
 .webassets-cache
 flamaster/conf/local_*
+chaplin

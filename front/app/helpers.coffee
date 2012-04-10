@@ -3,6 +3,7 @@ class exports.BrunchApplication
     $ =>
       @initialize this
       Backbone.history.start()
+
   initialize: ->
     null
 

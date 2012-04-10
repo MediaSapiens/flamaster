@@ -13,12 +13,6 @@ class exports.HomeView extends Backbone.View
         login: ["Login", '!/login']
       session: @getCurrentUser()
 
-    @getCurrentUser
-      success: (model, resp) ->
-        if !model.get 'is_anonymous'
-          uid = model.get 'uid'
-          console.log uid
-          app.router.navigate "!/profiles/#{uid}"
 
   render: ->
     @$el.html @template

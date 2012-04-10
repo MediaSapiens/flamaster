@@ -8,29 +8,28 @@ class exports.ProfileView extends GenericView
   className: 'profile'
   template: require './templates/profile'
 
-  events:
-    "click a#edit-profile": "edit"
+  actions:
+    'profile:show': (id) ->
+      (new ProfileModel id: id).fetch
+        success: (model, data) -> mediator.trigger 'profile:show', model
+        error: (args...) -> console.log args
+    'profile:edit': (id) ->
+      (new ProfileModel id: id).fetch
+        success: (model, data) -> mediator.trigger 'profile:edit', model
+        error: (args...) -> console.log args
 
-  actions: ->
-    show: =>
-
-  edit: (ev) ->
-    false
-
-  initialize: (options) ->
-    console.log 'routes', options.routes
-    # @model = new ProfileModel id: options.id
-
-  render: ->
+  render: (options) ->
+    console.log 'render', options
     baseContext = _.extend baseContext,
-      profile: @model
+      profile: options.model
+
+    switch options.action
+      when 'profile:edit' then template = require './templates/profile_form'
+
     @$el.html @template(baseContext)
+    if template?
+      @$el.find("#profile-container").html(template(baseContext))
     @el
 
   push: (options) ->
-    console.log 'pushed': options
-
-    if typeof(options.id) isnt 'undefined'
-      @model = new ProfileModel id: options.id
-      @model.fetch
-        success: => @trigger options.action
+    @actions[options.action](options.id)

@@ -3,13 +3,11 @@ class exports.ProfileModel extends Backbone.Model
 
   initialize: ->
     @front =
-      edit: "/#!/profile/#{@id}/edit"
-    true
+      edit: "/#!/profiles/#{@id}/edit"
+      show: "/#!/profiles/#{@id}"
 
   getUsername: ->
-    console.log @first_name, @last_name
-    if @first_name? or @last_name?
-      username = $.trim "#{@first_name} #{@last_name}"
-    if not username? or username.length == 0
-      username = "please, fill your profile data"
+    [first, last] = [@get('first_name'), @get('last_name')]
+    username = $.trim "#{first? and first or ''} #{last? and last or ''}"
+    username = username.length and username or "please, fill your profile data"
     username

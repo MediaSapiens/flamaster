@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="span10">
+    <%= @formFor 'profile-form', (form) => %>
+    <fieldset>
+      <legend>Update your profile data</legend>
+      <div class="control-group">
+        <%= form.labelFor 'first', 'First Name' %>
+        <div class="controls">
+          <%= form.textField 'first', 'enter your first name here' %>
+        </div>
+      </div>
+      <div class="control-group">
+        <%= form.labelFor 'last', 'Last Name' %>
+        <div class="controls">
+          <%= form.textField 'last', 'enter your last name here' %>
+        </div>
+      </div>
+      <div class="control-group">
+        <%= form.labelFor 'phone', 'Cell Phone' %>
+        <div class="controls">
+          <%= form.textField 'phone', 'enter your cell phone number' %>
+        </div>
+      </div>
+    </fieldset>
+    <% end %>
+  </div>
+</div>

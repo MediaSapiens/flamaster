@@ -23,14 +23,13 @@ class exports.Application extends BrunchApplication
 
   inject: (html) ->
     @layout()
-    console.log @$container
     @$container.html html
 
   layout: ->
-    if typeof(@homeView) is 'undefined'
+    if @homeView is undefined
       @homeView = new HomeView
       $('body').html @homeView.render()
-      console.log @
       @$container = $ '#content'
 
 window.app = new exports.Application
+window.mediator = _({}).extend(Backbone.Events)

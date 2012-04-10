@@ -9,9 +9,21 @@ class exports.MainRouter extends Backbone.Router
     '!/login': "login"
 
   initialize: -> true
-  layout: -> app.render()
-  signup: -> app.render(SignupView)
-  login: -> app.render(LoginView)
+  layout: ->
+    app.render()
+    @redirectAuthenticated()
 
+  signup: ->
+    app.render(SignupView)
+    @redirectAuthenticated()
 
+  login: ->
+    app.render(LoginView)
+    @redirectAuthenticated()
 
+  redirectAuthenticated: ->
+    console.log app.profileRouter
+    app.homeView.getCurrentUser
+      success: (model, resp) ->
+        if model.get('is_anonymous')?
+          app.router.navigate "!/profiles/#{model.get 'uid'}", trigger: true
