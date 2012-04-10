@@ -563,12 +563,18 @@
           }
         },
         error: function(model, response) {
-          var field, message, _ref2;
-          if (response.responseText != null) {
-            _ref2 = JSON.parse(response.responseText);
-            for (field in _ref2) {
-              message = _ref2[field];
-              _this.renderError(field, message);
+          var field, message, parsedResponse, _ref2;
+          console.log(response);
+          if (response.responseText !== void 0) {
+            try {
+              parsedResponse = JSON.parse(response.responseText);
+              _ref2 = JSON.parse(response.responseText);
+              for (field in _ref2) {
+                message = _ref2[field];
+                _this.renderError(field, message);
+              }
+            } catch (error) {
+              console.warn(error);
             }
           } else {
             for (field in response) {
@@ -765,7 +771,7 @@
       this.model.save(formData, {
         success: function(model, response) {
           if (!response.is_anonymous) {
-            return app.router.navigate("!/profile/" + response.uid, {
+            return app.router.navigate("!/profiles/" + response.uid, {
               trigger: true
             });
           }

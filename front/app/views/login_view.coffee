@@ -29,9 +29,14 @@ class exports.LoginView extends GenericView
         if !response.is_anonymous
           app.router.navigate "!/profiles/#{response.uid}", trigger: true
       error: (model, response) =>
-        if response.responseText?
-          for field, message of JSON.parse(response.responseText)
-            @renderError field, message
+        console.log response
+        if response.responseText isnt undefined
+          try
+            parsedResponse = JSON.parse response.responseText
+            for field, message of JSON.parse(response.responseText)
+              @renderError field, message
+          catch error
+            console.warn error
         else
           for field, message of response
             @renderError field, message
