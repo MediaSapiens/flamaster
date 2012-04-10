@@ -72,10 +72,11 @@ class SessionResource(BaseResource):
 @api_resource(account, 'profiles', {'id': int})
 class ProfileResource(BaseResource):
 
+    validation = t.Dict({'first_name': t.String, 'last_name': t.String,
+                         'phone': t.String})
+
     def get(self, id=None):
-        user = User.query.filter_by(id=self.current_user).first()
-        if user is None:
-            abort(404)
+        user = User.query.filter_by(id=self.current_user).first() or abort(404)
         response = as_dict(user)
         response['password'] = ''
         return jsonify(response)
@@ -84,10 +85,27 @@ class ProfileResource(BaseResource):
         pass
 
     def put(self, id):
-        pass
+        assert id == session.get('uid')
+        user = User.query.filter_by(id=id).first() or abort(404)
+        data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
+        try:
+            self.validation.check(data)
+            user.update(**data)
+            response, status = as_dict(user), 202
+        except t.DataError as e:
+            response, status = e.as_dict(), 400
+
+        response['password'] = ''
+        return jsonify(response, status=status)
 
     def delete(self, id):
-        pass
+        user = User.query.filter_by(id=id).first() or abort(404)
+        user.delete()
+        return jsonify({}, status=200)
+
+    def __extract_keys(self, data, keys):
+        filter(lambda x: x[0] in keys, data.items())
+        return dict(filter(lambda x: x[0] in keys, data.items()))
 
 
 @api_resource(account, 'addresses', {'id': int})
@@ -99,6 +117,7 @@ class AddressResource(BaseResource):
                          'zip_code': t.String(regex='^.{,20}$'),
                          'type': t.String(regex="(billing|delivery)"),
                          'user_id': t.Int})
+    validation.make_optional('apartment', 'zip_code', 'user_id')
 
     def get(self, id=None):
         uid = session.get('uid') or abort(401)
@@ -115,7 +134,6 @@ class AddressResource(BaseResource):
         uid = session.get('uid') or abort(401)
         data = request.json or abort(400)
         data.update({'user_id': uid})
-        self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
             self.validation.check(data)
             addr = Address.create(**data)

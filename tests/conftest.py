@@ -19,10 +19,10 @@ def request_context(func):
     return wrapper
 
 
-def login(client, email='test@email.com', passwd='test'):
+def login(client, email='test@email.com', password='test'):
     auth_url = url_for('account.sessions', id=1)
     return client.put(auth_url, content_type='application/json',
-            data=json.dumps({'email': email, 'password': passwd}))
+            data=json.dumps({'email': email, 'password': password}))
 
 
 def logout(client, uid=1):

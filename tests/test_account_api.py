@@ -3,17 +3,11 @@ from flask.helpers import json
 from flamaster.app import app, db
 from flamaster.account.models import User
 
-from .conftest import request_context
+from .conftest import request_context, login
 
 
 def setup_module(module):
     db.create_all()
-
-
-def login(email, passwd, client):
-    auth_url = url_for('account.sessions', id=1)
-    return client.put(auth_url, content_type='application/json',
-            data=json.dumps({'email': 'test@email.com', 'password': 'test'}))
 
 
 def test_flask_invocation():
@@ -56,7 +50,7 @@ def test_authorization():
 
         # assert session['is_anonymous'] == True
 
-        resp = login('test@email.com', 'test', c)
+        resp = login(c, 'test@email.com', 'test')
         j_resp = json.loads(resp.data)
 
         assert 'email' in j_resp
@@ -67,7 +61,7 @@ def test_authorization():
 @request_context
 def test_authorization_failed():
     with app.test_client() as c:
-        resp = login('test@email.com', 'pass', c)
+        resp = login(c, 'test@email.com', 'test')
         j_resp = json.loads(resp.data)
         assert 'email' in j_resp
         assert session['is_anonymous'] == True
