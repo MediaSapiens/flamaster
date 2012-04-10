@@ -2,7 +2,30 @@
 from flamaster.app import db
 
 
-class User(db.Model):
+class CRUDMixin(object):
+    """ Basic CRUD mixin
+    """
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls(**kwargs)
+        return instance.save()
+
+    def update(self, commit=True, **kwargs):
+        for attr, value in kwargs.iteritems():
+            setattr(self, attr, value)
+        return commit and self.save() or self
+
+    def save(self, commit=True):
+        db.session.add(self)
+        commit and db.session.commit()
+        return self
+
+    def delete(self, commit=True):
+        db.session.delete(self)
+        commit and db.session.commit()
+
+
+class User(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,23 +47,13 @@ class User(db.Model):
     def __repr__(self):
         return "<User: %r>" % self.email
 
-    def save(self, commit=True):
-        db.session.add(self)
-        commit and db.session.commit()
-        return self
-
     @classmethod
     def authenticate(cls, email, password):
         return cls.query.filter_by(email=email,
                 password=password).first()
 
-    @classmethod
-    def create(cls, **kwargs):
-        instance = cls(**kwargs)
-        return instance.save()
 
-
-class Address(db.Model):
+class Address(db.Model, CRUDMixin):
     """
         representing address data for users
     """
@@ -65,27 +78,8 @@ class Address(db.Model):
     def __repr__(self):
         return "<Address:('%s','%s')>" % (self.city, self.street)
 
-    def save(self, commit=True):
-        db.session.add(self)
-        commit and db.session.commit()
-        return self
 
-    @classmethod
-    def create(cls, **kwargs):
-        instance = cls(**kwargs)
-        return instance.save()
-
-    def delete(self, commit=True):
-        db.session.delete(self)
-        commit and db.session.commit()
-
-    def update(self, commit=True, **kwargs):
-        for attr, value in kwargs.iteritems():
-            setattr(self, attr, value)
-        return commit and self.save() or self
-
-
-class Role(db.Model):
+class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
 
