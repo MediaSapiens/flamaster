@@ -28,8 +28,9 @@ class exports.Application extends BrunchApplication
   layout: ->
     if @homeView is undefined
       @homeView = new HomeView
-      $('body').html @homeView.render()
-      @$container = $ '#content'
+
+    $('body').html @homeView.render()
+    @$container = $ '#content'
 
 window.app = new exports.Application
 window.mediator = _({}).extend(Backbone.Events)

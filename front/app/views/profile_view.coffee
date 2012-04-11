@@ -48,5 +48,4 @@ class exports.ProfileView extends GenericView
         console.log 'success:', args
       error: (args...) ->
         console.log 'error:', args
-    console.log data
     return false

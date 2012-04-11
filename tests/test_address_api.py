@@ -85,12 +85,12 @@ def test_addresses_put_400(url, client):
 def test_addresses_put_not_valid_data(url, client):
     uid = json.loads(login(client).data)['uid']
     address_data = first_address.copy()
-    address_data.update({'citys': 'Kharrr'})
+    del address_data['city']
     resp = client.put(url, data=json.dumps(address_data),
                       content_type='application/json')
 
-    assert json.loads(resp.data) == {u'citys': u'citys is not allowed key'}
     assert resp.status_code == 400
+    assert json.loads(resp.data) == {u'city': u'is required'}
     logout(client, uid)
 
 

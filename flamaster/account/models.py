@@ -6,6 +6,10 @@ class CRUDMixin(object):
     """ Basic CRUD mixin
     """
     @classmethod
+    def get(cls, id):
+        return cls.query.get(id)
+
+    @classmethod
     def create(cls, **kwargs):
         instance = cls(**kwargs)
         return instance.save()

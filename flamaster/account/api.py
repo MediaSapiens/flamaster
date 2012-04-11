@@ -76,7 +76,7 @@ class ProfileResource(BaseResource):
                          'phone': t.String})
 
     def get(self, id=None):
-        user = User.query.filter_by(id=self.current_user).first() or abort(404)
+        user = User.get(self.current_user) or abort(404)
         response = as_dict(user)
         response['password'] = ''
         return jsonify(response)
@@ -86,7 +86,7 @@ class ProfileResource(BaseResource):
 
     def put(self, id):
         assert id == session.get('uid')
-        user = User.query.filter_by(id=id).first() or abort(404)
+        user = User.get(id) or abort(404)
         data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
             self.validation.check(data)
@@ -99,12 +99,11 @@ class ProfileResource(BaseResource):
         return jsonify(response, status=status)
 
     def delete(self, id):
-        user = User.query.filter_by(id=id).first() or abort(404)
+        user = User.get(id) or abort(404)
         user.delete()
         return jsonify({}, status=200)
 
     def __extract_keys(self, data, keys):
-        filter(lambda x: x[0] in keys, data.items())
         return dict(filter(lambda x: x[0] in keys, data.items()))
 
 
@@ -113,11 +112,8 @@ class AddressResource(BaseResource):
 
     validation = t.Dict({'city': t.String,
                          'street': t.String,
-                         'apartment': t.String(regex='^.{,20}$'),
-                         'zip_code': t.String(regex='^.{,20}$'),
-                         'type': t.String(regex="(billing|delivery)"),
-                         'user_id': t.Int})
-    validation.make_optional('apartment', 'zip_code', 'user_id')
+                         'type': t.String(regex="(billing|delivery)")}
+                         ).allow_extra('*')
 
     def get(self, id=None):
         uid = session.get('uid') or abort(401)
