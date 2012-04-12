@@ -1,5 +1,9 @@
 # from __future__ import absolute_import
 from flamaster.app import db
+from datetime import datetime
+from time import mktime
+import random
+from .utils import get_hexdigest
 
 
 class User(db.Model):
@@ -11,6 +15,7 @@ class User(db.Model):
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     phone = db.Column(db.String(15))
+    last_login = db.Column(db.DateTime)
 
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
@@ -38,6 +43,44 @@ class User(db.Model):
     def create(cls, **kwargs):
         instance = cls(**kwargs)
         return instance.save()
+
+    def update_login_time(self):
+        self.last_login = datetime.utcnow()
+        self.save()
+        return self
+
+    def create_token(self):
+        ts_datetime = self.last_login
+        ts = int(mktime(ts_datetime.timetuple()))
+        base = "{}{}".format(self.key.urlsafe(), ts)
+        algo, salt, pass_hash = self.password.split('$')
+        return "{}$${}".format(self.key.urlsafe(), get_hexdigest(algo, salt, base))
+
+    @classmethod
+    def validate_token(cls, token):
+        if token is not None:
+            key_safe, hsh = token.split('$$')
+            user = cls.query.filter_by().one()
+            return token == user.create_token() and user
+        return False
+
+    @classmethod
+    def check_password(cls, email, password):
+        user = cls.query.filter_by(email=email).one()
+        if user is None:
+            return False
+        algo, salt, hsh = user.password.split('$')
+        if hsh == get_hexdigest(algo, salt, password):
+            return user
+        return False
+
+    def set_password(self, raw_password):
+        algo = 'sha1'
+        rand_str = lambda: str(random.random())
+        salt = get_hexdigest(algo, rand_str(), rand_str())[:5]
+        hsh = get_hexdigest(algo, salt, raw_password)
+        self.password = '{}${}${}'.format(algo, salt, hsh)
+        return self
 
 
 class Address(db.Model):
@@ -93,24 +136,3 @@ class Role(db.Model):
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
                             backref=db.backref('role', lazy='joined'))
-
-
-# def query_object(self):
-#     query_obj = db.session.query(type(self))
-#     params_list = list()
-#     for counter, item in [(1, 'apartment'), (2, 'city'), (3, 'street'),
-#                           (4, 'user_id'), (5, 'zip_code'), (6, 'type')]:
-#         if getattr(self, item):
-#             params_list += ['%s=:param%d' % (item, counter)]
-#     filter_str = ' and '.join(params_list)
-#     try:
-#         query_obj = query_obj.filter(filter_str).params(
-#             param1=self.apartment,
-#             param2=self.city,
-#             param3=self.street,
-#             param4=self.user_id,
-#             param5=self.zip_code,
-#             param6=self.type).one()
-#     except orm_exc.NoResultFound, e:
-#         return e
-#     return query_obj
