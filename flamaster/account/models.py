@@ -61,8 +61,6 @@ class User(db.Model, CRUDMixin):
         return cls.query.filter_by(email=email,
                 password=password).first()
 
-<<<<<<< HEAD
-=======
     @classmethod
     def create(cls, **kwargs):
         instance = cls(**kwargs)
@@ -106,7 +104,6 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}${}'.format(algo, salt, hsh)
         return self
 
->>>>>>> working_branch_dorosh
 
 class Address(db.Model, CRUDMixin):
     """
