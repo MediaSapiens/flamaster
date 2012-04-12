@@ -1,5 +1,10 @@
 # from __future__ import absolute_import
+import base64
+import random
+from time import mktime
+
 from flamaster.app import db
+from flamaster.core.utils import get_hexdigest
 
 
 class CRUDMixin(object):
@@ -38,6 +43,8 @@ class User(db.Model, CRUDMixin):
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     phone = db.Column(db.String(15))
+    created_at = db.Column()
+    logged_at = db.Column()
 
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
@@ -46,15 +53,45 @@ class User(db.Model, CRUDMixin):
 
     def __init__(self, email, password):
         self.email = email
-        self.password = password
+        self.password = self.set_password(password)
 
     def __repr__(self):
         return "<User: %r>" % self.email
 
     @classmethod
     def authenticate(cls, email, password):
-        return cls.query.filter_by(email=email,
-                password=password).first()
+        user = cls.query.filter_by(email=email.lower()).first()
+        if user is not None:
+            salt, hsh = user.password.split('$')
+            if hsh == get_hexdigest(salt, password):
+                return user
+        return user
+
+    def set_password(self, raw_password):
+        rand_str = lambda: str(random.random())
+        salt = get_hexdigest(rand_str(), rand_str())[:5]
+        hsh = get_hexdigest(salt, raw_password)
+        self.password = '{}${}'.format(salt, hsh)
+        return self
+
+    def create_token(self):
+        """ creates a unique token based on user last login time and
+        urlsafe encoded user key
+        """
+        ts_datetime = self.logged_at or self.created_at
+        ts = int(mktime(ts_datetime.timetuple()))
+        key = base64.encodestring(self.email)
+        base = "{}{}".format(key, ts)
+        salt, hsh = self.password.split('$')
+        return "{}$${}".format(key, get_hexdigest(salt, base))
+
+    @classmethod
+    def validate_token(cls, token=None):
+        if token is not None:
+            key, hsh = token.split('$$')
+            user = cls.query.filter_by(base64.decodestring(key))
+            return token == user.create_token() and user
+        return None
 
 
 class Address(db.Model, CRUDMixin):
