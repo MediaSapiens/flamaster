@@ -4,8 +4,6 @@ import hashlib
 from flask import current_app, request
 from flask.helpers import json, _assert_have_json
 
-from sqlalchemy.orm import class_mapper
-
 
 def jsonify(*args, **kwargs):
     status = 200
@@ -16,11 +14,6 @@ def jsonify(*args, **kwargs):
     return current_app.response_class(json.dumps(dict(*args, **kwargs),
         indent=None if request.is_xhr else 2), status=status,
         mimetype='application/json')
-
-
-def as_dict(obj):
-    return dict((c.name, getattr(obj, c.name))
-              for c in class_mapper(obj.__class__).mapped_table.c)
 
 
 def get_hexdigest(salt, raw_password):

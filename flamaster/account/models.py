@@ -1,7 +1,10 @@
 # from __future__ import absolute_import
 import base64
 import random
+from datetime import datetime
 from time import mktime
+
+from sqlalchemy.orm import class_mapper
 
 from flamaster.app import db
 from flamaster.core.utils import get_hexdigest
@@ -33,6 +36,13 @@ class CRUDMixin(object):
         db.session.delete(self)
         commit and db.session.commit()
 
+    def as_dict(self):
+        """ method for building dictionary for model value-properties filled
+            with data from mapped storage backend
+        """
+        return dict((c.name, getattr(self, c.name))
+              for c in class_mapper(self.__class__).mapped_table.c)
+
 
 class User(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
@@ -43,17 +53,16 @@ class User(db.Model, CRUDMixin):
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     phone = db.Column(db.String(15))
-    created_at = db.Column()
-    logged_at = db.Column()
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    logged_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
                                 cascade="all, delete, delete-orphan")
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
-    def __init__(self, email, password):
+    def __init__(self, email):
         self.email = email
-        self.password = self.set_password(password)
 
     def __repr__(self):
         return "<User: %r>" % self.email
@@ -66,6 +75,18 @@ class User(db.Model, CRUDMixin):
             if hsh == get_hexdigest(salt, password):
                 return user
         return user
+
+    @classmethod
+    def validate_token(cls, token=None):
+        if token is not None:
+            key, hsh = token.split('$$')
+            user = cls.query.filter_by(base64.decodestring(key))
+            return token == user.create_token() and user
+        return None
+
+    @classmethod
+    def is_unique(cls, email):
+        return cls.query.filter_by(email=email).count() == 0
 
     def set_password(self, raw_password):
         rand_str = lambda: str(random.random())
@@ -84,14 +105,6 @@ class User(db.Model, CRUDMixin):
         base = "{}{}".format(key, ts)
         salt, hsh = self.password.split('$')
         return "{}$${}".format(key, get_hexdigest(salt, base))
-
-    @classmethod
-    def validate_token(cls, token=None):
-        if token is not None:
-            key, hsh = token.split('$$')
-            user = cls.query.filter_by(base64.decodestring(key))
-            return token == user.create_token() and user
-        return None
 
 
 class Address(db.Model, CRUDMixin):
