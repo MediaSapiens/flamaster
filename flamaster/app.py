@@ -14,7 +14,7 @@ blueprints = {
 }
 
 
-def register_blueprints(app, **blueprints):
+def register_blueprints(app, blueprints):
     for bp, module in blueprints.iteritems():
         bp_module = __import__(module, {}, {}, [''])
         app.register_blueprint(vars(bp_module)[bp])
@@ -29,6 +29,15 @@ def register_assets(app):
     return app
 
 
+def register_signals(app, blueprints):
+    for bp in blueprints.iterkeys():
+        try:
+            signal_m = __import__("flamaster.{}.signals".format(bp), {}, {}, [])
+            print signal_m
+        except ImportError as e:
+            print e.message
+    return app
+
 if 'TESTING' in os.environ:
     app.config.from_object('flamaster.conf.local_test_settings')
 else:
@@ -36,5 +45,6 @@ else:
     # 'category', 'delivery', 'image', 'order', 'payment',
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 
-app = register_blueprints(app, **blueprints)
+app = register_blueprints(app, blueprints)
+app = register_signals(app, blueprints)
 app = register_assets(app)

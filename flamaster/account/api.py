@@ -4,7 +4,7 @@ from flask import Blueprint, abort, request, session
 
 import trafaret as t
 
-from flamaster.core.utils import jsonify, as_dict
+from flamaster.core.utils import jsonify
 from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
@@ -17,6 +17,7 @@ account = Blueprint('account', __name__, template_folder='templates',
 
 @api_resource(account, 'sessions', {'id': None})
 class SessionResource(BaseResource):
+    validation = t.Dict({'email': t.Email}).ignore_extra('*')
 
     def get(self, id=None):
         session.update({'is_anonymous': not bool(session.get('uid')),
@@ -25,17 +26,18 @@ class SessionResource(BaseResource):
 
     def post(self):
         data = request.json or abort(400)
-        users_q = User.query.filter_by(email=data.get('email'))
+        try:
+            data = self.validation.check(data)
+            if User.is_unique(data['email']):
+                user = User(data['email']).save()
+                session.update({'uid': user.id, 'is_anonymous': False})
+                response, status = dict(session), 201
+            else:
+                response, status = {'email': "This email is already taken"}, 200
+        except t.DataError as e:
+            response, status = e.as_dict(), 400
 
-        if users_q.count() > 0:
-            return jsonify({'email': "This email is already taken"})
-
-        elif data.get('email'):
-            user = User(data['email'], None).save()
-            session.update({'uid': user.id, 'is_anonymous': False})
-            return jsonify(dict(session), status=201)
-
-        abort(400)
+        return jsonify(response, status)
 
     def put(self, id):
         data, status = request.json or abort(400), 202
@@ -77,7 +79,7 @@ class ProfileResource(BaseResource):
 
     def get(self, id=None):
         user = User.get(self.current_user) or abort(404)
-        response = as_dict(user)
+        response = user.as_dict()
         response['password'] = ''
         return jsonify(response)
 
@@ -91,7 +93,7 @@ class ProfileResource(BaseResource):
         try:
             self.validation.check(data)
             user.update(**data)
-            response, status = as_dict(user), 202
+            response, status = user.as_dict(), 202
         except t.DataError as e:
             response, status = e.as_dict(), 400
 
@@ -119,11 +121,11 @@ class AddressResource(BaseResource):
         uid = session.get('uid') or abort(401)
         if id is None:
             addresses = Address.query.filter_by(user_id=uid)
-            response = [as_dict(addr) for addr in addresses]
+            response = [addr.as_dict() for addr in addresses]
 
         else:
             addr = Address.query.filter_by(id=id, user_id=uid).first() or abort(404)
-            response = as_dict(addr)
+            response = addr.as_dict()
         return jsonify(response)
 
     def post(self):
@@ -133,7 +135,7 @@ class AddressResource(BaseResource):
         try:
             self.validation.check(data)
             addr = Address.create(**data)
-            data, status = as_dict(addr), 201
+            data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
 
@@ -148,7 +150,7 @@ class AddressResource(BaseResource):
             self.validation.check(data)
             addr = Address.query.filter_by(id=id, user_id=uid).one()
             addr.update(**data)
-            data, status = as_dict(addr), 201
+            data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
             print data
