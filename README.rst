@@ -1,12 +1,8 @@
-=========
-Flamaster
-=========
-
--------------------------------
-E-commerce framework with the Flask
--------------------------------
-
+==============================================
+Flamaster: e-commerce framework with the Flask
+==============================================
 Setup requirements:
+___________________
 
 - python == v2.7.x
 - pip >= 1.1
@@ -18,10 +14,11 @@ Setup requirements:
 - `trafaret <http://github.com/deepwalker/trafaret>`__
 
 Testing:
+________
 
 - `py.test <http://pytest.org>`__
 
 Frontent development
-_______________
+____________________
 
 We use `brunch.io <http://brunch.io>`__ for the client-side with `coffee-script <http://coffeescript.org>`__ and eco templates
