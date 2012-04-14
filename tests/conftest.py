@@ -5,6 +5,7 @@ from flask import url_for
 from flask.helpers import json
 
 from flamaster.app import app
+from flamaster.account.models import User
 
 
 os.environ['TESTING'] = 'True'
@@ -19,7 +20,7 @@ def request_context(func):
     return wrapper
 
 
-def login(client, email='test@email.com', password='test'):
+def login(client, email='test@example.com', password='test'):
     auth_url = url_for('account.sessions', id=1)
     return client.put(auth_url, content_type='application/json',
             data=json.dumps({'email': email, 'password': password}))
@@ -45,3 +46,7 @@ def url_client(endpoint, **url_kwargs):
             return response
         return wrapper
     return decorate
+
+
+def create_user():
+    return User(email='test@example.com').set_password('test').save()

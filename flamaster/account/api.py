@@ -36,8 +36,8 @@ class SessionResource(BaseResource):
                 response, status = {'email': "This email is already taken"}, 200
         except t.DataError as e:
             response, status = e.as_dict(), 400
-
-        return jsonify(response, status)
+        # print response, status
+        return jsonify(response, status=status)
 
     def put(self, id):
         data, status = request.json or abort(400), 202
@@ -108,6 +108,9 @@ class ProfileResource(BaseResource):
     def __extract_keys(self, data, keys):
         return dict(filter(lambda x: x[0] in keys, data.items()))
 
+    def __exclude_keys(self, data, keys):
+        return dict(filter(lambda x: x[0] not in keys, data.items()))
+
 
 @api_resource(account, 'addresses', {'id': int})
 class AddressResource(BaseResource):
@@ -153,7 +156,7 @@ class AddressResource(BaseResource):
             data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
-            print data
+            # print data
         return jsonify(data, status=status)
 
     def delete(self, id):
@@ -182,7 +185,7 @@ def edit_person(id):
 
 @app.route('/password_reset/', methods=['GET', 'POST'])
 def password_reset():
-    print dir(request), request.form.to_dict()
+    # print dir(request), request.form.to_dict()
     data = request.form.to_dict()
     if 'email' in data:
         try:

@@ -1,5 +1,5 @@
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.sqlalchemy import SQLAlchemy, models_committed
 from flask.ext.assets import Environment, Bundle
 
 import os
@@ -32,10 +32,15 @@ def register_assets(app):
 def register_signals(app, blueprints):
     for bp in blueprints.iterkeys():
         try:
-            signal_m = __import__("flamaster.{}.signals".format(bp), {}, {}, [])
-            print signal_m
+            signal_module = __import__("flamaster.{}.signals".format(bp), {},
+                                       {}, [''])
+            module_vars = vars(signal_module)
+            signals = filter(lambda s: s.endswith('_signal'),
+                             module_vars.keys())
+            for signal in signals:
+                models_committed.connected_to(module_vars[signal], sender=app)
         except ImportError as e:
-            print e.message
+            pass
     return app
 
 if 'TESTING' in os.environ:

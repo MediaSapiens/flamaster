@@ -1,8 +1,18 @@
-import types
 import hashlib
+import types
+
+from datetime import datetime
 
 from flask import current_app, request
 from flask.helpers import json, _assert_have_json
+
+
+class CustomEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.ctime()
+        return super(CustomEncoder, self).default(obj)
 
 
 def jsonify(*args, **kwargs):
@@ -12,8 +22,8 @@ def jsonify(*args, **kwargs):
     if 'status' in kwargs:
         status = kwargs.pop('status', 200)
     return current_app.response_class(json.dumps(dict(*args, **kwargs),
-        indent=None if request.is_xhr else 2), status=status,
-        mimetype='application/json')
+        indent=None if request.is_xhr else 2, cls=CustomEncoder),
+        status=status, mimetype='application/json')
 
 
 def get_hexdigest(salt, raw_password):

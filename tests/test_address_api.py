@@ -1,8 +1,8 @@
 from flask.helpers import json
 from flamaster.app import db
-from flamaster.account.models import User, Address
+from flamaster.account.models import Address
 
-from conftest import url_client, login, logout
+from conftest import url_client, login, logout, create_user
 
 
 first_address = {'city': 'Kharkov',
@@ -21,7 +21,7 @@ dafault_address = {'user_id': 1,
 
 def setup_module(module):
     db.create_all()
-    User.create(email='test@email.com', password='test')
+    create_user()
 
 
 @url_client('account.addresses')

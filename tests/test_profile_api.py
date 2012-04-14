@@ -3,7 +3,7 @@ from flask import json
 from flamaster.app import db
 from flamaster.account.models import User
 
-from .conftest import login, url_client
+from .conftest import login, url_client, create_user
 
 
 user_credentials = {
@@ -20,7 +20,7 @@ profile_data = {
 
 def setup_module(module):
     db.create_all()
-    User.create(**user_credentials)
+    create_user()
 
 
 def teardown_module(module):

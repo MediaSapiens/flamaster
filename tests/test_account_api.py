@@ -31,7 +31,7 @@ def test_session_creation():
     sessions_url = url_for('account.sessions')
     with app.test_client() as c:
         resp = c.post(sessions_url,
-                data=json.dumps({'email': 'test@email.com'}),
+                data=json.dumps({'email': 'test@example.com'}),
                 content_type='application/json')
         j_resp = json.loads(resp.data)
 
@@ -44,13 +44,12 @@ def test_authorization():
     sessions_url = url_for('account.sessions')
     with app.test_client() as c:
         c.get(sessions_url)
-        User.query.filter_by(email='test@email.com').update({'password':
-            'test'})
-        db.session.commit()
+        user = User.query.filter_by(email='test@example.com').first()
+        user.set_password('test').save()
 
         # assert session['is_anonymous'] == True
 
-        resp = login(c, 'test@email.com', 'test')
+        resp = login(c, 'test@example.com', 'test')
         j_resp = json.loads(resp.data)
 
         assert 'email' in j_resp
@@ -61,7 +60,7 @@ def test_authorization():
 @request_context
 def test_authorization_failed():
     with app.test_client() as c:
-        resp = login(c, 'test@email.com', 'test')
+        resp = login(c, 'test@example.com', 'test')
         j_resp = json.loads(resp.data)
         assert 'email' in j_resp
         assert session['is_anonymous'] == True
