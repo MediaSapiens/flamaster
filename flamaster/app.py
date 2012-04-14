@@ -10,8 +10,7 @@ db = SQLAlchemy(app)
 
 blueprints = {
     'core': 'flamaster.core.views',
-    'account': 'flamaster.account.api'
-}
+    'account': 'flamaster.account.api'}
 
 
 def register_blueprints(app, blueprints):
