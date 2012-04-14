@@ -151,7 +151,6 @@ class AddressResource(BaseResource):
             data, status = as_dict(addr), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
-            print data
         return jsonify(data, status=status)
 
     def delete(self, id):
@@ -166,26 +165,4 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
 
-from flask import render_template
-from flamaster.app import app
-
-
-@app.route('/user/edit/<id>/', methods=['GET', 'POST'])
-def edit_person(id):
-    user = User.query.get(id)
-    if user:
-        # form = UserForm(user)
-        return render_template('edit_user.html')
-
-
-@app.route('/password_reset/', methods=['GET', 'POST'])
-def password_reset():
-    print dir(request), request.form.to_dict()
-    data = request.form.to_dict()
-    if 'email' in data:
-        try:
-            user = User.query.filter_by(email=data['email']).one()
-        except:
-            return ''
-
-    return render_template('edit_user.html')
+from .views import *

@@ -61,11 +61,6 @@ class User(db.Model, CRUDMixin):
         return cls.query.filter_by(email=email,
                 password=password).first()
 
-    @classmethod
-    def create(cls, **kwargs):
-        instance = cls(**kwargs)
-        return instance.save()
-
     def update_login_time(self):
         self.last_login = datetime.utcnow()
         self.save()
@@ -74,15 +69,15 @@ class User(db.Model, CRUDMixin):
     def create_token(self):
         ts_datetime = self.last_login
         ts = int(mktime(ts_datetime.timetuple()))
-        base = "{}{}".format(self.key.urlsafe(), ts)
+        base = "{}{}".format(self.email, ts)
         algo, salt, pass_hash = self.password.split('$')
-        return "{}$${}".format(self.key.urlsafe(), get_hexdigest(algo, salt, base))
+        return "{}$${}".format(self.email, get_hexdigest(algo, salt, base))
 
     @classmethod
     def validate_token(cls, token):
         if token is not None:
             key_safe, hsh = token.split('$$')
-            user = cls.query.filter_by().one()
+            user = cls.query.filter_by(email=key_safe).one()
             return token == user.create_token() and user
         return False
 
