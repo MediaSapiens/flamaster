@@ -169,4 +169,5 @@ class AddressResource(BaseResource):
 
         return jsonify(data, status=status)
 
+
 from .views import *

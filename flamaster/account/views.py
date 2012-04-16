@@ -1,44 +1,31 @@
-from flask import request, url_for
-from flask import render_template
-from sqlalchemy.orm.exc import NoResultFound
+from flask import request, render_template
+from flask.ext.mail import Message
+
+from flamaster.app import mail
 
 from .models import User
 from .api import account
 
-from flamaster.app import mail
-from flaskext.mail import Message
-
-__all__ = ['edit_person', 'password_reset', 'validation_token']
+__all__ = ['request_reset', 'confirm_reset']
 
 
-@account.route('/edit/<id>/', methods=['GET', 'POST'])
-def edit_person(id):
-#    user = User.query.get_or_404(id)
-    return render_template('edit_user.html')
+@account.route('/reset/', methods=['GET', 'POST'])
+def request_reset():
+    #print dir(request), request.form.to_dict()
+    if len(request.form):
+        user = User.query.filter_by(email=request.form.get('email')).first_or_404()
+
+        token = user.create_token()
+        # Create the message
+        msg = Message(subject="You've requested a password reset",
+                      body=render_template("email_reset.html", token=token),
+                      recipients=request.form['email'])
+        mail.send(msg)
+
+    return render_template('request_password_reset.html')
 
 
-@account.route('/password_reset/', methods=['GET', 'POST'])
-def password_reset():
-    # print dir(request), request.data
-    if request.method == 'POST':
-        data = request.form.to_dict()
-        if 'email' in data:
-            try:
-                user = User.query.filter_by(email=data['email']).one()
-            except NoResultFound:
-                return 'This email no found'
-
-            token = user.create_token()
-            msg = Message('This is the body of the message.',
-                          recipients=[data['email']])
-            msg.html = '<b>link for password reset http://127.0.0.1:5000{}'.format(
-                url_for('.validation_token', **{'token': token}))
-            mail.send(msg)
-
-    return render_template('edit_user.html')
-
-
-@account.route('/validation_token/<token>/', methods=['GET', 'POST'])
-def validation_token(token):
-    if User.validate_token(token):
-        return render_template('edit_user.html')
+@account.route('/reset/<token>/', methods=['GET', 'POST'])
+def confirm_reset(token):
+    if User.create_token(token):
+        return render_template('confirm_password_reset.html')
