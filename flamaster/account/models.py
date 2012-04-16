@@ -4,10 +4,13 @@ import random
 from datetime import datetime
 from time import mktime
 
+from flask.ext import sqlalchemy
 from sqlalchemy.orm import class_mapper
 
-from flamaster.app import db
+from flamaster.app import db, app
 from flamaster.core.utils import get_hexdigest
+
+from .signals import user_added_signal
 
 
 class CRUDMixin(object):
@@ -87,6 +90,13 @@ class User(db.Model, CRUDMixin):
             user = cls.query.filter_by(base64.decodestring(key))
             return token == user.create_token() and user
         return None
+
+    @classmethod
+    def create(cls, **kwargs):
+        with sqlalchemy.models_committed.connect_to(user_added_signal,
+                                                    sender=app):
+            instance = cls(**kwargs).save()
+        return instance.save()
 
     def create_token(self):
         """ creates a unique token based on user last login time and
