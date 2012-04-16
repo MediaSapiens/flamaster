@@ -8,6 +8,10 @@ SQLALCHEMY_ECHO = False
 DEFAULT_MAIL_SENDER = "noreply@findevent.com"
 MAIL_FAIL_SILENTLY = True
 
+MAIL_SERVER = '127.0.0.1'
+MAIL_PORT = 1025
+DEFAULT_MAIL_SENDER = 'author@example.com'
+
 try:
     from local_settings import *
 except ImportError:

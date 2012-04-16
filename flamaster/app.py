@@ -1,6 +1,7 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy, models_committed
 from flask.ext.assets import Environment, Bundle
+from flaskext.mail import Mail
 
 import os
 
@@ -48,6 +49,8 @@ else:
     app.config.from_object('flamaster.conf.settings')
     # 'category', 'delivery', 'image', 'order', 'payment',
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
+
+mail = Mail(app)
 
 app = register_blueprints(app, blueprints)
 app = register_signals(app, blueprints)

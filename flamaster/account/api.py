@@ -17,7 +17,7 @@ account = Blueprint('account', __name__, template_folder='templates',
 
 @api_resource(account, 'sessions', {'id': None})
 class SessionResource(BaseResource):
-    validation = t.Dict({'email': t.Email}).ignore_extra('*')
+    validation = t.Dict({'email': t.Email}).allow_extra('*')
 
     def get(self, id=None):
         session.update({'is_anonymous': not bool(session.get('uid')),

@@ -106,11 +106,6 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}'.format(salt, hsh)
         return self
 
-    def update_login_time(self):
-        self.last_login = datetime.utcnow()
-        self.save()
-        return self
-
 
 class Address(db.Model, CRUDMixin):
     """
