@@ -156,7 +156,6 @@ class AddressResource(BaseResource):
             data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
-            # print data
         return jsonify(data, status=status)
 
     def delete(self, id):
@@ -169,3 +168,6 @@ class AddressResource(BaseResource):
             data, status = e.as_dict(), 400
 
         return jsonify(data, status=status)
+
+
+from .views import *
