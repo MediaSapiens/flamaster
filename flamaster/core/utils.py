@@ -2,8 +2,10 @@ import hashlib
 import types
 
 from datetime import datetime
+from flamaster.app import mail
 
 from flask import current_app, request
+from flask.ext.mail import Message
 from flask.helpers import json, _assert_have_json
 
 
@@ -58,3 +60,9 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s.decode('utf-8', errors).encode(encoding, errors)
     else:
         return s
+
+
+def send_email(to, subject, body):
+        recipients = isinstance(to, basestring) and [to] or to
+        msg = Message(subject=subject, body=body, recipients=recipients)
+        mail.send(msg)

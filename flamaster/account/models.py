@@ -86,8 +86,9 @@ class User(db.Model, CRUDMixin):
     def validate_token(cls, token=None):
         if token is not None:
             key, hsh = token.split('$$')
-            user = cls.query.filter_by(base64.decodestring(key))
-            return token == user.create_token() and user
+            user = cls.query.filter_by(email=base64.decodestring(key)).first()
+            if user and token == user.create_token():
+                return user
         return None
 
     # @classmethod
@@ -99,6 +100,9 @@ class User(db.Model, CRUDMixin):
         """ creates a unique token based on user last login time and
         urlsafe encoded user key
         """
+        if not self.password:
+            self.set_password('*')
+            self.save()
         ts_datetime = self.logged_at or self.created_at
         ts = int(mktime(ts_datetime.timetuple()))
         key = base64.encodestring(self.email)

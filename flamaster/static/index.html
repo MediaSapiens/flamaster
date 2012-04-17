@@ -10,11 +10,13 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% assets "js_vendor" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
+  {% block extra_js %}
   {% assets "js_templates" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
   {% assets "js_app" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
   <script>require('initialize');</script>
+  {% endblock %}
 </head>
 <body>
-
+  {% block content %}{% endblock %}
 </body>
 </html>

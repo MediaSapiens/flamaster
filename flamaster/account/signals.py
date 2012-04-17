@@ -1,5 +1,6 @@
 from flask.ext.sqlalchemy import models_committed
-from flask.ext.mail import Mail
+
+from flamaster.core.utils import send_email
 from .models import User
 
 
@@ -7,6 +8,8 @@ __all__ = ['signal_router']
 
 
 def user_created(instance):
+    send_email(to=instance.email,
+               subject='', body='')
     return 'user created'
 
 
