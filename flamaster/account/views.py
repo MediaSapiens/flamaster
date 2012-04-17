@@ -4,7 +4,6 @@ from flask.ext.mail import Message
 from . import account
 from .models import User
 
-
 __all__ = ['request_reset', 'confirm_reset']
 
 
