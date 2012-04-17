@@ -1,7 +1,7 @@
-{SessionModel} = require 'models/session_model'
+{GenericView} = require 'views/generic_view'
 {NavView} = require 'views/nav_view'
 
-class exports.HomeView extends Backbone.View
+class exports.HomeView extends GenericView
   id: 'home-view'
   template: require('./templates/home')
 
@@ -19,9 +19,3 @@ class exports.HomeView extends Backbone.View
     @$el.find("#nav-container").html @navView.render()
     @el
 
-  getCurrentUser: (options) ->
-    @session = new SessionModel
-    if options?
-      @session.fetch
-        success: options.success
-        error: options.error

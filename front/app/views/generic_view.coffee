@@ -1,3 +1,5 @@
+{SessionModel} = require 'models/session_model'
+
 class exports.GenericView extends Backbone.View
 
   renderError: (field, message) ->
@@ -9,3 +11,10 @@ class exports.GenericView extends Backbone.View
   clearErrors: ->
     @$el.find(".control-group").removeClass 'error'
     @$el.find("span.help-inline.error").remove()
+
+  getCurrentUser: (options) ->
+    @session = new SessionModel
+    if options?
+      @session.fetch
+        success: options.success
+        error: options.error

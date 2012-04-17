@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template
+from flask import render_template
+
+from . import core
 
 
-core = Blueprint('core', __name__, url_prefix='')
+__all__ = ['index']
 
 
 @core.route('/')

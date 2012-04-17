@@ -3,13 +3,13 @@
 
 class exports.MainRouter extends Backbone.Router
   routes:
-    '': "layout"
-    '!/': "layout"
+    '': "index"
+    '!/': "index"
     '!/signup': "signup"
     '!/login': "login"
 
   initialize: -> true
-  layout: ->
+  index: ->
     app.render()
     @redirectAuthenticated()
 
@@ -22,8 +22,8 @@ class exports.MainRouter extends Backbone.Router
     @redirectAuthenticated()
 
   redirectAuthenticated: ->
-    console.log app.profileRouter
     app.homeView.getCurrentUser
       success: (model, resp) ->
         unless model.get('is_anonymous')
-          app.router.navigate "!/profiles/#{model.get 'uid'}", trigger: true
+          routePath = "!/profiles/#{model.get 'uid'}"
+          app.router.navigate routePath, trigger: true

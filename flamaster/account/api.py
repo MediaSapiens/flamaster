@@ -1,6 +1,6 @@
 import uuid
 
-from flask import Blueprint, abort, request, session
+from flask import abort, request, session
 
 import trafaret as t
 
@@ -8,11 +8,10 @@ from flamaster.core.utils import jsonify
 from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
+from . import account
 from .models import User, Address
 
-
-account = Blueprint('account', __name__, template_folder='templates',
-                    url_prefix='/account')
+__all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 
 
 @api_resource(account, 'sessions', {'id': None})
@@ -29,11 +28,11 @@ class SessionResource(BaseResource):
         try:
             data = self.validation.check(data)
             if User.is_unique(data['email']):
-                user = User(data['email']).save()
+                user = User.create(email=data['email'])
                 session.update({'uid': user.id, 'is_anonymous': False})
                 response, status = dict(session), 201
             else:
-                response, status = {'email': "This email is already taken"}, 200
+                response, status = {'email': "This email is already taken"}, 400
         except t.DataError as e:
             response, status = e.as_dict(), 400
         # print response, status
@@ -168,6 +167,3 @@ class AddressResource(BaseResource):
             data, status = e.as_dict(), 400
 
         return jsonify(data, status=status)
-
-
-from .views import *

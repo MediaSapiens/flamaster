@@ -1,5 +1,6 @@
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy, models_committed
+from flask.ext.sqlalchemy import SQLAlchemy
+
 from flask.ext.assets import Environment, Bundle
 from flask.ext.mail import Mail
 
@@ -10,16 +11,21 @@ app = Flask(__name__, static_url_path='/static', template_folder='static')
 mail = Mail(app)
 db = SQLAlchemy(app)
 
-blueprints = {
-    'core': 'flamaster.core.views',
-    'account': 'flamaster.account.api'}
+
+from core import core
+from account import account
+
+app.register_blueprint(core)
+app.register_blueprint(account)
+
+# blueprints = ['core', 'account']
 
 
-def register_blueprints(app, blueprints):
-    for bp, module in blueprints.iteritems():
-        bp_module = __import__(module, {}, {}, [''])
-        app.register_blueprint(vars(bp_module)[bp])
-    return app
+# def register_blueprints(app, blueprints):
+#     for bp in blueprints:
+#         bp_module = __import__("flamaster.{}".format(bp), {}, {}, [''])
+#         app.register_blueprint(vars(bp_module)[bp])
+#     return app
 
 
 def register_assets(app):
@@ -30,6 +36,14 @@ def register_assets(app):
     return app
 
 
+# def register_signals(app, blueprints):
+#     for bp in blueprints:
+#         try:
+#             __import__("flamaster.{}.signals".format(bp), {}, {}, [''])
+#         except ImportError as e:
+#             print bp, e.message
+#     return app
+
 if 'TESTING' in os.environ:
     app.config.from_object('flamaster.conf.local_test_settings')
 else:
@@ -37,5 +51,5 @@ else:
     # 'category', 'delivery', 'image', 'order', 'payment',
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 
-app = register_blueprints(app, blueprints)
+# app = register_blueprints(app, blueprints)
 app = register_assets(app)

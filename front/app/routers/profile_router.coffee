@@ -7,6 +7,7 @@ class exports.ProfileRouter extends Backbone.Router
     '!/profiles/:id/edit': "edit"
 
   initialize: ->
+
     unless @view?
       @view = new ProfileView
 

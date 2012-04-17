@@ -1,10 +1,8 @@
-from flask import request, render_template
+from flask import request, render_template, current_app
 from flask.ext.mail import Message
 
-from flamaster.app import mail
-
+from . import account
 from .models import User
-from .api import account
 
 
 __all__ = ['request_reset', 'confirm_reset']
@@ -21,12 +19,13 @@ def request_reset():
         msg = Message(subject="You've requested a password reset",
                       body=render_template("email_reset.html", token=token),
                       recipients=request.form['email'])
-        mail.send(msg)
+        app = current_app._get_current_object()
+        app.mail.send(msg)
 
     return render_template('request_password_reset.html')
 
 
 @account.route('/reset/<token>/', methods=['GET', 'POST'])
 def confirm_reset(token):
-    if User.create_token(token):
+    if User.validate(token):
         return render_template('confirm_password_reset.html')
