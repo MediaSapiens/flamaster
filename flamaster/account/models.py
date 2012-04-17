@@ -91,11 +91,6 @@ class User(db.Model, CRUDMixin):
                 return user
         return None
 
-    # @classmethod
-    # def create(cls, **kwargs):
-    #     instance = cls(**kwargs).save()
-    #     return instance.save()
-
     def create_token(self):
         """ creates a unique token based on user last login time and
         urlsafe encoded user key

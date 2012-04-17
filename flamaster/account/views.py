@@ -1,4 +1,4 @@
-from flask import flash, request, redirect, render_template, url_for
+from flask import flash, request, redirect, render_template, url_for, abort
 
 from flamaster.core.utils import send_email
 
@@ -10,7 +10,6 @@ __all__ = ['request_reset', 'confirm_reset']
 
 @account.route('/reset/', methods=['GET', 'POST'])
 def request_reset():
-    #print dir(request), request.form.to_dict()
     if request.method == 'POST' and request.form.get('email'):
         user = User.query.filter_by(email=request.form.get('email')).first_or_404()
 
@@ -27,5 +26,9 @@ def request_reset():
 
 @account.route('/reset/<token>/', methods=['GET', 'POST'])
 def confirm_reset(token):
-    if User.validate_token(token):
-        return render_template('password_reset_confirm.html')
+    user = User.validate_token(token) or abort(403)
+    password = request.form.get('password', None)
+    again_password = request.form.get('again_password', None)
+    if password and again_password and password == again_password:
+        user.set_password(password)
+    return render_template('password_reset_confirm.html', token=token)
