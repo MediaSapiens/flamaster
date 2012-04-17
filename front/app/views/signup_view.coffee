@@ -5,29 +5,28 @@
 
 class exports.SignupView extends GenericView
   className: 'signup'
-  template: require './templates/signup'
   events:
     "click #signup-form button[type='submit']": "submit"
+  templates:
+    'signup:start': require './templates/signup'
+    'signup:complete': require './templates/signup_complete'
 
-  initialize: ->
-    @model = new SessionModel
-
-    # app.homeView.getCurrentUser
-    #   success: (model, resp) =>
-    #     @model.set model.toJSON(), silent: true
-
-  render: ->
-    @$el.html @template(baseContext)
+  render: (options) ->
+    console.log options
+    @$el.html(options.model.template baseContext)
     @el
 
+  push: (options) ->
+    mediator.trigger options.action, template: @templates[options.action]
+
   submit: (ev) ->
+    model = new SessionModel
     $form = $(ev.target).parents 'form'
     @clearErrors()
     formData = serializeForm $form
-    @model.save formData,
+    model.save formData,
       success: (model, response) ->
-        if !response.is_anonymous
-          app.router.navigate "!/profiles/#{response.uid}", trigger: true
+        response.uid? and app.router.navigate "!/signup/complete", trigger: true
       error: (model, response) =>
         if response.responseText?
           for field, message of JSON.parse(response.responseText)

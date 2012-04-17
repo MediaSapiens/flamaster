@@ -11,7 +11,6 @@ class exports.BrunchApplication
 exports.baseContext =
   baseField: (options) ->
     {name, type, placeholder, value} = options
-    console.log value
     @safe "<input type='#{type}' name='#{name}' value='#{value or ''}' id='id_#{name}' class='input-large' placeholder='#{placeholder}' />"
   formFor: (id, yield) ->
     form =

@@ -91,18 +91,15 @@ class User(db.Model, CRUDMixin):
                 return user
         return None
 
-    # @classmethod
-    # def create(cls, **kwargs):
-    #     instance = cls(**kwargs).save()
-    #     return instance.save()
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls(**kwargs).set_password('*')
+        return instance.save()
 
     def create_token(self):
         """ creates a unique token based on user last login time and
         urlsafe encoded user key
         """
-        if not self.password:
-            self.set_password('*')
-            self.save()
         ts_datetime = self.logged_at or self.created_at
         ts = int(mktime(ts_datetime.timetuple()))
         key = base64.encodestring(self.email)

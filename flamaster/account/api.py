@@ -29,21 +29,18 @@ class SessionResource(BaseResource):
             data = self.validation.check(data)
             if User.is_unique(data['email']):
                 user = User.create(email=data['email'])
-                session.update({'uid': user.id, 'is_anonymous': False})
                 response, status = dict(session), 201
+                response['uid'] = user.id
             else:
                 response, status = {'email': "This email is already taken"}, 400
         except t.DataError as e:
             response, status = e.as_dict(), 400
-        # print response, status
         return jsonify(response, status=status)
 
     def put(self, id):
         data, status = request.json or abort(400), 202
-
         validation = t.Dict({'email': t.Email, 'password':
             t.String}).append(self._authenticate)
-
         try:
             data = {'email': data.get('email'), 'password':
                     data.get('password')}
@@ -52,7 +49,6 @@ class SessionResource(BaseResource):
         except t.DataError as e:
             data, status = e.as_dict(), 404
             session.update({'is_anonymous': True})
-
         return jsonify(data, status=status)
 
     def delete(self, id):
@@ -66,7 +62,6 @@ class SessionResource(BaseResource):
             raise t.DataError({'email': "There is no user matching this "
             "credentials"})
         session.update({'uid': user.id, 'is_anonymous': False})
-
         return data_dict
 
 
@@ -82,8 +77,8 @@ class ProfileResource(BaseResource):
         response['password'] = ''
         return jsonify(response)
 
-    def post(self):
-        pass
+    # def post(self):
+    #     pass
 
     def put(self, id):
         assert id == session.get('uid')

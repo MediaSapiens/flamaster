@@ -4,7 +4,6 @@ class exports.NavView extends Backbone.View
   template: require('./templates/nav')
 
   initialize: (options) ->
-    console.log app.router.routes
     # have to refactor this
     app.router.on "route:layout", =>
       @$el.find("li").removeClass 'active'

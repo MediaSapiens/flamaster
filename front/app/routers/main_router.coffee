@@ -6,24 +6,28 @@ class exports.MainRouter extends Backbone.Router
     '': "index"
     '!/': "index"
     '!/signup': "signup"
+    '!/signup/complete': "signupComplete"
     '!/login': "login"
 
-  initialize: -> true
+  initialize: ->
+    @signupView = new SignupView
+
   index: ->
     app.render()
-    @redirectAuthenticated()
 
-  signup: ->
-    app.render(SignupView)
-    @redirectAuthenticated()
+  signup: -> @bindInject @signupView, {action: 'signup:start'}
+  signupComplete: -> @bindInject @signupView, {action: 'signup:complete'}
+
 
   login: ->
     app.render(LoginView)
-    @redirectAuthenticated()
 
-  redirectAuthenticated: ->
-    app.homeView.getCurrentUser
-      success: (model, resp) ->
-        unless model.get('is_anonymous')
-          routePath = "!/profiles/#{model.get 'uid'}"
-          app.router.navigate routePath, trigger: true
+  bindInject: (view, options) ->
+    mediator.on options.action, (model) =>
+      app.inject view.render {action: options.action, model: model}
+      mediator.off options.action
+
+    mediator.on 'all', (action, model) ->
+      console.log 'action:', action, model
+
+    view.push options

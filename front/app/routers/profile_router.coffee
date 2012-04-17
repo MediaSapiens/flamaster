@@ -7,9 +7,7 @@ class exports.ProfileRouter extends Backbone.Router
     '!/profiles/:id/edit': "edit"
 
   initialize: ->
-
-    unless @view?
-      @view = new ProfileView
+    @view = new ProfileView
 
   index: -> @bindInject @view, {action: 'profile:index'}
   show: (id) -> @bindInject @view, {id: id, action: 'profile:show'}
@@ -23,4 +21,4 @@ class exports.ProfileRouter extends Backbone.Router
       mediator.off options.action
 
     mediator.on 'all', (action, model) ->
-      console.log 'action:', action, model
+      console.log 'action:', action, models

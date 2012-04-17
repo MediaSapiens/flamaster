@@ -33,6 +33,7 @@ class exports.ProfileView extends GenericView
     @el
 
   push: (options) ->
+    @navigateAnonymous()
     if options.id?
       @model.set id: options.id
       @model.fetch

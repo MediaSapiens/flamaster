@@ -18,3 +18,16 @@ class exports.GenericView extends Backbone.View
       @session.fetch
         success: options.success
         error: options.error
+
+  redirectAuthenticated: ->
+    @getCurrentUser
+      success: (model, resp) ->
+        unless model.get('is_anonymous')
+          routePath = "!/profiles/#{model.get 'uid'}"
+          app.router.navigate routePath, trigger: true
+
+  redirectAnonymous: ->
+    @getCurrentUser
+      success: (model, resp) ->
+        if model.get('is_anonymous')
+          app.router.navigate "", trigger: true
