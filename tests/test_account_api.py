@@ -44,6 +44,7 @@ def test_authorization():
     with app.test_client() as c:
         c.get(sessions_url)
         user = User.query.filter_by(email='test@example.com').first()
+        assert user is not None
         user.set_password('test').save()
 
         # assert session['is_anonymous'] == True
