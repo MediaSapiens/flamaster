@@ -4,6 +4,7 @@ import trafaret as t
 
 from datetime import datetime
 from flamaster.app import mail
+import trafaret as t
 
 import trafaret as t
 from trafaret.extras import KeysSubset
