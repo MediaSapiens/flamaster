@@ -36,7 +36,6 @@ def test_session_creation():
         j_resp = json.loads(resp.data)
 
         assert isinstance(j_resp['uid'], int)
-        assert j_resp['is_anonymous'] == False
 
 
 @request_context

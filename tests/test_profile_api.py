@@ -1,6 +1,6 @@
 from flask import json
 
-from flamaster.app import db
+from flamaster.app import db, app
 from flamaster.account.models import User
 
 from .conftest import login, url_client, create_user
@@ -20,7 +20,8 @@ profile_data = {
 
 def setup_module(module):
     db.create_all()
-    create_user()
+    with app.test_request_context('/'):
+        create_user()
 
 
 def teardown_module(module):
