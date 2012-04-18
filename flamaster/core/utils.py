@@ -69,6 +69,14 @@ def send_email(to, subject, body):
         mail.send(msg)
 
 
+def valid_request_form(data_form):
+    t.Dict(password=t.String, password_confirm=t.String).append(
+            change_password_validate).check(
+        {'password': data_form.get('password', None),
+         'password_confirm': data_form.get('password_confirm', None)})
+    return True
+
+
 def change_password_validate(data_validate):
     if not data_validate['password'] == data_validate['password_confirm']:
         raise t.DataError('Not equal')
