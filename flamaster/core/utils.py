@@ -3,15 +3,13 @@ import types
 import trafaret as t
 
 from datetime import datetime
-from flamaster.app import mail
-import trafaret as t
-
-import trafaret as t
 from trafaret.extras import KeysSubset
 
 from flask import current_app, request, g
 from flask.ext.mail import Message
 from flask.helpers import json, _assert_have_json
+
+from flamaster.app import mail
 
 
 class CustomEncoder(json.JSONEncoder):
