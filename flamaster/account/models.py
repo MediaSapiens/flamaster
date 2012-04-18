@@ -42,8 +42,10 @@ class CRUDMixin(object):
         """ method for building dictionary for model value-properties filled
             with data from mapped storage backend
         """
+        omit_values = ['password']
         return dict((c.name, getattr(self, c.name))
-              for c in class_mapper(self.__class__).mapped_table.c)
+              for c in class_mapper(self.__class__).mapped_table.c
+              if c.name not in omit_values)
 
 
 class User(db.Model, CRUDMixin):
@@ -71,7 +73,7 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def authenticate(cls, email, password):
-        user = cls.query.filter_by(email=email.lower()).first()
+        user = cls.query.filter_by(email=email.lower()).first_or_404()
         if user is not None:
             salt, hsh = user.password.split('$')
             if hsh == get_hexdigest(salt, password):
@@ -86,7 +88,8 @@ class User(db.Model, CRUDMixin):
     def validate_token(cls, token=None):
         if token is not None:
             key, hsh = token.split('$$')
-            user = cls.query.filter_by(email=base64.decodestring(key)).first()
+            user = cls.query.filter_by(email=base64.decodestring(key)).\
+                    first_or_404()
             if user and token == user.create_token():
                 return user
         return None
