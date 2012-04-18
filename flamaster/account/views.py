@@ -29,7 +29,6 @@ def request_reset():
 @account.route('/reset/<token>/', methods=['GET', 'POST'])
 def confirm_reset(token):
     user = User.validate_token(token) or abort(403)
-
     if len(request.form) and request.method == 'POST':
         try:
             validate_password_change(request.form.to_dict())
