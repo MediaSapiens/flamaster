@@ -1,10 +1,9 @@
 from flask import flash, request, redirect, render_template, url_for, abort
 
-from flamaster.core.utils import send_email, change_password_validate
+from flamaster.core.utils import send_email, valid_request_form
 
 from . import account
 from .models import User
-import trafaret as t
 
 __all__ = ['request_reset', 'confirm_reset']
 
@@ -29,11 +28,7 @@ def request_reset():
 def confirm_reset(token):
     user = User.validate_token(token) or abort(403)
     if len(request.form):
-        d = t.Dict(password=t.String, password_confirm=t.String).append(
-            change_password_validate)
-        d.check({'password': request.form.get('password', None),
-                 'password_confirm': request.form.get(
-                     'password_confirm', None)})
+        valid_request_form(request.form)
         user.set_password(request.form.get('password'))
         user.save()
     return render_template('password_reset_confirm.html', token=token)
