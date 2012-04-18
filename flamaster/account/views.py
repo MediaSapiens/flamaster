@@ -5,7 +5,6 @@ from flamaster.core.utils import send_email, validate_password_change
 
 from . import account
 from .models import User
-import trafaret as t
 
 
 __all__ = ['request_reset', 'confirm_reset']
