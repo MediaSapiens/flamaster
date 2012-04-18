@@ -3,6 +3,7 @@ import types
 
 from datetime import datetime
 from flamaster.app import mail
+import trafaret as t
 
 from flask import current_app, request
 from flask.ext.mail import Message
@@ -66,3 +67,9 @@ def send_email(to, subject, body):
         recipients = isinstance(to, basestring) and [to] or to
         msg = Message(subject=subject, body=body, recipients=recipients)
         mail.send(msg)
+
+
+def change_password_validate(data_validate):
+    if not data_validate['password'] == data_validate['password_confirm']:
+        raise t.DataError('Not equal')
+    return data_validate
