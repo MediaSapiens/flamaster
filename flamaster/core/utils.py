@@ -69,12 +69,10 @@ def send_email(to, subject, body):
         mail.send(msg)
 
 
-def valid_request_form(data_form):
-    t.Dict(password=t.String, password_confirm=t.String).append(
-            change_password_validate).check(
-        {'password': data_form.get('password', None),
-         'password_confirm': data_form.get('password_confirm', None)})
-    return True
+def valid_request(json_data):
+    valid_dict = t.Dict(password=t.String, password_confirm=t.String).append(
+        change_password_validate).check(json_data)
+    return valid_dict
 
 
 def change_password_validate(data_validate):
