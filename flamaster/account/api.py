@@ -84,8 +84,6 @@ class ProfileResource(BaseResource):
         else:
             id == self.current_user or abort(403)
             user = User.query.get_or_404(id=self.current_user)
-        print 'user', user
-        user or abort(404)
 
         data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
