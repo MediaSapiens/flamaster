@@ -1,5 +1,6 @@
 {SignupView} = require 'views/signup_view'
 {LoginView} = require 'views/login_view'
+{ProfileWizardView} = require 'views/profile_wizard_view'
 
 class exports.MainRouter extends Backbone.Router
   routes:
@@ -8,19 +9,18 @@ class exports.MainRouter extends Backbone.Router
     '!/signup': "signup"
     '!/signup/complete': "signupComplete"
     '!/login': "login"
+    '!/validate/:token': "activate"
 
   initialize: ->
     @signupView = new SignupView
 
-  index: ->
-    app.render()
-
+  index: -> app.render()
+  login: -> app.render(LoginView)
   signup: -> @bindInject @signupView, {action: 'signup:start'}
   signupComplete: -> @bindInject @signupView, {action: 'signup:complete'}
+  activate: (token) -> @bindInject(new ProfileWizardView(), {token: token, action: 'activate:start'})
 
 
-  login: ->
-    app.render(LoginView)
 
   bindInject: (view, options) ->
     mediator.on options.action, (model) =>

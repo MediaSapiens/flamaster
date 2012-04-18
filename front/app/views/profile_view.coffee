@@ -1,8 +1,6 @@
 {ProfileModel} = require 'models/profile_model'
-
 {GenericView} = require 'views/generic_view'
 
-{baseContext, serializeForm} = require 'helpers'
 
 class exports.ProfileView extends GenericView
   className: 'profile'
@@ -27,9 +25,9 @@ class exports.ProfileView extends GenericView
     switch options.action
       when 'profile:edit' then template = require './templates/profile_form'
 
-    @$el.html @template(baseContext)
+    @$el.html @template(@baseContext)
     if template?
-      @$el.find("#profile-container").html(template(baseContext))
+      @$el.find("#profile-container").html(template(@baseContext))
     @el
 
   push: (options) ->
@@ -43,7 +41,7 @@ class exports.ProfileView extends GenericView
           console.log 'error', args
 
   saveProfile: (ev) ->
-    data = serializeForm($(ev.target).parents 'form')
+    data = @serializeForm($(ev.target).parents 'form')
     @model.save data,
       success: (args...) ->
         console.log 'success:', args

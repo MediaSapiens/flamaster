@@ -1,7 +1,6 @@
 {LoginModel} = require 'models/session_model'
 {GenericView} = require 'views/generic_view'
 
-{baseContext, serializeForm} = require 'helpers'
 
 class exports.LoginView extends GenericView
   className: 'login'
@@ -17,12 +16,12 @@ class exports.LoginView extends GenericView
         @model.set model.toJSON(), silent: true
 
   render: ->
-    @$el.html @template(baseContext)
+    @$el.html @template(@baseContext)
     @el
 
   submit: (ev) ->
     @clearErrors()
-    data = serializeForm($(ev.target).parents 'form')
+    data = @serializeForm($(ev.target).parents 'form')
     # @model.set data, silent: true
     @model.save data,
       success: (model, response) ->

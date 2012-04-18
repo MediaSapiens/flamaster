@@ -1,7 +1,6 @@
 {SessionModel} = require 'models/session_model'
 {GenericView} = require 'views/generic_view'
 
-{baseContext, serializeForm} = require 'helpers'
 
 class exports.SignupView extends GenericView
   className: 'signup'
@@ -13,7 +12,7 @@ class exports.SignupView extends GenericView
 
   render: (options) ->
     console.log options
-    @$el.html(options.model.template baseContext)
+    @$el.html(options.model.template @baseContext)
     @el
 
   push: (options) ->
@@ -23,7 +22,7 @@ class exports.SignupView extends GenericView
     model = new SessionModel
     $form = $(ev.target).parents 'form'
     @clearErrors()
-    formData = serializeForm $form
+    formData = @serializeForm $form
     model.save formData,
       success: (model, response) ->
         response.uid? and app.router.navigate "!/signup/complete", trigger: true
