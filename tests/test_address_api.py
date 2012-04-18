@@ -1,5 +1,5 @@
 from flask.helpers import json
-from flamaster.app import db
+from flamaster.app import db, app
 from flamaster.account.models import Address
 
 from conftest import url_client, login, logout, create_user
@@ -21,7 +21,8 @@ dafault_address = {'user_id': 1,
 
 def setup_module(module):
     db.create_all()
-    create_user()
+    with app.test_request_context('/'):
+        create_user()
 
 
 @url_client('account.addresses')
