@@ -19,7 +19,7 @@ class SessionResource(BaseResource):
     validation = t.Dict({'email': t.Email}).allow_extra('*')
 
     def get(self, id=None):
-        session.update({'is_anonymous': not bool(session.get('uid')),
+        session.update({'is_anonymous': not bool(self.current_user),
                         'id': session.get('id', uuid.uuid4().hex)})
         return jsonify(dict(session))
 
@@ -58,9 +58,6 @@ class SessionResource(BaseResource):
 
     def _authenticate(self, data_dict):
         user = User.authenticate(**data_dict)
-        if user is None:
-            raise t.DataError({'email': "There is no user matching this "
-            "credentials"})
         session.update({'uid': user.id, 'is_anonymous': False})
         return data_dict
 
@@ -72,17 +69,24 @@ class ProfileResource(BaseResource):
                          'phone': t.String})
 
     def get(self, id=None):
-        user = User.get(self.current_user) or abort(404)
-        response = user.as_dict()
-        response['password'] = ''
-        return jsonify(response)
+        id == self.current_user or abort(403)
+        user = User.query.get_or_404(id=self.current_user)
+        return jsonify(user.as_dict())
 
-    # def post(self):
-    #     pass
+    def post(self):
+        user = User.validate_token(request.json.get('token'))
+        return jsonify(user.as_dict(), status=200)
 
     def put(self, id):
-        assert id == session.get('uid')
-        user = User.get(id) or abort(404)
+        user = None
+        if 'token' in request.json:
+            user = User.validate_token(request.json['token'])
+        else:
+            id == self.current_user or abort(403)
+            user = User.query.get_or_404(id=self.current_user)
+        print 'user', user
+        user or abort(404)
+
         data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
             self.validation.check(data)
@@ -91,11 +95,11 @@ class ProfileResource(BaseResource):
         except t.DataError as e:
             response, status = e.as_dict(), 400
 
-        response['password'] = ''
         return jsonify(response, status=status)
 
     def delete(self, id):
-        user = User.get(id) or abort(404)
+        id == self.current_user or abort(403)
+        user = User.query.get_or_404(id=self.current_user)
         user.delete()
         return jsonify({}, status=200)
 
@@ -115,7 +119,7 @@ class AddressResource(BaseResource):
                          ).allow_extra('*')
 
     def get(self, id=None):
-        uid = session.get('uid') or abort(401)
+        uid = self.current_user or abort(401)
         if id is None:
             addresses = Address.query.filter_by(user_id=uid)
             response = [addr.as_dict() for addr in addresses]
@@ -126,7 +130,7 @@ class AddressResource(BaseResource):
         return jsonify(response)
 
     def post(self):
-        uid = session.get('uid') or abort(401)
+        uid = self.current_user or abort(401)
         data = request.json or abort(400)
         data.update({'user_id': uid})
         try:
@@ -139,7 +143,7 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        uid = session.get('uid') or abort(401)
+        uid = self.current_user or abort(401)
         data = request.json or abort(400)
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
@@ -153,7 +157,7 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def delete(self, id):
-        uid = session.get('uid') or abort(401)
+        uid = self.current_user or abort(404)
         try:
             t.Dict({'id': t.Int}).check({'id': id})
             Address.query.filter_by(id=id, user_id=uid).delete()
