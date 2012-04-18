@@ -28,7 +28,7 @@ def request_reset():
 def confirm_reset(token):
     user = User.validate_token(token) or abort(403)
     password = request.form.get('password', None)
-    again_password = request.form.get('again_password', None)
-    if password and again_password and password == again_password:
+    password_confirm = request.form.get('password_confirm', None)
+    if password and password_confirm and password == password_confirm:
         user.set_password(password)
     return render_template('password_reset_confirm.html', token=token)
