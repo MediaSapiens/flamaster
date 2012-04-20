@@ -1,0 +1,6 @@
+{{#each routes}}
+<li class="n-{{this.id}}"><a href="/{{this.path}}">{{this.title}}</a></li>
+{{/each}}
+{{#unless routes}}
+<li><a href="#">there is no routes</a></li>
+{{/unless}}
