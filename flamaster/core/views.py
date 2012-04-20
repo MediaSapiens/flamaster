@@ -8,4 +8,4 @@ __all__ = ['index']
 
 @core.route('/')
 def index():
-    return render_template('index.html', **{})
+    return render_template('base.html', **{})

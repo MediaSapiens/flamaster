@@ -1,0 +1,61 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Findevent</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+
+  <script src="{{ url_for('static', filename='js/vendor/jquery-1.7.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/underscore-1.3.3.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/backbone-0.9.2.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/handlebars-1.0.0.beta.6.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/require-1.0.7.js') }}"></script>
+  <!--[if lt IE 9]>
+  <script>
+    'abbr article aside audio canvas details figcaption figure footer header hgroup mark meter nav output progress section summary time video'.replace(/\w+/g,function(n){document.createElement(n)})
+  </script>
+  <![endif]-->
+  {#{% assets "js_vendor" %}<script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}#}
+  <script>
+  require.config({
+      baseUrl: '/static/js/',
+      paths: {
+        text: 'vendor/require-text-1.0.7'
+      },
+      waitSeconds: 1,
+      // For easier development, disable browser caching:
+      urlArgs: 'bust=' +  (new Date()).getTime()
+  });
+  require(['application'], function (Application) {
+    Application.initialize();
+  });
+  </script>
+
+  {% block extra_js %}
+
+  {% endblock %}
+</head>
+<body>
+{% block content %}
+<div id="dialogs"></div>
+<div class="container">
+  <div class="row">
+    <div class="span12" id="navigation-wrapper">
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="span12" id="content">
+      <p id="startup-loading">Loading…</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+</body>
+</html>
