@@ -58,12 +58,12 @@ def test_valid_token():
 def test_valid_token_not_valid_data():
     url = url_for('account.confirm_reset', token=valid_user().create_token())
     with app.test_client() as c:
-        resp = c.post(url, data={'password': '111', 'password_confirm': None})
+        resp = c.post(url, data={'password': '111', 'password_confirm': ''})
         assert resp.status_code == 200
-        assert '' in resp.data
-        resp = c.post(url, data={'password': None, 'password_confirm': '111'})
+        assert 'blank value is not allowed' in resp.data
+        resp = c.post(url, data={'password': '', 'password_confirm': '111'})
         assert resp.status_code == 200
-        assert '' in resp.data
+        assert 'blank value is not allowed' in resp.data
         resp = c.post(url, data={'password': '111', 'password_confirm': '222'})
         assert resp.status_code == 200
         assert 'Not equal' in resp.data

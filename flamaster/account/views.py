@@ -36,7 +36,7 @@ def confirm_reset(token):
             return render_template('password_reset_confirm.html',
                                    token=token, error=e)
 
-        user.set_password(request.form.get('password')).save()
+        user.set_password(request.form['password']).save()
         return redirect(url_for('core.index'))
 
     return render_template('password_reset_confirm.html', token=token)
