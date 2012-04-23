@@ -77,5 +77,5 @@ def valid_request(json_data):
 
 def change_password_validate(data_validate):
     if not data_validate['password'] == data_validate['password_confirm']:
-        raise t.DataError('Not equal')
+        raise t.DataError({'Not equal': 'Not equal'})
     return data_validate

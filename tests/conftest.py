@@ -50,3 +50,7 @@ def url_client(endpoint, **url_kwargs):
 
 def create_user():
     return User(email='test@example.com').set_password('test').save()
+
+
+def valid_user():
+    return User.query.filter_by(email='test@example.com').one()

@@ -84,7 +84,7 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def validate_token(cls, token=None):
-        if token is not None:
+        if token is not None and '$$' in token:
             key, hsh = token.split('$$')
             user = cls.query.filter_by(email=base64.decodestring(key)).first()
             if user and token == user.create_token():
