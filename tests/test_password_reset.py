@@ -53,7 +53,6 @@ def test_valid_token():
         assert resp.status_code == 200
 
 
-# ?????
 @request_context
 def test_valid_token_not_valid_data():
     url = url_for('account.confirm_reset', token=valid_user().create_token())
