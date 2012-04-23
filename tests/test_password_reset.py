@@ -1,7 +1,8 @@
-from flamaster.app import db, app
 from conftest import url_client, create_user, valid_user, request_context
-from flamaster.app import mail
 from flask import url_for
+
+from flamaster.app import mail
+from flamaster.app import db, app
 
 
 def setup_module(module):
@@ -52,22 +53,26 @@ def test_valid_token():
         resp = c.get(url)
         assert resp.status_code == 200
 
-# ?????
+
 @request_context
 def test_valid_token_not_valid_data():
     url = url_for('account.confirm_reset', token=valid_user().create_token())
     with app.test_client() as c:
-        resp = c.post(url, data={'password': '111', 'password_confirm': ''})
+        resp = c.post(url, data={'password': '111', 'password_confirm': None})
         assert resp.status_code == 200
-        assert 'blank value is not allowed' in resp.data
-        resp = c.post(url, data={'password': '', 'password_confirm': '111'})
+        assert '' in resp.data
+
+        resp = c.post(url, data={'password': None, 'password_confirm': '111'})
         assert resp.status_code == 200
-        assert 'blank value is not allowed' in resp.data
+        assert '' in resp.data
+
         resp = c.post(url, data={'password': '111', 'password_confirm': '222'})
         assert resp.status_code == 200
         assert 'Not equal' in resp.data
+
         resp = c.post(url, data={'password': '111', 'password_confirm': '111'})
-        assert resp.status_code == 302
+        assert resp.status_code == 200
+        assert '' in resp.data
 
 
 def teardown_module(module):
