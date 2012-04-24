@@ -9,6 +9,7 @@ SQLALCHEMY_ECHO = False
 DEFAULT_PAGE_SIZE = 100
 DEFAULT_MAIL_SENDER = "<noreply@example.com>"
 MAIL_FAIL_SILENTLY = True
+
 ADMINS = ('admin@example.com', )
 
 ASSETS_DEBUG = DEBUG
