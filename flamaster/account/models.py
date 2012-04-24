@@ -128,6 +128,16 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}'.format(salt, hsh)
         return self
 
+    def save(self, commit=True):
+        self_dict = self.as_dict().get('email', False)
+        if self_dict not in app.config['ADMINS']:
+            self.role_id = Role.query.filter_by(name='user').one().id
+        elif self_dict in app.config['ADMINS']:
+            self.role_id = Role.query.filter_by(name='administrator').one().id
+        db.session.add(self)
+        commit and db.session.commit()
+        return self
+
 
 class Address(db.Model, CRUDMixin):
     """
@@ -190,6 +200,7 @@ class Permissions(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'permissions'
 
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String(255))
 
