@@ -9,14 +9,16 @@ SQLALCHEMY_ECHO = False
 DEFAULT_PAGE_SIZE = 100
 DEFAULT_MAIL_SENDER = "<noreply@example.com>"
 MAIL_FAIL_SILENTLY = True
+
+ASSETS_DEBUG = DEBUG
+# ASSETS_MANIFEST = False
+ASSETS_CACHE = True
+
 ADMINS = ('admin@example.com', )
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
 
-ASSETS_DEBUG = DEBUG
-# ASSETS_MANIFEST = False
-ASSETS_CACHE = True
 
 try:
     from local_settings import *
