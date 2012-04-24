@@ -6,7 +6,9 @@ from time import mktime
 
 from sqlalchemy.orm import class_mapper
 
-from flamaster.app import db
+from flamaster.app import db, app
+from sqlalchemy import Table
+
 from flamaster.core.utils import get_hexdigest
 
 
@@ -114,6 +116,16 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}'.format(salt, hsh)
         return self
 
+    def save(self, commit=True):
+        self_dict = self.as_dict().get('email', False)
+        if self_dict not in app.config['ADMINS']:
+            self.role_id = Role.query.filter_by(name='user').one().id
+        elif self_dict in app.config['ADMINS']:
+            self.role_id = Role.query.filter_by(name='administrator').one().id
+        db.session.add(self)
+        commit and db.session.commit()
+        return self
+
 
 class Address(db.Model, CRUDMixin):
     """
@@ -141,11 +153,52 @@ class Address(db.Model, CRUDMixin):
         return "<Address:('%s','%s')>" % (self.city, self.street)
 
 
+# association table
+role_permissions = Table(
+    'role_permissions', db.metadata,
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+    db.Column('permissions_id', db.Integer, db.ForeignKey('permissions.id')))
+
+
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
+    __tablename__ = 'role'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
                             backref=db.backref('role', lazy='joined'))
+    permissions = db.relationship('Permissions', secondary=role_permissions,
+                                  lazy='dynamic',
+                                  backref=db.backref('role', lazy='joined'))
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "<Role: %r>" % self.name
+
+    @classmethod
+    def is_unique(cls, name):
+        return cls.query.filter_by(name=name).count() == 0
+
+
+class Permissions(db.Model, CRUDMixin):
+
+    __table_args__ = {'extend_existing': True}
+    __tablename__ = 'permissions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "<Permissions: %r>" % self.name
+
+    @classmethod
+    def is_unique(cls, name):
+        return cls.query.filter_by(name=name).count() == 0
