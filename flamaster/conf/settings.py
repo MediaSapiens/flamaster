@@ -14,7 +14,6 @@ ASSETS_DEBUG = False
 ASSETS_MANIFEST = False
 ASSETS_CACHE = False
 
-
 try:
     from local_settings import *
 except ImportError:
