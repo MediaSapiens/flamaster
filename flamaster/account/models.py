@@ -130,7 +130,7 @@ class User(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         if not self.role_id and self.email not in app.config['ADMINS']:
-            self.role_id = Role.get_or_create().id
+            self.role_id = Role.get_or_create('user').id
         elif not self.role_id and self.email in app.config['ADMINS']:
             self.role_id = Role.get_or_create('administrator').id
         return super(User, self).save(commit=commit)
