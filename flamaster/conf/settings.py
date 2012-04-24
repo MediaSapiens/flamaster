@@ -8,6 +8,7 @@ SQLALCHEMY_ECHO = False
 
 DEFAULT_MAIL_SENDER = "<noreply@findevent.com>"
 MAIL_FAIL_SILENTLY = True
+ADMINS = ('admin@findevent.com', )
 
 ASSETS_DEBUG = False
 ASSETS_MANIFEST = False
