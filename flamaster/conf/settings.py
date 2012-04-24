@@ -19,7 +19,6 @@ ADMINS = ('admin@example.com', )
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
 
-
 try:
     from local_settings import *
 except ImportError:
