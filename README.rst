@@ -22,3 +22,13 @@ Frontent development
 ____________________
 
 We use `brunch.io <http://brunch.io>`__ for the client-side with `coffee-script <http://coffeescript.org>`__ and eco templates
+
+================
+Running project:
+================
+
+# At once setup virtualenv, next
+
+./manage.py createall
+./manage.py runserver
+
