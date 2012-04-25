@@ -1,7 +1,8 @@
 define [
   'chaplin/controller',
+  'models/user',
   'views/index_view', 'views/signup_view'
-], (Controller, IndexView, SignUpView) ->
+], (Controller, User, IndexView, SignUpView) ->
   'use strict'
 
   class PageController extends Controller
@@ -12,4 +13,6 @@ define [
 
     index: -> @view = new IndexView
 
-    signup: -> @view = new SignUpView
+    signup: ->
+      nUser = User.extend urlRoot: '/account/sessions'
+      @view = new SignUpView model: new nUser
