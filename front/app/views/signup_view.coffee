@@ -26,13 +26,15 @@ class exports.SignupView extends GenericView
     model.save formData,
       success: (model, response) ->
         response.uid? and app.router.navigate "!/signup/complete", trigger: true
-      error: (model, response) =>
-        if response.responseText?
-          for field, message of JSON.parse(response.responseText)
-            @renderError field, message
-        else
-          for field, message of response
-            @renderError field, message
+      error: (model, response) => @displayErrors
 
     # error event listener
     return false
+
+  displayErrors: (model, response) ->
+    if response.responseText?
+      for field, message of JSON.parse(response.responseText)
+        @renderError field, message
+    else
+      for field, message of response
+        @renderError field, message
