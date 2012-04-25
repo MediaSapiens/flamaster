@@ -12,8 +12,7 @@ __all__ = ['request_reset', 'confirm_reset']
 @account.route('/reset/', methods=['GET', 'POST'])
 def request_reset():
     if request.method == 'POST' and request.form.get('email'):
-        user = User.query.filter_by(email=request.form.get('email')).first_or_404()
-
+        user = User.query.filter_by(email=request.form['email']).first_or_404()
         token = user.create_token()
         # Create the message
         send_email(to=request.form['email'],
@@ -32,12 +31,9 @@ def confirm_reset(token):
         try:
             valid_request(request.form.to_dict())
         except t.DataError as e:
-            error = e.as_dict().get('password', False)\
-                    or e.as_dict().get('password_confirm', False)\
-                    or e.as_dict().get('Not equal', False)
+            error = " ".join(e.as_dict().values())
             return render_template('password_reset_confirm.html',
                                    token=token, error=error)
-        user.set_password(request.form.get('password'))
-        user.save()
+        user.set_password(request.form.get('password')).save()
         return redirect(url_for('core.index'))
     return render_template('password_reset_confirm.html', token=token)

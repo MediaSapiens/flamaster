@@ -81,7 +81,7 @@ class ProfileResource(BaseResource):
         if 'token' in request.json:
             user = User.validate_token(request.json['token'])
 
-        data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
+        data = self.extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
             self.validation.check(data)
             user.update(**data)
