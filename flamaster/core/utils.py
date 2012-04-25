@@ -69,13 +69,13 @@ def send_email(to, subject, body):
         mail.send(msg)
 
 
-def valid_request(json_data):
-    valid_dict = t.Dict(password=t.String, password_confirm=t.String).append(
-        change_password_validate).check(json_data)
-    return valid_dict
+def validate_password_change(data):
 
+    def cmp_words(dikt):
+        response = {'password': dikt['password']}
+        if dikt['password_confirm'] != dikt['password']:
+            response['password'] = t.DataError("Passwords don't match")
+        return response
 
-def change_password_validate(data_validate):
-    if not data_validate['password'] == data_validate['password_confirm']:
-        raise t.DataError({'Not equal': 'Not equal'})
-    return data_validate
+    valid_dict = t.Dict({t.KeysSubset(['password', 'password_confirm']): cmp_words})
+    return valid_dict.check(data)

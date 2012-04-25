@@ -1,7 +1,7 @@
 from flask import flash, request, redirect, render_template, url_for, abort
 import trafaret as t
 
-from flamaster.core.utils import send_email, valid_request
+from flamaster.core.utils import send_email, validate_password_change
 
 from . import account
 from .models import User
@@ -21,6 +21,7 @@ def request_reset():
         flash("We sent you an email with the special link to restore "
               "your password", 'success')
         return redirect(url_for('.request_reset'))
+
     return render_template('password_reset_request.html')
 
 
@@ -29,11 +30,13 @@ def confirm_reset(token):
     user = User.validate_token(token) or abort(403)
     if len(request.form) and request.method == 'POST':
         try:
-            valid_request(request.form.to_dict())
+            validate_password_change(request.form.to_dict())
         except t.DataError as e:
             error = " ".join(e.as_dict().values())
             return render_template('password_reset_confirm.html',
                                    token=token, error=error)
+
         user.set_password(request.form.get('password')).save()
         return redirect(url_for('core.index'))
+
     return render_template('password_reset_confirm.html', token=token)

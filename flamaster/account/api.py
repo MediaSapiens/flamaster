@@ -40,10 +40,8 @@ class SessionResource(BaseResource):
     def put(self, id):
         data, status = request.json or abort(400), 202
         validation = t.Dict({'email': t.Email, 'password':
-            t.String}).append(self._authenticate)
+            t.String}).ignore_extra('*').append(self._authenticate)
         try:
-            data = {'email': data.get('email'), 'password':
-                    data.get('password')}
             validation.check(data)
             response = dict(session)
         except t.DataError as e:
@@ -66,7 +64,7 @@ class SessionResource(BaseResource):
 class ProfileResource(BaseResource):
 
     validation = t.Dict({'first_name': t.String, 'last_name': t.String,
-                         'phone': t.String})
+                         'phone': t.String}).ignore_extra('*')
 
     def get(self, id=None):
         id == g.user.id or abort(403)
@@ -80,11 +78,8 @@ class ProfileResource(BaseResource):
         user = g.user
         if 'token' in request.json:
             user = User.validate_token(request.json['token'])
-
-        data = self.extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
-            self.validation.check(data)
-            user.update(**data)
+            user.update(**self.validation.check(request.json))
             response, status = user.as_dict(), 202
         except t.DataError as e:
             response, status = e.as_dict(), 400
@@ -121,8 +116,7 @@ class AddressResource(BaseResource):
         data = request.json or abort(400)
         data.update({'user_id': uid})
         try:
-            self.validation.check(data)
-            addr = Address.create(**data)
+            addr = Address.create(**self.validation.check(data))
             data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
@@ -135,9 +129,8 @@ class AddressResource(BaseResource):
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            self.validation.check(data)
             addr = Address.query.filter_by(id=id, user_id=uid).one()
-            addr.update(**data)
+            addr.update(**self.validation.check(data))
             data, status = addr.as_dict(), 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
@@ -146,7 +139,6 @@ class AddressResource(BaseResource):
     def delete(self, id):
         uid = self.current_user or abort(404)
         try:
-            t.Dict({'id': t.Int}).check({'id': id})
             Address.query.filter_by(id=id, user_id=uid).delete()
             data, status = {}, 200
         except t.DataError as e:
