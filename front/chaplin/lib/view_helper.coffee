@@ -54,5 +54,7 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
     Handlebars.helpers.with.call(this, context, options)
 
   Handlebars.registerHelper 'form', (context, options) ->
-    console.log context, options
+    console.log 'context:', context
+    console.log 'options:', options
+    options.fn(context)
   null

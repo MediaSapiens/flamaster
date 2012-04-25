@@ -7,7 +7,7 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
     # Set your application name here so
     # the document title is set properly to
     # “Site title – Controller title” (see adjustTitle)
-    siteTitle = 'Chaplin Example Application'
+    siteTitle = 'Findevent'
 
     previousController: null
 
