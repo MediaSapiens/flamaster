@@ -15,6 +15,9 @@ from flamaster.core.utils import get_hexdigest
 class CRUDMixin(object):
     """ Basic CRUD mixin
     """
+
+    id = db.Column(db.Integer, primary_key=True)
+
     @classmethod
     def get(cls, id):
         if id is not None:
@@ -52,8 +55,8 @@ class CRUDMixin(object):
 
 class User(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
+    __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(20))
     first_name = db.Column(db.String(255))
@@ -65,7 +68,7 @@ class User(db.Model, CRUDMixin):
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
                                 cascade="all, delete, delete-orphan")
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def __init__(self, email):
         self.email = email
@@ -98,7 +101,13 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def create(cls, **kwargs):
+        admin = Role.get_or_create(name='administrator')
+        user = Role.get_or_create(name='user')
         instance = cls(**kwargs).set_password('*')
+        if instance.email in app.config['ADMINS']:
+            instance.role = admin
+        else:
+            instance.role = user
         return instance.save()
 
     def create_token(self):
@@ -119,24 +128,14 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}'.format(salt, hsh)
         return self
 
-    def save(self, commit=True):
-        self_dict = self.as_dict().get('email', False)
-        if self_dict not in app.config['ADMINS']:
-            self.role_id = Role.query.filter_by(name='user').one().id
-        elif self_dict in app.config['ADMINS']:
-            self.role_id = Role.query.filter_by(name='administrator').one().id
-        db.session.add(self)
-        commit and db.session.commit()
-        return self
-
 
 class Address(db.Model, CRUDMixin):
     """
         representing address data for users
     """
     __table_args__ = {'extend_existing': True}
+    __tablename__ = 'addresses'
 
-    id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(255), nullable=False)
     street = db.Column(db.String(255), nullable=False)
     apartment = db.Column(db.String(20))
@@ -144,7 +143,7 @@ class Address(db.Model, CRUDMixin):
     type = db.Column(db.Enum('billing', 'delivery', name='addr_types'),
                      nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def __init__(self, **kwargs):
         assert 'city' in kwargs and 'street' in kwargs
@@ -159,16 +158,15 @@ class Address(db.Model, CRUDMixin):
 # association table
 role_permissions = Table(
     'role_permissions', db.metadata,
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('roles.id')),
     db.Column('permissions_id', db.Integer, db.ForeignKey('permissions.id')))
 
 
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'role'
+    __tablename__ = 'roles'
 
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
                             backref=db.backref('role', lazy='joined'))
@@ -183,8 +181,8 @@ class Role(db.Model, CRUDMixin):
         return "<Role: %r>" % self.name
 
     @classmethod
-    def is_unique(cls, name):
-        return cls.query.filter_by(name=name).count() == 0
+    def get_or_create(cls, name):
+        return cls.query.filter_by(name=name).first() or cls.create(name=name)
 
 
 class Permissions(db.Model, CRUDMixin):
@@ -192,7 +190,6 @@ class Permissions(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'permissions'
 
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String(255))
 
@@ -201,7 +198,3 @@ class Permissions(db.Model, CRUDMixin):
 
     def __repr__(self):
         return "<Permissions: %r>" % self.name
-
-    @classmethod
-    def is_unique(cls, name):
-        return cls.query.filter_by(name=name).count() == 0
