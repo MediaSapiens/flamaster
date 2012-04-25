@@ -4,6 +4,7 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
 
   # Registers several Handlebars helpers
 
+  prepareAttrs = (attrs) -> ("#{attr}=#{value}" for attr, value of attrs).join " "
   # Partials
   # --------
 
@@ -53,8 +54,15 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
     context = mediator.user or {}
     Handlebars.helpers.with.call(this, context, options)
 
+  Handlebars.registerHelper 'labelFor', (name, text) ->
+    "<label for='id_#{name}'>#{text}</label>"
+
+  Handlebars.registerHelper 'textField', (name, placeholder) ->
+    "<input type='text' name='#{name}' id='id_#{name}' placeholder='#{placeholder}' />"
+
+  # Helper for a form rendering
   Handlebars.registerHelper 'form', (context, options) ->
-    console.log 'context:', context
-    console.log 'options:', options
-    options.fn(context)
+    attrs = _(@form).defaults(options.hash)
+    "<form #{prepareAttrs(attrs)}>#{options.fn(context)}</form>"
+
   null
