@@ -3,7 +3,7 @@ class exports.SessionModel extends Backbone.Model
 
     emailRegex: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
 
-    initial:
+    defaults:
       is_anonymous: true
 
 
