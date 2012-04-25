@@ -5,7 +5,7 @@ from datetime import datetime
 from flamaster.app import mail
 import trafaret as t
 
-from flask import current_app, request
+from flask import current_app, request, g
 from flask.ext.mail import Message
 from flask.helpers import json, _assert_have_json
 
@@ -79,3 +79,9 @@ def validate_password_change(data):
 
     valid_dict = t.Dict({t.KeysSubset(['password', 'password_confirm']): cmp_words})
     return valid_dict.check(data)
+
+
+def check_permission(name):
+    from flamaster.account.models import Role
+    return bool(
+        Role.get(g.user.role_id).permissions.filter_by(name=name).first())

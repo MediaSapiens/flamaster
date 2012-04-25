@@ -31,7 +31,6 @@ def signal_router(sender, changes):
         except KeyError as e:
             pass
 
-
 models_committed.connect(signal_router)
 
 
@@ -40,6 +39,5 @@ def propagate_user(app):
         g.user = User.get(session['uid'])
     else:
         g.user = User(email='nobody@example.com')
-
 
 request_started.connect(propagate_user)
