@@ -39,7 +39,7 @@ def propagate_user(app):
     if 'uid' in session:
         g.user = User.get(session['uid'])
     else:
-        g.user = None
+        g.user = User(email='nobody@example.com')
 
 
 request_started.connect(propagate_user)

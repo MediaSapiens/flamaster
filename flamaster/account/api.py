@@ -1,6 +1,6 @@
 import uuid
 
-from flask import abort, request, session
+from flask import abort, g, request, session
 
 import trafaret as t
 
@@ -69,21 +69,17 @@ class ProfileResource(BaseResource):
                          'phone': t.String})
 
     def get(self, id=None):
-        id == self.current_user or abort(403)
-        user = User.query.get_or_404(id=self.current_user)
-        return jsonify(user.as_dict())
+        id == g.user.id or abort(403)
+        return jsonify(g.user.as_dict())
 
     def post(self):
         user = User.validate_token(request.json.get('token'))
         return jsonify(user.as_dict(), status=200)
 
     def put(self, id):
-        user = None
+        user = g.user
         if 'token' in request.json:
             user = User.validate_token(request.json['token'])
-        else:
-            id == self.current_user or abort(403)
-            user = User.query.get_or_404(id=self.current_user)
 
         data = self.__extract_keys(request.json, ['first_name', 'last_name', 'phone'])
         try:
@@ -96,9 +92,8 @@ class ProfileResource(BaseResource):
         return jsonify(response, status=status)
 
     def delete(self, id):
-        id == self.current_user or abort(403)
-        user = User.query.get_or_404(id=self.current_user)
-        user.delete()
+        id == g.user.id or abort(403)
+        g.user.delete()
         return jsonify({}, status=200)
 
 
