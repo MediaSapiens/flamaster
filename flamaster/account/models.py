@@ -4,11 +4,10 @@ import random
 from datetime import datetime
 from time import mktime
 
+from sqlalchemy import Table
 from sqlalchemy.orm import class_mapper
 
 from flamaster.app import db, app
-from sqlalchemy import Table
-
 from flamaster.core.utils import get_hexdigest
 
 
@@ -172,7 +171,6 @@ role_permissions = Table(
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
@@ -195,7 +193,6 @@ class Role(db.Model, CRUDMixin):
 class Permissions(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'permissions'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
