@@ -1,8 +1,13 @@
-from flamaster.core.utils import check_permission
 from flask import g, url_for
-from flamaster.app import db, app
 from conftest import create_user, request_context, login
+
+from flamaster.app import db, app
 from flamaster.account.models import Role, User, Permissions
+from flamaster.core.utils import check_permission
+
+@app.teardown_request
+def teardown_request(exception=None):
+    print dir(g)
 
 
 def setup_module(module):
@@ -20,6 +25,7 @@ def test_save_in_user_check_permission():
         user = User.query.filter_by(email='test@example.com').first()
         assert user is not None
         user.set_password('test').save()
+
         Permissions.create(name='test_permissions')
         role = Role.get(user.role_id)
         role.permissions.append(Permissions(name='test_permissions_in_role'))
@@ -33,6 +39,14 @@ def test_save_in_user_check_permission():
 
         assert check_permission('test_permissions') == False
         assert check_permission('test_permissions_in_role') == True
+
+        login(c, 'test@example.com', 'test')
+        assert getattr(g, 'user', False) == None
+        Permissions.create(name='test_permissions1')
+        Role.get(user.role_id).permissions.append(
+            Permissions('test_permissions_in_role2'))
+        assert check_permission('test_permissions1') == False
+        assert check_permission('test_permissions_in_role2') == True
 
 
 def teardown_module(module):

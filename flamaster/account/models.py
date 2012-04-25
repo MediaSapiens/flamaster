@@ -128,13 +128,6 @@ class User(db.Model, CRUDMixin):
         self.password = '{}${}'.format(salt, hsh)
         return self
 
-    def save(self, commit=True):
-        if not self.role_id and self.email not in app.config['ADMINS']:
-            self.role_id = Role.get_or_create('user').id
-        elif not self.role_id and self.email in app.config['ADMINS']:
-            self.role_id = Role.get_or_create('administrator').id
-        return super(User, self).save(commit=commit)
-
 
 class Address(db.Model, CRUDMixin):
     """
@@ -172,7 +165,6 @@ role_permissions = Table(
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
@@ -195,7 +187,6 @@ class Role(db.Model, CRUDMixin):
 class Permissions(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'permissions'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
