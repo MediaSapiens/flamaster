@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 
-# from flask.ext.assets import Environment, Bundle
+from flask.ext.assets import Environment
 from flask.ext.mail import Mail
 
 import os
@@ -18,6 +18,10 @@ else:
 
 mail = Mail(app)
 db = SQLAlchemy(app)
+assets = Environment(app)
+
+assets.register('style_base', 'less/style.less', filters='less',
+                output='gen/style.css')
 
 
 from core import core
@@ -40,8 +44,6 @@ def page_not_found(error):
 #     return app
 
 
-# def register_assets(app):
-#     assets = Environment(app)
 
 
 #     js_libs = ['jquery-1.7.1', 'underscore-1.3.1', 'backbone-0.9.1',
@@ -64,4 +66,3 @@ def page_not_found(error):
     # 'pricing', 'product', 'reporting', 'statistic', 'stock', 'tax'
 
 # app = register_blueprints(app, blueprints)
-# app = register_assets(app)

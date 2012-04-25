@@ -9,6 +9,11 @@ SQLALCHEMY_ECHO = False
 DEFAULT_MAIL_SENDER = "<noreply@findevent.com>"
 MAIL_FAIL_SILENTLY = True
 
+ASSETS_DEBUG = False
+ASSETS_MANIFEST = False
+ASSETS_CACHE = False
+
+
 try:
     from local_settings import *
 except ImportError:

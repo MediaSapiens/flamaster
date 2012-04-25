@@ -1,7 +1,7 @@
 define [
-  'chaplin/view',
+  'chaplin/mediator', 'chaplin/view',
   'text!templates/login.hbs'
-], (View, template) ->
+], (mediator, View, template) ->
   'use strict'
 
   class LoginView extends View
@@ -9,6 +9,7 @@ define [
     autoRender: true
     containerSelector: '#dialogs'
     id: 'login'
+    className: 'modal fade'
     @template = template
 
     initialize: (options) ->
@@ -23,9 +24,17 @@ define [
           this, serviceProviderName, serviceProvider
         )
 
-        @delegate 'click'
+        @delegate 'click', buttonSelector, loginHandler
 
     loginWith: (serviceProviderName, serviceProvider, e) ->
       e.preventDefault()
+      return unless serviceProvider.isLoaded()
+
+      if serviceProviderName is 'custom'
+        @loginData = @serializeForm @$el.find('form')
+
+      mediator.publish 'login:pickService', serviceProviderName
+      mediator.publish '!login', serviceProviderName, @loginData
+
       console.debug "LoginView#loginWith",
         serviceProviderName, serviceProvider

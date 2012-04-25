@@ -1,7 +1,7 @@
 define [
   'chaplin/controller',
-  'views/index_view', 'views/signin_view', 'views/signup_view'
-], (Controller, IndexView, SignInView, SignUpView) ->
+  'views/index_view', 'views/signup_view'
+], (Controller, IndexView, SignUpView) ->
   'use strict'
 
   class PageController extends Controller
@@ -11,7 +11,5 @@ define [
       options.path or ''
 
     index: -> @view = new IndexView
-
-    signin: -> @view = new SignInView
 
     signup: -> @view = new SignUpView

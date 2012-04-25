@@ -5,9 +5,7 @@ define [
 
   class Navigation extends Model
     defaults:
-      routes: [
-        {id: 'index', path: '', title: 'Index'}
-      ]
+      routes: []
 
     initialize: ->
       super
@@ -15,11 +13,15 @@ define [
       @updateRoutes()
 
     updateRoutes: =>
+      @set
+        routes: [
+          {id: 'index', path: '', title: 'Index'}
+        ]
       routes = @get 'routes'
 
       unless mediator.user?
         routes.push {id: 'signin', path: 'signin', title: 'Sign In'},
-                     {id: 'signup', path: 'signup', title: 'Sign Up'}
+          {id: 'signup', path: 'signup', title: 'Sign Up'}
 
       else
         routes.push {id: 'signout', path: 'signout', title: 'Sign Out'}

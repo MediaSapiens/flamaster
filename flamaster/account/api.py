@@ -45,11 +45,11 @@ class SessionResource(BaseResource):
             data = {'email': data.get('email'), 'password':
                     data.get('password')}
             validation.check(data)
-            data.update(session)
+            response = dict(session)
         except t.DataError as e:
-            data, status = e.as_dict(), 404
+            response, status = e.as_dict(), 404
             session.update({'is_anonymous': True})
-        return jsonify(data, status=status)
+        return jsonify(response, status=status)
 
     def delete(self, id):
         session['is_anonymous'] = True
@@ -100,12 +100,6 @@ class ProfileResource(BaseResource):
         user = User.query.get_or_404(id=self.current_user)
         user.delete()
         return jsonify({}, status=200)
-
-    def __extract_keys(self, data, keys):
-        return dict(filter(lambda x: x[0] in keys, data.items()))
-
-    def __exclude_keys(self, data, keys):
-        return dict(filter(lambda x: x[0] not in keys, data.items()))
 
 
 @api_resource(account, 'addresses', {'id': int})

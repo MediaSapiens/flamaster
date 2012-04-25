@@ -16,8 +16,11 @@ define [
     initialize: ->
       super
       @subscribeEvent 'startupController', @render
-
       @modelBind 'change:routes', @render
 
-      @modelBind 'all', (args...) ->
-        console.log args
+      @delegate 'click', '.n-signin a', @showLoginDialog
+      # @modelBind 'all', (args...) ->
+      #   console.log args
+
+    showLoginDialog: (ev) ->
+      $("#dialogs #login").modal show: true

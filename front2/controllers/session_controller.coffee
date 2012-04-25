@@ -1,7 +1,8 @@
 define [
   'chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller',
+  'chaplin/lib/services/custom',
   'models/user', 'views/login_view'
-], (mediator, utils, Controller, User, LoginView) ->
+], (mediator, utils, Controller, Custom, User, LoginView) ->
   'use strict'
 
   class SessionController extends Controller
@@ -9,11 +10,7 @@ define [
     # This just hardcoded here to avoid async loading of service providers.
     # In the end you might want to do this.
     @serviceProviders =
-      custom:
-        loadSDK: ->
-          console.log "custom#SDK"
-        done: (args...) ->
-          console.log "custom#done"
+      custom: new Custom
 
     # Was the login status already determined?
     loginStatusDetermined: false
@@ -23,10 +20,6 @@ define [
 
     # Current service provider
     serviceProviderName: null
-
-    historyURL: (params) ->
-      console.log "SessionController#params", params
-      params.path or ""
 
     initialize: ->
       #console.debug 'SessionController#initialize'
@@ -85,9 +78,9 @@ define [
 
     # Handler for the global !login event
     # Delegate the login to the selected service provider
-    triggerLogin: (serviceProviderName) =>
+    triggerLogin: (serviceProviderName, loginData) =>
       serviceProvider = SessionController.serviceProviders[serviceProviderName]
-      #console.debug 'SessionController#triggerLogin', serviceProviderName, serviceProvider
+      console.debug 'SessionController#triggerLogin', serviceProviderName, serviceProvider
 
       # Publish an event in case the provider SDK could not be loaded
       unless serviceProvider.isLoaded()
@@ -98,7 +91,7 @@ define [
       mediator.publish 'loginAttempt', serviceProviderName
 
       # Delegate to service provider
-      serviceProvider.triggerLogin()
+      serviceProvider.triggerLogin loginData
 
     # Handler for the global loginAttempt event
     loginAttempt: =>
@@ -141,7 +134,7 @@ define [
 
     # Handler for the global logout event
     logout: =>
-      #console.debug 'SessionController#logout'
+      console.debug 'SessionController#logout'
 
       @loginStatusDetermined = true
 
