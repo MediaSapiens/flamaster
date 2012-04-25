@@ -21,7 +21,6 @@ def test_save_in_user_check_permission():
         user = User.query.filter_by(email='test@example.com').first()
         assert user is not None
         user.set_password('test').save()
-
         Permissions.create(name='test_permissions')
         role = Role.get(user.role_id)
         role.permissions.append(Permissions(name='test_permissions_in_role'))
