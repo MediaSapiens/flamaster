@@ -4,7 +4,5 @@ flamaster.sublime-*
 .DS_Store
 *.py[co]
 env_flamaster
-front/node_modules/*
 .webassets-cache
-flamaster/conf/local_*
-chaplin
+flamaster/conf/*.py
