@@ -132,6 +132,7 @@ class User(db.Model, CRUDMixin):
             self.role = Role.get_or_create(name=app.config['USER_ROLE'])
         elif not self.role and self.email in app.config['ADMINS']:
             self.role = Role.get_or_create(name=app.config['ADMIN_ROLE'])
+
         return super(User, self).save(commit=commit)
 
 
@@ -171,7 +172,6 @@ role_permissions = Table(
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
@@ -194,7 +194,6 @@ class Role(db.Model, CRUDMixin):
 class Permissions(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
-    __tablename__ = 'permissions'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
