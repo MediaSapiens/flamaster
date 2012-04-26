@@ -4,6 +4,7 @@ import types
 from datetime import datetime
 from flamaster.app import mail
 import trafaret as t
+from trafaret.extras import KeysSubset
 
 from flask import current_app, request, g
 from flask.ext.mail import Message
