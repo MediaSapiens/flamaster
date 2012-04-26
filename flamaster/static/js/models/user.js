@@ -31,12 +31,13 @@ define(['chaplin/model'], function(Model) {
       response = {
         status: 'success'
       };
-      console.log("User#validate", attrs.email, this.emailRegex.test(attrs.email));
       if (!this.emailRegex.test(attrs.email)) {
-        response.status = 'failed';
-        response.email = 'This is not valid email address';
-        return response;
+        response = {
+          status: 'failed',
+          email: 'This is not valid email address'
+        };
       }
+      return response.status !== 'success' && response || null;
     };
 
     return User;

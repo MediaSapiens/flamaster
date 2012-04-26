@@ -14,12 +14,9 @@ define [
       console.log "User#initialize", @urlRoot
 
     validate: (attrs) ->
-      response =
-        status: 'success'
-
-      console.log "User#validate", attrs.email, @emailRegex.test attrs.email
+      response = status: 'success'
 
       unless @emailRegex.test(attrs.email)
-        response.status = 'failed'
-        response.email = 'This is not valid email address'
-        response
+        response = status: 'failed', email: 'This is not valid email address'
+
+      return response.status isnt 'success' and response or null
