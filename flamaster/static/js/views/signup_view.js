@@ -3,7 +3,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/view', 'text!templates/sign_up.hbs'], function(View, template) {
+define(['chaplin/view', 'text!templates/sign_up.hbs', 'text!templates/sign_up_complete.hbs'], function(View, template, templateComplete) {
   'use strict';
 
   var SignUpView;
@@ -30,6 +30,7 @@ define(['chaplin/view', 'text!templates/sign_up.hbs'], function(View, template) 
 
     SignUpView.prototype.initialize = function() {
       SignUpView.__super__.initialize.apply(this, arguments);
+      console.log(this.template);
       return this.delegate('submit', "#sigup-form", this.signUp);
     };
 
@@ -46,11 +47,14 @@ define(['chaplin/view', 'text!templates/sign_up.hbs'], function(View, template) 
     };
 
     SignUpView.prototype.signUp = function(ev) {
+      var _this = this;
       this.preventDefault(ev);
       this.clearErrors();
       return this.model.save(this.serializeForm(ev.target), {
-        success: function() {
-          return console.log(arguments);
+        success: function(model, data) {
+          console.log("SignUpView#signUp", data);
+          _this.constructor.template = templateComplete;
+          return _this.render();
         },
         error: this.displayErrors
       });

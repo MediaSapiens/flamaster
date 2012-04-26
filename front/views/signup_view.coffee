@@ -1,7 +1,7 @@
 define [
   'chaplin/view',
-  'text!templates/sign_up.hbs'
-], (View, template) ->
+  'text!templates/sign_up.hbs', 'text!templates/sign_up_complete.hbs'
+], (View, template, templateComplete) ->
   'use strict'
 
   class SignUpView extends View
@@ -13,6 +13,7 @@ define [
 
     initialize: ->
       super
+      console.log @template
       @delegate 'submit', "#sigup-form", @signUp
 
     getTemplateData: ->
@@ -28,7 +29,10 @@ define [
       @clearErrors()
 
       @model.save @serializeForm(ev.target),
-        success: -> console.log arguments
+        success: (model, data) =>
+          console.log "SignUpView#signUp", data
+          @constructor.template = templateComplete
+          @render()
         error: @displayErrors
 
     # Process & render errors came either from the backend or were returned by
