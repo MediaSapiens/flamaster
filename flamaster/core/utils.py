@@ -84,5 +84,6 @@ def validate_password_change(data):
 
 def check_permission(name):
     from flamaster.account.models import Role
+    print Role.get(g.user.role_id).permissions.all()
     return bool(
         Role.get(g.user.role_id).permissions.filter_by(name=name).first())
