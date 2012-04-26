@@ -52,7 +52,9 @@ def test_authorization():
         resp = login(c, 'test@example.com', 'test')
         j_resp = json.loads(resp.data)
 
+        #?????
         assert 'email' in j_resp
+        #-------------------------
         assert isinstance(session['uid'], long)
         assert session['is_anonymous'] == False
 

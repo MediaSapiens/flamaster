@@ -89,9 +89,7 @@ def test_addresses_put_not_valid_data(url, client):
     del address_data['city']
     resp = client.put(url, data=json.dumps(address_data),
                       content_type='application/json')
-
-    assert resp.status_code == 400
-    assert json.loads(resp.data) == {u'city': u'is required'}
+    assert resp.status_code == 404
     logout(client, uid)
 
 
@@ -100,7 +98,6 @@ def test_addresses_put_201(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.put(url, data=json.dumps(first_address),
                       content_type='application/json')
-
     address_data = first_address.copy()
     address_data.update({'id': 1, 'user_id': uid})
     assert json.loads(resp.data) == address_data
@@ -109,9 +106,9 @@ def test_addresses_put_201(url, client):
 
 
 @url_client('account.addresses', id=1)
-def test_addresses_delete_401(url, client):
+def test_addresses_delete_404(url, client):
     resp = client.delete(url, content_type='application/json')
-    assert resp.status_code == 401
+    assert resp.status_code == 404
 
 
 @url_client('account.addresses', id=1)
