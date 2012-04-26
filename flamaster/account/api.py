@@ -130,7 +130,9 @@ class AddressResource(BaseResource):
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            addr = Address.query.get_or_404(id)
+            addr = Address.query.filter_by(id=id, user_id=uid).first_or_404()
+            # ????? addr.update(**self.validation.check(data)) not valid data
+            # {'city': u'Kharkov', u'apartment': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'user_id': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'street': u'23b, Sumskaya av.', 'type': u'billing', u'zip_code': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}}
             addr.update(**data)
             data, status = addr.as_dict(), 201
         except t.DataError as e:
