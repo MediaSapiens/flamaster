@@ -4,7 +4,9 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
 
   # Registers several Handlebars helpers
 
-  prepareAttrs = (attrs) -> ("#{attr}=#{value}" for attr, value of attrs).join " "
+  prepareAttrs = (attrs) -> ("#{attr}='#{value}'" for attr, value of attrs).join " "
+  inputRenderer = (attrs) ->
+    "<input #{prepareAttrs(attrs)} id='id_#{attrs.name}' class='input-large' />"
   # Partials
   # --------
 
@@ -54,11 +56,23 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
     context = mediator.user or {}
     Handlebars.helpers.with.call(this, context, options)
 
+  # helper for a label for input field
   Handlebars.registerHelper 'labelFor', (name, text) ->
-    "<label for='id_#{name}'>#{text}</label>"
+    "<label class='control-label' for='id_#{name}'>#{text}</label>"
 
+  # helper for a text input
   Handlebars.registerHelper 'textField', (name, placeholder) ->
-    "<input type='text' name='#{name}' id='id_#{name}' placeholder='#{placeholder}' />"
+    inputRenderer
+      type: 'text'
+      name: name
+      placeholder: placeholder
+
+  # helper for a password input
+  Handlebars.registerHelper 'passwordField', (name, placeholder) ->
+    inputRenderer
+      type: 'password'
+      name: name
+      placeholder: placeholder
 
   # Helper for a form rendering
   Handlebars.registerHelper 'form', (context, options) ->

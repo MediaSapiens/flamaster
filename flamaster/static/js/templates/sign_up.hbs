@@ -1,19 +1,16 @@
-<div class="row">
-  <div class="span12">
-    {{#form form class="form-horizontal"}}
-      <fieldset>
-        <legend>Enter your credetials to create an account</legend>
-        <div class="control-group">
-          {{{labelFor "email" "Email:"}}}
-          <div class="controls">
-            {{{textField "email" "email will be used as login"}}}
-          </div>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Sign Up</button>
-          <button class="btn">Cancel</button>
-        </div>
-      </fieldset>
-    {{/form}}
-  </div>
-</div>
+{{#form form class="form-horizontal"}}
+  <fieldset>
+    <legend>Enter your credetials to create an account</legend>
+    <div class="control-group">
+      {{{labelFor "email" "Email:"}}}
+      <div class="controls">
+        {{{textField "email" "email will be used as login"}}}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Sign Up</button>
+      <button class="btn">Cancel</button>
+    </div>
+  </fieldset>
+{{/form}}
+

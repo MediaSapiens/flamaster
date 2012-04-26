@@ -28,7 +28,7 @@ define(['chaplin/controller', 'models/user', 'views/index_view', 'views/signup_v
     PageController.prototype.signup = function() {
       var nUser;
       nUser = User.extend({
-        urlRoot: '/account/sessions'
+        urlRoot: '/account/sessions/'
       });
       return this.view = new SignUpView({
         model: new nUser

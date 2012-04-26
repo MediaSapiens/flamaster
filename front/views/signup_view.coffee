@@ -25,11 +25,16 @@ define [
 
     signUp: (ev) =>
       @preventDefault(ev)
-      data = @serializeForm(ev.target)
-      @model.save data,
-        error: (model, response) => @displayErrors
+      @clearErrors()
 
-    displayErrors: (model, response) ->
+      @model.save @serializeForm(ev.target),
+        success: -> console.log arguments
+        error: @displayErrors
+
+    # Process & render errors came either from the backend or were returned by
+    # the model validaton method
+    displayErrors: (model, response) =>
+      console.log "SignUpView#displayErrors"
       if response.responseText?
         for field, message of JSON.parse(response.responseText)
           @renderError field, message

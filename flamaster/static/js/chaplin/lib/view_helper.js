@@ -2,6 +2,23 @@
 
 define(['chaplin/mediator', 'chaplin/lib/utils'], function(mediator, utils) {
   'use strict';
+
+  var inputRenderer, prepareAttrs;
+  prepareAttrs = function(attrs) {
+    var attr, value;
+    return ((function() {
+      var _results;
+      _results = [];
+      for (attr in attrs) {
+        value = attrs[attr];
+        _results.push("" + attr + "='" + value + "'");
+      }
+      return _results;
+    })()).join(" ");
+  };
+  inputRenderer = function(attrs) {
+    return "<input " + (prepareAttrs(attrs)) + " id='id_" + attrs.name + "' class='input-large' />";
+  };
   Handlebars.registerHelper('partial', function(partialName, options) {
     return new Handlebars.SafeString(Handlebars.VM.invokePartial(Handlebars.partials[partialName], partialName, options.hash));
   });
@@ -34,8 +51,27 @@ define(['chaplin/mediator', 'chaplin/lib/utils'], function(mediator, utils) {
     context = mediator.user || {};
     return Handlebars.helpers["with"].call(this, context, options);
   });
+  Handlebars.registerHelper('labelFor', function(name, text) {
+    return "<label class='control-label' for='id_" + name + "'>" + text + "</label>";
+  });
+  Handlebars.registerHelper('textField', function(name, placeholder) {
+    return inputRenderer({
+      type: 'text',
+      name: name,
+      placeholder: placeholder
+    });
+  });
+  Handlebars.registerHelper('passwordField', function(name, placeholder) {
+    return inputRenderer({
+      type: 'password',
+      name: name,
+      placeholder: placeholder
+    });
+  });
   Handlebars.registerHelper('form', function(context, options) {
-    return console.log(context, options);
+    var attrs;
+    attrs = _(this.form).defaults(options.hash);
+    return "<form " + (prepareAttrs(attrs)) + ">" + (options.fn(context)) + "</form>";
   });
   return null;
 });

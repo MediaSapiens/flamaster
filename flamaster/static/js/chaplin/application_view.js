@@ -10,7 +10,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils'], function(mediator, utils) {
 
     ApplicationView.name = 'ApplicationView';
 
-    siteTitle = 'Chaplin Example Application';
+    siteTitle = 'Findevent';
 
     ApplicationView.prototype.previousController = null;
 

@@ -14,6 +14,8 @@ define(['chaplin/view', 'text!templates/sign_up.hbs'], function(View, template) 
     SignUpView.name = 'SignUpView';
 
     function SignUpView() {
+      this.displayErrors = __bind(this.displayErrors, this);
+
       this.signUp = __bind(this.signUp, this);
       return SignUpView.__super__.constructor.apply(this, arguments);
     }
@@ -44,19 +46,19 @@ define(['chaplin/view', 'text!templates/sign_up.hbs'], function(View, template) 
     };
 
     SignUpView.prototype.signUp = function(ev) {
-      var data,
-        _this = this;
       this.preventDefault(ev);
-      data = this.serializeForm(ev.target);
-      return this.model.save(data, {
-        error: function(model, response) {
-          return _this.displayErrors;
-        }
+      this.clearErrors();
+      return this.model.save(this.serializeForm(ev.target), {
+        success: function() {
+          return console.log(arguments);
+        },
+        error: this.displayErrors
       });
     };
 
     SignUpView.prototype.displayErrors = function(model, response) {
       var field, message, _ref, _results, _results1;
+      console.log("SignUpView#displayErrors");
       if (response.responseText != null) {
         _ref = JSON.parse(response.responseText);
         _results = [];

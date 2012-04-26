@@ -14,5 +14,5 @@ define [
     index: -> @view = new IndexView
 
     signup: ->
-      nUser = User.extend urlRoot: '/account/sessions'
+      nUser = User.extend urlRoot: '/account/sessions/'
       @view = new SignUpView model: new nUser
