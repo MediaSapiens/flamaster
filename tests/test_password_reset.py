@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+from flamaster.app import db, app
+>>>>>>> add test user roles
 from conftest import url_client, create_user, valid_user, request_context
 from flask import url_for
 
