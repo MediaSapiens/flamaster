@@ -1,4 +1,3 @@
-#from flask.helpers import json
 from flamaster.app import db, app
 from conftest import url_client, create_user, valid_user, request_context
 from flamaster.app import mail

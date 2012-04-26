@@ -176,7 +176,7 @@ class Role(db.Model, CRUDMixin):
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
-                            backref=db.backref('role', lazy='joined'))
+                            backref=db.backref('roles', lazy='joined'))
     permissions = db.relationship('Permissions', secondary=role_permissions,
                                   lazy='dynamic',
                                   backref=db.backref('roles', lazy='joined'))
@@ -195,6 +195,7 @@ class Role(db.Model, CRUDMixin):
 class Permissions(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
+    __tablename__ = 'permissions'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
