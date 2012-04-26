@@ -171,6 +171,7 @@ role_permissions = Table(
 class Role(db.Model, CRUDMixin):
 
     __table_args__ = {'extend_existing': True}
+    __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
