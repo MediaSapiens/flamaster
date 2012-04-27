@@ -129,7 +129,7 @@ class AddressResource(BaseResource):
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            addr = Address.get_or_404(id=id)
+            addr = Address.query.get_or_404(id)
 
             # ????? addr.update(**self.validation.check(data)) not valid data
             # {'city': u'Kharkov', u'apartment': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'user_id': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'street': u'23b, Sumskaya av.', 'type': u'billing', u'zip_code': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}}
