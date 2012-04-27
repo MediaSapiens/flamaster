@@ -1,7 +1,8 @@
 define [
+  'chaplin/mediator',
   'chaplin/view',
   'text!templates/navigation.hbs'
-], (View, template) ->
+], (mediator, View, template) ->
   'use strict'
 
   class NavigationView extends View
@@ -15,6 +16,7 @@ define [
 
     initialize: ->
       super
+      # mediator.publish '!showLogin'
       # global events
       @subscribeEvent 'startupController', @render
       # model events
@@ -23,5 +25,6 @@ define [
       @delegate 'click', '.n-signin a', @showLoginDialog
 
     showLoginDialog: (ev) ->
-      console.log ev
-      $("#dialogs #login").modal show: true
+      mediator.publish '!showLogin'
+      $("#login").modal show: true
+

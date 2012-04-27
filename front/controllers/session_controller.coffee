@@ -22,7 +22,7 @@ define [
     serviceProviderName: null
 
     initialize: ->
-      #console.debug 'SessionController#initialize'
+      console.debug 'SessionController#initialize'
 
       # Login flow events
       @subscribeEvent 'loginAttempt', @loginAttempt
@@ -44,6 +44,7 @@ define [
       # Determine the logged-in state
       @getSession()
 
+
     # Load the JavaScript SDKs of all service providers
     loadSDKs: ->
       for name, serviceProvider of SessionController.serviceProviders
@@ -64,7 +65,7 @@ define [
 
     # Handler for the global !showLoginView event
     showLoginView: ->
-      # console.debug 'SessionController#showLoginView', @loginView
+      console.debug 'SessionController#showLoginView', @loginView
       return if @loginView
       @loadSDKs()
       @loginView = new LoginView

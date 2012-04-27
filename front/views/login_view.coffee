@@ -38,3 +38,11 @@ define [
 
       console.debug "LoginView#loginWith",
         serviceProviderName, serviceProvider
+
+    getTemplateData: ->
+      data =
+        form:
+          id: 'login-form'
+          method: 'post'
+          action: '.'
+      data

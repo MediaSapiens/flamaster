@@ -54,6 +54,18 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/login.hbs'], functio
       return console.debug("LoginView#loginWith", serviceProviderName, serviceProvider);
     };
 
+    LoginView.prototype.getTemplateData = function() {
+      var data;
+      data = {
+        form: {
+          id: 'login-form',
+          method: 'post',
+          action: '.'
+        }
+      };
+      return data;
+    };
+
     return LoginView;
 
   })(View);

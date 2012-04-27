@@ -35,6 +35,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     SessionController.prototype.serviceProviderName = null;
 
     SessionController.prototype.initialize = function() {
+      console.debug('SessionController#initialize');
       this.subscribeEvent('loginAttempt', this.loginAttempt);
       this.subscribeEvent('serviceProviderSession', this.serviceProviderSession);
       this.subscribeEvent('logout', this.logout);
@@ -75,6 +76,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     };
 
     SessionController.prototype.showLoginView = function() {
+      console.debug('SessionController#showLoginView', this.loginView);
       if (this.loginView) {
         return;
       }

@@ -9,6 +9,3 @@ body {
   float: right;
   margin-right: 90px;
 }
-div#dialogs #login {
-  display: none;
-}
