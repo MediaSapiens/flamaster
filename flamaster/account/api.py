@@ -10,7 +10,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
 from . import account
-from .models import User, Address
+from .models import User, Address, Role
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 
@@ -125,12 +125,12 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        uid = self.current_user or abort(401)
+        uid = self.current_user or abort(403)
         data = request.json or abort(400)
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            addr = Address.query.filter_by(id=id, user_id=uid).first_or_404()
+            addr = Address.get_or_404(id=id)
             # ????? addr.update(**self.validation.check(data)) not valid data
             # {'city': u'Kharkov', u'apartment': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'user_id': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'street': u'23b, Sumskaya av.', 'type': u'billing', u'zip_code': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}}
             addr.update(**data)
