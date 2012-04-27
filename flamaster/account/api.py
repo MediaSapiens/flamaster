@@ -9,7 +9,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
 from . import account
-from .models import User, Address
+from .models import User, Address, Role
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 
@@ -129,7 +129,7 @@ class AddressResource(BaseResource):
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
-            addr = Address.query.filter_by(id=id, user_id=uid).first_or_404()
+            addr = Address.get_or_404(id=id)
 
             # ????? addr.update(**self.validation.check(data)) not valid data
             # {'city': u'Kharkov', u'apartment': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'user_id': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'street': u'23b, Sumskaya av.', 'type': u'billing', u'zip_code': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}}
@@ -145,6 +145,44 @@ class AddressResource(BaseResource):
         try:
             Address.query.filter_by(id=id, user_id=uid).delete()
             data, status = {}, 200
+        except t.DataError as e:
+            data, status = e.as_dict(), 400
+
+        return jsonify(data, status=status)
+
+
+@api_resource(account, 'roles', {'id': int})
+class RoleResource(BaseResource):
+
+    validation = t.Dict({'name': t.String}).allow_extra('*')
+
+    def get(self, id=None):
+        role_user = self._authenticate(id=id)
+        return jsonify(role_user.as_dict())
+
+    def post(self):
+        self._authenticate()
+        return jsonify({})
+
+    def put(self, id):
+        self._authenticate(id=id)
+        data = request.json or abort(400)
+        return self.role_update(self, id=id, **data)
+
+    def delete(self, id):
+        self._authenticate(id=id)
+        return self.role_update(self, id=id, **{'name': 'deactivate'})
+
+    def _authenticate(self, id=None):
+        role_user = Role.get_or_404(g.user.role_id)
+        id == role_user.id or 'administrator' == role_user.name or abort(403)
+        return True
+
+    def role_update(self, id, **kwargs):
+        role = Role.get_or_404(id)
+        try:
+            role.update(**self.validation.check(kwargs))
+            data, status = role.as_dict(), 200
         except t.DataError as e:
             data, status = e.as_dict(), 400
 
