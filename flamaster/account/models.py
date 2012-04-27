@@ -58,7 +58,7 @@ class User(db.Model, CRUDMixin):
     __tablename__ = 'users'
 
     email = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(20))
+    password = db.Column(db.String(512))
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     phone = db.Column(db.String(15))
