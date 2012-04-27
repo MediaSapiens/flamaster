@@ -1,6 +1,7 @@
 import uuid
 
 from flask import abort, g, request, session
+from flamaster.app import db, app
 
 import trafaret as t
 
@@ -107,7 +108,7 @@ class AddressResource(BaseResource):
             response = [addr.as_dict() for addr in addresses]
 
         else:
-            addr = Address.query.filter_by(id=id, user_id=uid).first() or abort(404)
+            addr = Address.query.filter_by(id=id, user_id=uid).first_or_404()
             response = addr.as_dict()
         return jsonify(response)
 
@@ -130,10 +131,6 @@ class AddressResource(BaseResource):
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
         try:
             addr = Address.query.get_or_404(id)
-
-            # ????? addr.update(**self.validation.check(data)) not valid data
-            # {'city': u'Kharkov', u'apartment': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'user_id': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}, 'street': u'23b, Sumskaya av.', 'type': u'billing', u'zip_code': {u'apartment': u'1', 'user_id': 1L, u'zip_code': u'626262'}}
-
             addr.update(**data)
             data, status = addr.as_dict(), 201
         except t.DataError as e:
@@ -154,36 +151,44 @@ class AddressResource(BaseResource):
 @api_resource(account, 'roles', {'id': int})
 class RoleResource(BaseResource):
 
-    validation = t.Dict({'name': t.String}).allow_extra('*')
+    validation = t.Dict({'uid': t.Int})
 
     def get(self, id=None):
-        role_user = self._authenticate(id=id)
-        return jsonify(role_user.as_dict())
+        role_id = g.user.role_id
+        role = Role.get_or_404(role_id)
+        role_dict = role.as_dict()
+        if id == role_id and 'administrator' != role.name:
+            return jsonify(role_dict)
 
-    def post(self):
-        self._authenticate()
-        return jsonify({})
+        'administrator' == role.name or abort(403)
+        users = db.session.query(User.id).filter_by(role_id=role_id).all()
+        try:
+            page_size = t.Dict({'page_size': t.Int}).check(
+                request.json)['page_size']
+        except t.DataError:
+            page_size = app.config['DEFAULT_PAGE_SIZE']
+
+        role_dict.update({'total': len(users), 'users': users[:page_size]})
+        return jsonify(role_dict.as_dict())
 
     def put(self, id):
-        self._authenticate(id=id)
-        data = request.json or abort(400)
-        return self.role_update(self, id=id, **data)
-
-    def delete(self, id):
-        self._authenticate(id=id)
-        return self.role_update(self, id=id, **{'name': 'deactivate'})
-
-    def _authenticate(self, id=None):
-        role_user = Role.get_or_404(g.user.role_id)
-        id == role_user.id or 'administrator' == role_user.name or abort(403)
-        return True
-
-    def role_update(self, id, **kwargs):
-        role = Role.get_or_404(id)
+        role = Role.get_or_404(g.user.role_id)
+        'administrator' == role.name or abort(403)
         try:
-            role.update(**self.validation.check(kwargs))
-            data, status = role.as_dict(), 200
+            data = t.Dict({'uid': t.Int, 'role_id': t.Int}).check(
+                request.json)
+            status = 201
         except t.DataError as e:
             data, status = e.as_dict(), 400
 
+        user = User.get(data['uid']).update({'role_id': data['role_id']})
+        data = user.as_dict()
         return jsonify(data, status=status)
+
+    # def post(self):
+    #     self._authenticate()
+    #     return jsonify({})
+
+    # def delete(self, id):
+    #     self._authenticate(id=id)
+    #     return self.role_update(self, **{'name': 'deactivate', 'id': id})
