@@ -6,6 +6,7 @@ USE_X_SENDFILE = True
 SQLALCHEMY_DATABASE_URI = "mysql://flamaster@localhost.localdomain/flamaster"
 SQLALCHEMY_ECHO = False
 
+DEFAULT_PAGE_SIZE = 100
 DEFAULT_MAIL_SENDER = "<noreply@findevent.com>"
 MAIL_FAIL_SILENTLY = True
 ADMINS = ('admin@findevent.com', )
