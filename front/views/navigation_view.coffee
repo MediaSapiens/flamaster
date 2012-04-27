@@ -15,12 +15,12 @@ define [
 
     initialize: ->
       super
+      # global events
       @subscribeEvent 'startupController', @render
+      # model events
       @modelBind 'change:routes', @render
-
+      # user events
       @delegate 'click', '.n-signin a', @showLoginDialog
-      # @modelBind 'all', (args...) ->
-      #   console.log args
 
     showLoginDialog: (ev) ->
       console.log ev

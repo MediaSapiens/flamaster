@@ -1,9 +1,11 @@
 import hashlib
 import types
+import trafaret as t
 
 from datetime import datetime
 from flamaster.app import mail
-import trafaret as t
+
+from trafaret.extras import KeysSubset
 
 from flask import current_app, request
 from flask.ext.mail import Message
@@ -66,6 +68,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 def send_email(to, subject, body):
         recipients = isinstance(to, basestring) and [to] or to
         msg = Message(subject=subject, body=body, recipients=recipients)
+        current_app.logger.debug(body)
         mail.send(msg)
 
 
@@ -77,5 +80,5 @@ def validate_password_change(data):
             response['password'] = t.DataError("Passwords don't match")
         return response
 
-    valid_dict = t.Dict({t.KeysSubset(['password', 'password_confirm']): cmp_words})
+    valid_dict = t.Dict({KeysSubset('password', 'password_confirm'): cmp_words})
     return valid_dict.check(data)
