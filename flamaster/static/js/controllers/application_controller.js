@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/controller', 'chaplin/application_view', 'controllers/navigation_controller'], function(Controller, ApplicationView, NavigationController) {
+define(['chaplin/mediator', 'chaplin/controller', 'chaplin/application_view', 'controllers/navigation_controller'], function(mediator, Controller, ApplicationView, NavigationController) {
   'use strict';
 
   var ApplicationController;
@@ -21,7 +21,8 @@ define(['chaplin/controller', 'chaplin/application_view', 'controllers/navigatio
     ApplicationController.prototype.initialize = function() {
       console.log("ApplicationController#initialized");
       this.initApplicationView();
-      return this.initSidebars();
+      this.initSidebars();
+      return this.subscribeEvent('loginStatus', this.loginStatus);
     };
 
     ApplicationController.prototype.initApplicationView = function() {
@@ -30,6 +31,12 @@ define(['chaplin/controller', 'chaplin/application_view', 'controllers/navigatio
 
     ApplicationController.prototype.initSidebars = function() {
       return new NavigationController();
+    };
+
+    ApplicationController.prototype.loginStatus = function(loggedIn) {
+      if (loggedIn) {
+        return mediator.router.route('/dashboard');
+      }
     };
 
     return ApplicationController;

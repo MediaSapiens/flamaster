@@ -18,6 +18,8 @@ define(['chaplin/model'], function(Model) {
 
     User.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 
+    User.prototype.urlRoot = '/account/profiles/';
+
     User.prototype.defaults = {
       email: ''
     };

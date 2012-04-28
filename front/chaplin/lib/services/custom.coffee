@@ -40,17 +40,18 @@ define [
     # This actually determines a) whether the user is logged in at Facebook
     # and b) whether the user has authorized the app
     getLoginStatus: (callback = @loginStatusHandler, force = false) =>
-      console.debug 'Custom#getLoginStatus'
+      # console.debug 'Custom#getLoginStatus'
       response = $.get '/account/sessions/'
       response.success callback
 
     # Callback for the initial FB.getLoginStatus call
     loginStatusHandler: (response) =>
-      console.debug 'Custom#loginStatusHandler', response
+      # console.debug 'Custom#loginStatusHandler', response
       @saveAuthResponse response
       authResponse = response.is_anonymous
       unless authResponse
         @publishSession response
+        @getUserData(response.uid)
       else
         mediator.publish 'logout'
 
@@ -60,9 +61,9 @@ define [
     #   description - string
     #   model - optional model e.g. a topic the user wants to subscribe to
     triggerLogin: (loginContext) ->
-      console.debug 'Custom#triggerLogin', loginContext, @sessionId
+      # console.debug 'Custom#triggerLogin', loginContext, @sessionId
       $.ajax
-        url: "/account/sessions/#{@sessionId}"
+        url: "/account/sessions/#{encodeURI(@sessionId)}"
         contentType: 'application/json'
         type: 'put'
         data: JSON.stringify(loginContext)
@@ -71,7 +72,7 @@ define [
 
     # Callback for FB.login
     loginHandler: (loginContext, status) =>
-      console.debug 'Custom#loginHandler', loginContext, status
+      # console.debug 'Custom#loginHandler', loginContext, status
       response = JSON.parse(loginContext.responseText)
       switch status
         when 'error' then mediator.publish 'loginFail', response
@@ -84,11 +85,11 @@ define [
 
     # Publish the Facebook session
     publishSession: (authResponse) ->
-      console.debug 'Custom#publishSession', authResponse
+      # console.debug 'Custom#publishSession', authResponse
       mediator.publish 'serviceProviderSession',
         provider: this
-        userId: authResponse.userID
-        accessToken: authResponse.accessToken
+        userId: authResponse.uid
+        accessToken: authResponse.id
 
     # Check login status after abort and publish success or failure
     publishAbortionResult: (response) =>
@@ -112,3 +113,11 @@ define [
       # Clear the status properties
       @status = @accessToken = null
 
+    getUserData: (uid) ->
+      # console.debug "Custom#getUserData", uid
+      response = $.get "/account/profiles/#{encodeURI(uid)}"
+      response.success @processUserData
+
+    processUserData: (response) =>
+      # console.debug "Custom#processUserData", response
+      mediator.publish 'userData', response

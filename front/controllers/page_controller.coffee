@@ -1,8 +1,8 @@
 define [
-  'chaplin/controller',
+  'chaplin/mediator', 'chaplin/controller',
   'models/user',
-  'views/index_view', 'views/signup_view'
-], (Controller, User, IndexView, SignUpView) ->
+  'views/index_view', 'views/signup_view', 'views/dashboard_view'
+], (mediator, Controller, User, IndexView, SignUpView, DashboardView) ->
   'use strict'
 
   class PageController extends Controller
@@ -11,8 +11,16 @@ define [
       console.log "PageController#historyURL", options
       options.path or ''
 
-    index: -> @view = new IndexView
+    index: ->
+      unless mediator.user
+        @view = new IndexView
+      else
+        @view = new DashboardView
+
 
     signup: ->
       nUser = User.extend urlRoot: '/account/sessions/'
       @view = new SignUpView model: new nUser
+
+    dashboard: ->
+      @view = new DashboardView

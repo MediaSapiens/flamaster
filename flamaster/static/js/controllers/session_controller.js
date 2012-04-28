@@ -76,7 +76,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     };
 
     SessionController.prototype.showLoginView = function() {
-      console.debug('SessionController#showLoginView', this.loginView);
       if (this.loginView) {
         return;
       }
@@ -97,7 +96,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     SessionController.prototype.triggerLogin = function(serviceProviderName, loginData) {
       var serviceProvider;
       serviceProvider = SessionController.serviceProviders[serviceProviderName];
-      console.debug('SessionController#triggerLogin', serviceProviderName, serviceProvider.isLoaded());
       if (!serviceProvider.isLoaded()) {
         mediator.publish('serviceProviderMissing', serviceProviderName);
         return;
@@ -130,7 +128,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     };
 
     SessionController.prototype.logout = function() {
-      console.debug('SessionController#logout');
       this.loginStatusDetermined = true;
       if (mediator.user) {
         mediator.user.dispose();

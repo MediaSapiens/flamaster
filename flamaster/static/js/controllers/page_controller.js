@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/controller', 'models/user', 'views/index_view', 'views/signup_view'], function(Controller, User, IndexView, SignUpView) {
+define(['chaplin/mediator', 'chaplin/controller', 'models/user', 'views/index_view', 'views/signup_view', 'views/dashboard_view'], function(mediator, Controller, User, IndexView, SignUpView, DashboardView) {
   'use strict';
 
   var PageController;
@@ -22,7 +22,11 @@ define(['chaplin/controller', 'models/user', 'views/index_view', 'views/signup_v
     };
 
     PageController.prototype.index = function() {
-      return this.view = new IndexView;
+      if (!mediator.user) {
+        return this.view = new IndexView;
+      } else {
+        return this.view = new DashboardView;
+      }
     };
 
     PageController.prototype.signup = function() {
@@ -33,6 +37,10 @@ define(['chaplin/controller', 'models/user', 'views/index_view', 'views/signup_v
       return this.view = new SignUpView({
         model: new nUser
       });
+    };
+
+    PageController.prototype.dashboard = function() {
+      return this.view = new DashboardView;
     };
 
     return PageController;

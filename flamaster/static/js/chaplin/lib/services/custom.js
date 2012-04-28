@@ -22,6 +22,8 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
     Custom.prototype.sessionId = null;
 
     function Custom() {
+      this.processUserData = __bind(this.processUserData, this);
+
       this.publishAbortionResult = __bind(this.publishAbortionResult, this);
 
       this.loginHandler = __bind(this.loginHandler, this);
@@ -60,27 +62,25 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
       if (force == null) {
         force = false;
       }
-      console.debug('Custom#getLoginStatus');
       response = $.get('/account/sessions/');
       return response.success(callback);
     };
 
     Custom.prototype.loginStatusHandler = function(response) {
       var authResponse;
-      console.debug('Custom#loginStatusHandler', response);
       this.saveAuthResponse(response);
       authResponse = response.is_anonymous;
       if (!authResponse) {
-        return this.publishSession(response);
+        this.publishSession(response);
+        return this.getUserData(response.uid);
       } else {
         return mediator.publish('logout');
       }
     };
 
     Custom.prototype.triggerLogin = function(loginContext) {
-      console.debug('Custom#triggerLogin', loginContext, this.sessionId);
       return $.ajax({
-        url: "/account/sessions/" + this.sessionId,
+        url: "/account/sessions/" + (encodeURI(this.sessionId)),
         contentType: 'application/json',
         type: 'put',
         data: JSON.stringify(loginContext),
@@ -91,7 +91,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
 
     Custom.prototype.loginHandler = function(loginContext, status) {
       var response;
-      console.debug('Custom#loginHandler', loginContext, status);
       response = JSON.parse(loginContext.responseText);
       switch (status) {
         case 'error':
@@ -104,11 +103,10 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
     };
 
     Custom.prototype.publishSession = function(authResponse) {
-      console.debug('Custom#publishSession', authResponse);
       return mediator.publish('serviceProviderSession', {
         provider: this,
-        userId: authResponse.userID,
-        accessToken: authResponse.accessToken
+        userId: authResponse.uid,
+        accessToken: authResponse.id
       });
     };
 
@@ -136,6 +134,16 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
 
     Custom.prototype.logout = function() {
       return this.status = this.accessToken = null;
+    };
+
+    Custom.prototype.getUserData = function(uid) {
+      var response;
+      response = $.get("/account/profiles/" + (encodeURI(uid)));
+      return response.success(this.processUserData);
+    };
+
+    Custom.prototype.processUserData = function(response) {
+      return mediator.publish('userData', response);
     };
 
     return Custom;

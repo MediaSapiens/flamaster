@@ -65,7 +65,7 @@ define [
 
     # Handler for the global !showLoginView event
     showLoginView: ->
-      console.debug 'SessionController#showLoginView', @loginView
+      # console.debug 'SessionController#showLoginView', @loginView
       return if @loginView
       @loadSDKs()
       @loginView = new LoginView
@@ -80,10 +80,8 @@ define [
     # Handler for the global !login event
     # Delegate the login to the selected service provider
     triggerLogin: (serviceProviderName, loginData) =>
+      # console.debug 'SessionController#triggerLogin', serviceProviderName, serviceProvider.isLoaded()
       serviceProvider = SessionController.serviceProviders[serviceProviderName]
-      console.debug 'SessionController#triggerLogin', serviceProviderName,
-                     serviceProvider.isLoaded()
-
       # Publish an event in case the provider SDK could not be loaded
       unless serviceProvider.isLoaded()
         mediator.publish 'serviceProviderMissing', serviceProviderName
@@ -103,9 +101,7 @@ define [
     serviceProviderSession: (session) =>
       # Save the session provider used for login
       @serviceProviderName = session.provider.name
-
-      #console.debug 'SessionController#serviceProviderSession', session, @serviceProviderName
-
+      # console.debug 'SessionController#serviceProviderSession', session, @serviceProviderName
       # Hide the login view
       @hideLoginView()
 
@@ -119,7 +115,6 @@ define [
     # Publish an event to notify all application components of the login
     publishLogin: ->
       #console.debug 'SessionController#publishLogin', mediator.user
-
       @loginStatusDetermined = true
 
       # Publish a global login event passing the user
@@ -136,7 +131,7 @@ define [
 
     # Handler for the global logout event
     logout: =>
-      console.debug 'SessionController#logout'
+      # console.debug 'SessionController#logout'
 
       @loginStatusDetermined = true
 
@@ -144,10 +139,8 @@ define [
         # Dispose the user model
         mediator.user.dispose()
         mediator.user = null
-
       # Discard the login info
       @serviceProviderName = null
-
       # Show the login view again
       @showLoginView()
 
