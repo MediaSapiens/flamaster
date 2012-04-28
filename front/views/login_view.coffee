@@ -15,7 +15,7 @@ define [
     initialize: (options) ->
       super
 
-      @subscribeEvent 'loginAbort', @loginAbort
+      @subscribeEvent 'loginFail', @loginFailed
 
       for serviceProviderName, serviceProvider of options.serviceProviders
         console.log "LoginView", serviceProviderName
@@ -29,6 +29,7 @@ define [
         @delegate 'click', buttonSelector, loginHandler
 
     loginWith: (serviceProviderName, serviceProvider, e) ->
+      @clearErrors()
       @preventDefault(e)
       return unless serviceProvider.isLoaded()
 
@@ -46,6 +47,6 @@ define [
           action: '.'
       data
 
-    loginAbort: (response) ->
-      console.debug "LoginView#loginAbort", response
+    loginFailed: (response) ->
+      console.debug "LoginView#loginFailed", response
       @displayErrors {}, response

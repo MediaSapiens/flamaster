@@ -22,8 +22,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
     Custom.prototype.sessionId = null;
 
     function Custom() {
-      this.processUserData = __bind(this.processUserData, this);
-
       this.publishAbortionResult = __bind(this.publishAbortionResult, this);
 
       this.loginHandler = __bind(this.loginHandler, this);
@@ -73,8 +71,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
       this.saveAuthResponse(response);
       authResponse = response.is_anonymous;
       if (!authResponse) {
-        this.publishSession(response.id);
-        return this.getUserData();
+        return this.publishSession(response);
       } else {
         return mediator.publish('logout');
       }
@@ -93,11 +90,17 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
     };
 
     Custom.prototype.loginHandler = function(loginContext, status) {
+      var response;
       console.debug('Custom#loginHandler', loginContext, status);
+      response = JSON.parse(loginContext.responseText);
       switch (status) {
         case 'error':
-          return mediator.publish('loginAbort', JSON.parse(loginContext.responseText));
+          mediator.publish('loginFail', response);
+          break;
+        case 'success':
+          mediator.publish('loginSuccessful', response);
       }
+      return this.getLoginStatus(this.publishAbortionResult, true);
     };
 
     Custom.prototype.publishSession = function(authResponse) {
@@ -133,14 +136,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
 
     Custom.prototype.logout = function() {
       return this.status = this.accessToken = null;
-    };
-
-    Custom.prototype.getUserData = function() {
-      return console.debug('Custom#getUserData');
-    };
-
-    Custom.prototype.processUserData = function(response) {
-      return mediator.publish('userData', response);
     };
 
     return Custom;

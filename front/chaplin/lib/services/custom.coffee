@@ -50,8 +50,7 @@ define [
       @saveAuthResponse response
       authResponse = response.is_anonymous
       unless authResponse
-        @publishSession response.id
-        @getUserData()
+        @publishSession response
       else
         mediator.publish 'logout'
 
@@ -73,25 +72,15 @@ define [
     # Callback for FB.login
     loginHandler: (loginContext, status) =>
       console.debug 'Custom#loginHandler', loginContext, status
+      response = JSON.parse(loginContext.responseText)
       switch status
-        when 'error' then mediator.publish 'loginAbort', JSON.parse(loginContext.responseText)
-
-      # @saveAuthResponse response
-      # authResponse = response.authResponse
-
-      # if authResponse
-      #   mediator.publish 'loginSuccessful', {provider: this, loginContext}
-      #   @publishSession authResponse
-      #   @getUserData()
-
-      # else
-      #   mediator.publish 'loginAbort', {provider: this, loginContext}
-
+        when 'error' then mediator.publish 'loginFail', response
+        when 'success' then mediator.publish 'loginSuccessful', response
         # Get the login status again (forced) because the user might be
         # logged in anyway. This might happen when the user grants access
         # to the app but closes the second page of the auth dialog which
         # asks for Extended Permissions.
-      #   @getLoginStatus @publishAbortionResult, true
+      @getLoginStatus @publishAbortionResult, true
 
     # Publish the Facebook session
     publishSession: (authResponse) ->
@@ -123,15 +112,3 @@ define [
       # Clear the status properties
       @status = @accessToken = null
 
-
-    #
-    # Graph Querying
-    # --------------
-
-    getUserData: ->
-      console.debug 'Custom#getUserData'
-      # @getInfo '/me', @processUserData
-
-    processUserData: (response) =>
-      #console.debug 'Facebook#processUserData', response
-      mediator.publish 'userData', response
