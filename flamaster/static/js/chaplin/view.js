@@ -24,6 +24,8 @@ define(['chaplin/lib/utils', 'chaplin/lib/subscriber', 'chaplin/lib/view_helper'
     function View() {
       this.dispose = __bind(this.dispose, this);
 
+      this.displayErrors = __bind(this.displayErrors, this);
+
       this.render = __bind(this.render, this);
 
       var instance, wrapMethod;
@@ -239,6 +241,27 @@ allowed');
     View.prototype.clearErrors = function() {
       this.$el.find(".control-group").removeClass('error');
       return this.$el.find("span.help-inline.error").slideUp().remove();
+    };
+
+    View.prototype.displayErrors = function(model, response) {
+      var field, message, _ref, _results, _results1;
+      console.log("SignUpView#displayErrors");
+      if (response.responseText != null) {
+        _ref = JSON.parse(response.responseText);
+        _results = [];
+        for (field in _ref) {
+          message = _ref[field];
+          _results.push(this.renderError(field, message));
+        }
+        return _results;
+      } else {
+        _results1 = [];
+        for (field in response) {
+          message = response[field];
+          _results1.push(this.renderError(field, message));
+        }
+        return _results1;
+      }
     };
 
     View.prototype.disposed = false;

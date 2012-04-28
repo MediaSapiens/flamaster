@@ -15,6 +15,8 @@ define [
     initialize: (options) ->
       super
 
+      @subscribeEvent 'loginAbort', @loginAbort
+
       for serviceProviderName, serviceProvider of options.serviceProviders
         console.log "LoginView", serviceProviderName
 
@@ -36,9 +38,6 @@ define [
       mediator.publish 'login:pickService', serviceProviderName
       mediator.publish '!login', serviceProviderName, @loginData
 
-      console.debug "LoginView#loginWith",
-        serviceProviderName, serviceProvider
-
     getTemplateData: ->
       data =
         form:
@@ -46,3 +45,7 @@ define [
           method: 'post'
           action: '.'
       data
+
+    loginAbort: (response) ->
+      console.debug "LoginView#loginAbort", response
+      @displayErrors {}, response

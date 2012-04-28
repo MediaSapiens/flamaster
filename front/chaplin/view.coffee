@@ -276,10 +276,20 @@ allowed'
       $el.after error
       error.fadeIn()
 
-
     clearErrors: ->
       @$el.find(".control-group").removeClass 'error'
       @$el.find("span.help-inline.error").slideUp().remove()
+
+    # Process & render errors came either from the backend or were returned by
+    # the model validaton method
+    displayErrors: (model, response) =>
+      console.log "SignUpView#displayErrors"
+      if response.responseText?
+        for field, message of JSON.parse(response.responseText)
+          @renderError field, message
+      else
+        for field, message of response
+          @renderError field, message
 
     # Disposal
     # --------

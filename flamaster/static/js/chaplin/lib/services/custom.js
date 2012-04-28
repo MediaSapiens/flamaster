@@ -8,120 +8,72 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
 
   var Custom;
   return Custom = (function(_super) {
-    var facebookAppId, scope;
 
     __extends(Custom, _super);
 
     Custom.name = 'Custom';
 
-    facebookAppId = '115149731946795';
-
-    scope = 'user_likes';
-
-    Custom.prototype.name = 'facebook';
+    Custom.prototype.name = 'custom';
 
     Custom.prototype.status = null;
 
     Custom.prototype.accessToken = null;
 
+    Custom.prototype.sessionId = null;
+
     function Custom() {
       this.processUserData = __bind(this.processUserData, this);
-
-      this.processComment = __bind(this.processComment, this);
-
-      this.processLike = __bind(this.processLike, this);
-
-      this.facebookLogout = __bind(this.facebookLogout, this);
 
       this.publishAbortionResult = __bind(this.publishAbortionResult, this);
 
       this.loginHandler = __bind(this.loginHandler, this);
-
-      this.triggerLogin = __bind(this.triggerLogin, this);
 
       this.loginStatusHandler = __bind(this.loginStatusHandler, this);
 
       this.getLoginStatus = __bind(this.getLoginStatus, this);
 
       this.saveAuthResponse = __bind(this.saveAuthResponse, this);
-
-      this.sdkLoadHandler = __bind(this.sdkLoadHandler, this);
       Custom.__super__.constructor.apply(this, arguments);
-      utils.deferMethods({
-        deferred: this,
-        methods: ['parse', 'subscribe', 'postToGraph', 'getAccumulatedInfo', 'getInfo'],
-        onDeferral: this.loadSDK
-      });
-      utils.wrapAccumulators(this, ['getAccumulatedInfo']);
-      this.subscribeEvent('loginAbort', this.loginAbort);
+      console.debug('Custom#constructor');
       this.subscribeEvent('logout', this.logout);
     }
 
     Custom.prototype.dispose = function() {};
 
     Custom.prototype.loadSDK = function() {
-      if (this.state() === 'resolved' || this.loading) {
-        return;
-      }
-      this.loading = true;
-      window.fbAsyncInit = this.sdkLoadHandler;
-      return utils.loadLib('http://connect.facebook.net/en_US/all.js', null, this.reject);
-    };
-
-    Custom.prototype.sdkLoadHandler = function() {
-      this.loading = false;
-      try {
-        delete window.fbAsyncInit;
-      } catch (error) {
-        window.fbAsyncInit = void 0;
-      }
-      FB.init({
-        appId: facebookAppId,
-        status: true,
-        cookie: true,
-        xfbml: false
-      });
-      this.registerHandlers();
       return this.resolve();
     };
 
-    Custom.prototype.registerHandlers = function() {
-      this.subscribe('auth.logout', this.facebookLogout);
-      this.subscribe('edge.create', this.processLike);
-      return this.subscribe('comment.create', this.processComment);
-    };
-
     Custom.prototype.isLoaded = function() {
-      return Boolean(window.FB && FB.login);
+      return true;
     };
 
     Custom.prototype.saveAuthResponse = function(response) {
-      var authResponse;
-      this.status = response.status;
-      authResponse = response.authResponse;
-      if (authResponse) {
-        return this.accessToken = authResponse.accessToken;
-      } else {
-        return this.accessToken = null;
-      }
+      console.debug('Custom#saveAuthResponse', response);
+      this.status = !response.is_anonymous;
+      return this.sessionId = response.id;
     };
 
     Custom.prototype.getLoginStatus = function(callback, force) {
+      var response;
       if (callback == null) {
         callback = this.loginStatusHandler;
       }
       if (force == null) {
         force = false;
       }
-      return FB.getLoginStatus(callback, force);
+      console.debug('Custom#getLoginStatus');
+      response = $.get('/account/sessions/');
+      return response.success(callback);
     };
 
     Custom.prototype.loginStatusHandler = function(response) {
       var authResponse;
+      console.debug('Custom#loginStatusHandler', response);
       this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      if (authResponse) {
-        this.publishSession(authResponse);
+      authResponse = response.is_anonymous;
+      if (!authResponse) {
+        this.publishSession(response.id);
         return this.getUserData();
       } else {
         return mediator.publish('logout');
@@ -129,32 +81,27 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
     };
 
     Custom.prototype.triggerLogin = function(loginContext) {
-      return FB.login(_(this.loginHandler).bind(this, loginContext), {
-        scope: scope
+      console.debug('Custom#triggerLogin', loginContext, this.sessionId);
+      return $.ajax({
+        url: "/account/sessions/" + this.sessionId,
+        contentType: 'application/json',
+        type: 'put',
+        data: JSON.stringify(loginContext),
+        processData: false,
+        complete: _(this.loginHandler).bind(this)
       });
     };
 
-    Custom.prototype.loginHandler = function(loginContext, response) {
-      var authResponse;
-      this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      if (authResponse) {
-        mediator.publish('loginSuccessful', {
-          provider: this,
-          loginContext: loginContext
-        });
-        this.publishSession(authResponse);
-        return this.getUserData();
-      } else {
-        mediator.publish('loginAbort', {
-          provider: this,
-          loginContext: loginContext
-        });
-        return this.getLoginStatus(this.publishAbortionResult, true);
+    Custom.prototype.loginHandler = function(loginContext, status) {
+      console.debug('Custom#loginHandler', loginContext, status);
+      switch (status) {
+        case 'error':
+          return mediator.publish('loginAbort', JSON.parse(loginContext.responseText));
       }
     };
 
     Custom.prototype.publishSession = function(authResponse) {
+      console.debug('Custom#publishSession', authResponse);
       return mediator.publish('serviceProviderSession', {
         provider: this,
         userId: authResponse.userID,
@@ -184,65 +131,12 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
       }
     };
 
-    Custom.prototype.facebookLogout = function(response) {
-      return this.saveAuthResponse(response);
-    };
-
     Custom.prototype.logout = function() {
       return this.status = this.accessToken = null;
     };
 
-    Custom.prototype.processLike = function(url) {
-      return mediator.publish('facebookLike', url);
-    };
-
-    Custom.prototype.processComment = function(comment) {
-      return mediator.publish('facebookComment', comment.href);
-    };
-
-    Custom.prototype.parse = function(el) {
-      return FB.XFBML.parse(el);
-    };
-
-    Custom.prototype.subscribe = function(eventType, handler) {
-      return FB.Event.subscribe(eventType, handler);
-    };
-
-    Custom.prototype.unsubscribe = function(eventType, handler) {
-      return FB.Event.unsubscribe(eventType, handler);
-    };
-
-    Custom.prototype.postToGraph = function(ogResource, data, callback) {
-      return FB.api(ogResource, 'post', data, function(response) {
-        if (callback) {
-          return callback(response);
-        }
-      });
-    };
-
-    Custom.prototype.postToStream = function(data, callback) {
-      return this.postToGraph('/me/feed', data, callback);
-    };
-
-    Custom.prototype.getAccumulatedInfo = function(urls, callback) {
-      if (typeof urls === 'string') {
-        urls = [urls];
-      }
-      urls = _(urls).reduce(function(memo, url) {
-        if (memo) {
-          memo += ',';
-        }
-        return memo += encodeURIComponent(url);
-      }, '');
-      return FB.api("?ids=" + urls, callback);
-    };
-
-    Custom.prototype.getInfo = function(id, callback) {
-      return FB.api(id, callback);
-    };
-
     Custom.prototype.getUserData = function() {
-      return this.getInfo('/me', this.processUserData);
+      return console.debug('Custom#getUserData');
     };
 
     Custom.prototype.processUserData = function(response) {

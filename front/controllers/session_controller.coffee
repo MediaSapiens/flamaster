@@ -81,7 +81,8 @@ define [
     # Delegate the login to the selected service provider
     triggerLogin: (serviceProviderName, loginData) =>
       serviceProvider = SessionController.serviceProviders[serviceProviderName]
-      console.debug 'SessionController#triggerLogin', serviceProviderName, serviceProvider
+      console.debug 'SessionController#triggerLogin', serviceProviderName,
+                     serviceProvider.isLoaded()
 
       # Publish an event in case the provider SDK could not be loaded
       unless serviceProvider.isLoaded()
@@ -96,7 +97,7 @@ define [
 
     # Handler for the global loginAttempt event
     loginAttempt: =>
-      #console.debug 'SessionController#loginAttempt'
+      console.debug 'SessionController#loginAttempt'
 
     # Handler for the global serviceProviderSession event
     serviceProviderSession: (session) =>
