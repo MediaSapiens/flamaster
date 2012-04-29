@@ -154,14 +154,13 @@ class RoleResource(BaseResource):
     validation = t.Dict({'uid': t.Int})
 
     def get(self, id=None):
-        role_id = g.user.role_id
-        role = Role.get_or_404(role_id)
+        role = g.user.role
         role_dict = role.as_dict()
-        if id == role_id and 'administrator' != role.name:
+        if id == g.user.role and 'administrator' != g.user.role.name == 'administrator':
             return jsonify(role_dict)
 
-        'administrator' == role.name or abort(403)
-        users = db.session.query(User.id).filter_by(role_id=role_id).all()
+        role.name == 'administrator' or abort(403)
+        users = User.query.filter_by(role_id=role.id).all()
         try:
             page_size = t.Dict({'page_size': t.Int}).check(
                 request.json)['page_size']
@@ -172,8 +171,7 @@ class RoleResource(BaseResource):
         return jsonify(role_dict.as_dict())
 
     def put(self, id):
-        role = Role.get_or_404(g.user.role_id)
-        'administrator' == role.name or abort(403)
+        g.user.role.name == 'administrator' or abort(403)
         try:
             data = t.Dict({'uid': t.Int, 'role_id': t.Int}).check(
                 request.json)
@@ -181,7 +179,7 @@ class RoleResource(BaseResource):
         except t.DataError as e:
             data, status = e.as_dict(), 400
 
-        user = User.get(data['uid']).update({'role_id': data['role_id']})
+        user = User.get(data['uid']).update(role_id=data['role_id'])
         data = user.as_dict()
         return jsonify(data, status=status)
 
