@@ -72,6 +72,11 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/login.hbs'], functio
       return this.displayErrors({}, response);
     };
 
+    LoginView.prototype.dispose = function() {
+      $("#login").modal('hide');
+      return LoginView.__super__.dispose.apply(this, arguments);
+    };
+
     return LoginView;
 
   })(View);

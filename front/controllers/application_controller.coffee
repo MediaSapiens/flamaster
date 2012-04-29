@@ -14,6 +14,7 @@ define [
       @initSidebars()
 
       @subscribeEvent 'loginStatus', @loginStatus
+      @subscribeEvent 'loginSuccessful', @loginStatus
 
     initApplicationView: ->
       new ApplicationView()

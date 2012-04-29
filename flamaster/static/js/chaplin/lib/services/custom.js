@@ -112,22 +112,20 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/lib/services/service_p
 
     Custom.prototype.publishAbortionResult = function(response) {
       var authResponse;
+      console.log("Custom#publishAbortionResult", response);
       this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      if (authResponse) {
-        mediator.publish('loginSuccessful', {
-          provider: this,
-          loginContext: loginContext
-        });
+      authResponse = response.is_anonymous;
+      if (!authResponse) {
+        mediator.publish('loginSuccessful', response);
         mediator.publish('loginSuccessfulThoughAborted', {
           provider: this,
-          loginContext: loginContext
+          response: response
         });
-        return this.publishSession(authResponse);
+        return this.publishSession(response);
       } else {
         return mediator.publish('loginFail', {
           provider: this,
-          loginContext: loginContext
+          response: response
         });
       }
     };

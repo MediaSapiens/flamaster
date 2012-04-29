@@ -22,7 +22,8 @@ define(['chaplin/mediator', 'chaplin/controller', 'chaplin/application_view', 'c
       console.log("ApplicationController#initialized");
       this.initApplicationView();
       this.initSidebars();
-      return this.subscribeEvent('loginStatus', this.loginStatus);
+      this.subscribeEvent('loginStatus', this.loginStatus);
+      return this.subscribeEvent('loginSuccessful', this.loginStatus);
     };
 
     ApplicationController.prototype.initApplicationView = function() {

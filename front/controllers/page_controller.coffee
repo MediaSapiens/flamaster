@@ -22,5 +22,4 @@ define [
       nUser = User.extend urlRoot: '/account/sessions/'
       @view = new SignUpView model: new nUser
 
-    dashboard: ->
-      @view = new DashboardView
+    dashboard: -> @view = new DashboardView

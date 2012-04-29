@@ -19,12 +19,12 @@ define [
       # mediator.publish '!showLogin'
       # global events
       @subscribeEvent 'startupController', @render
-      # model events
-      @modelBind 'change:routes', @render
       # user events
       @delegate 'click', '.n-signin a', @showLoginDialog
+      @delegate 'click', '.n-signout a', @logout
 
     showLoginDialog: (ev) ->
       mediator.publish '!showLogin'
       $("#login").modal show: true
 
+    logout: -> mediator.publish '!logout'

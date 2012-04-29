@@ -101,7 +101,7 @@ define [
     serviceProviderSession: (session) =>
       # Save the session provider used for login
       @serviceProviderName = session.provider.name
-      # console.debug 'SessionController#serviceProviderSession', session, @serviceProviderName
+      console.debug 'SessionController#serviceProviderSession', session, @serviceProviderName
       # Hide the login view
       @hideLoginView()
 

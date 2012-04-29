@@ -93,20 +93,21 @@ define [
 
     # Check login status after abort and publish success or failure
     publishAbortionResult: (response) =>
+      console.log "Custom#publishAbortionResult", response
       @saveAuthResponse response
-      authResponse = response.authResponse
+      authResponse = response.is_anonymous
 
-      if authResponse
-        mediator.publish 'loginSuccessful', {provider: this, loginContext}
+      unless authResponse
+        mediator.publish 'loginSuccessful', response
         mediator.publish 'loginSuccessfulThoughAborted', {
-          provider: this, loginContext
+          provider: this, response
         }
 
-        @publishSession authResponse
+        @publishSession response
 
       else
         # Login failed ultimately
-        mediator.publish 'loginFail', {provider: this, loginContext}
+        mediator.publish 'loginFail', {provider: this, response}
 
     # Handler for the global logout event
     logout: ->

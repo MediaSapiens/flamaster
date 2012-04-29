@@ -1,5 +1,13 @@
 body {
     margin-top: 10px;
+    &.logged-in {
+        .n-signin, .n-signup { display: none; }
+        .n-signout { display: block; }
+    }
+    &.logged-out {
+        .n-signin, .n-signup { display: block; }
+        .n-signout { display: none; }
+    }
 }
 
 .profile-wizard {

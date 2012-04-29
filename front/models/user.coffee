@@ -1,6 +1,7 @@
 define [
-    'chaplin/model'
-], (Model) ->
+  'chaplin/mediator',
+  'chaplin/model'
+], (mediator, Model) ->
   'use strict'
 
   class User extends Model
@@ -20,3 +21,11 @@ define [
         response = status: 'failed', email: 'This is not valid email address'
 
       return response.status isnt 'success' and response or null
+
+    dispose: ->
+      deffered = $.ajax
+        url: "/account/sessions/#{encodeURI(@get 'accessToken')}"
+        type: 'delete'
+        complete: ->
+          mediator.router.route '/'
+      super

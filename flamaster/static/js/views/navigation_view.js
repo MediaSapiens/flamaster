@@ -31,8 +31,8 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/navigation.hbs'], fu
     NavigationView.prototype.initialize = function() {
       NavigationView.__super__.initialize.apply(this, arguments);
       this.subscribeEvent('startupController', this.render);
-      this.modelBind('change:routes', this.render);
-      return this.delegate('click', '.n-signin a', this.showLoginDialog);
+      this.delegate('click', '.n-signin a', this.showLoginDialog);
+      return this.delegate('click', '.n-signout a', this.logout);
     };
 
     NavigationView.prototype.showLoginDialog = function(ev) {
@@ -40,6 +40,10 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/navigation.hbs'], fu
       return $("#login").modal({
         show: true
       });
+    };
+
+    NavigationView.prototype.logout = function() {
+      return mediator.publish('!logout');
     };
 
     return NavigationView;

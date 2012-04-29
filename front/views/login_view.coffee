@@ -50,3 +50,7 @@ define [
     loginFailed: (response) ->
       console.debug "LoginView#loginFailed", response
       @displayErrors {}, response
+
+    dispose: ->
+      $("#login").modal 'hide'
+      super

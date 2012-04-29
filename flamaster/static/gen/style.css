@@ -1,6 +1,20 @@
 body {
   margin-top: 10px;
 }
+body.logged-in .n-signin,
+body.logged-in .n-signup {
+  display: none;
+}
+body.logged-in .n-signout {
+  display: block;
+}
+body.logged-out .n-signin,
+body.logged-out .n-signup {
+  display: block;
+}
+body.logged-out .n-signout {
+  display: none;
+}
 .profile-wizard .form-container {
   margin: auto;
   float: none;

@@ -110,6 +110,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
 
     SessionController.prototype.serviceProviderSession = function(session) {
       this.serviceProviderName = session.provider.name;
+      console.debug('SessionController#serviceProviderSession', session, this.serviceProviderName);
       this.hideLoginView();
       session.id = session.userId;
       delete session.userId;
