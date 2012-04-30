@@ -12,9 +12,6 @@ define [
       options.path or ''
 
     index: ->
-      unless mediator.user
-        @view = new IndexView
-      else
         @view = new DashboardView
 
 

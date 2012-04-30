@@ -25,5 +25,5 @@ define [
 
     loginStatus: (loggedIn) ->
       # console.debug 'ApplicationController#loginStatus'
-      mediator.router.route('/dashboard') if loggedIn
+      mediator.router.route('/') if loggedIn
 
