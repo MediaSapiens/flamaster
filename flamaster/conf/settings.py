@@ -12,7 +12,7 @@ MAIL_FAIL_SILENTLY = True
 ADMINS = ('admin@example.com', )
 
 ASSETS_DEBUG = DEBUG
-ASSETS_MANIFEST = False
+# ASSETS_MANIFEST = False
 ASSETS_CACHE = True
 
 try:
