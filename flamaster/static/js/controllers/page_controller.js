@@ -22,11 +22,7 @@ define(['chaplin/mediator', 'chaplin/controller', 'models/user', 'views/index_vi
     };
 
     PageController.prototype.index = function() {
-      if (!mediator.user) {
-        return this.view = new IndexView;
-      } else {
-        return this.view = new DashboardView;
-      }
+      return this.view = new DashboardView;
     };
 
     PageController.prototype.signup = function() {

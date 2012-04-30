@@ -36,7 +36,7 @@ define(['chaplin/mediator', 'chaplin/controller', 'chaplin/application_view', 'c
 
     ApplicationController.prototype.loginStatus = function(loggedIn) {
       if (loggedIn) {
-        return mediator.router.route('/dashboard');
+        return mediator.router.route('/');
       }
     };
 

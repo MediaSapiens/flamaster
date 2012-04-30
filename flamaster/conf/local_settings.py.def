@@ -1,5 +1,7 @@
 DEBUG = True
 USE_X_SENDFILE = False
 
-SQLALCHEMY_ECHO = False
-SQLALCHEMY_DATABASE_URI = "mysql://root:root@localhost/flamaster"
+SQLALCHEMY_ECHO = True
+SQLALCHEMY_DATABASE_URI = "mysql://root@localhost/flamaster"
+
+ASSETS_DEBUG = DEBUG
