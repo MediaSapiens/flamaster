@@ -1,7 +1,7 @@
 import uuid
 
 from flask import abort, g, request, session
-from flamaster.app import db, app
+from flamaster.app import app
 
 import trafaret as t
 
@@ -48,6 +48,7 @@ class SessionResource(BaseResource):
         except t.DataError as e:
             response, status = e.as_dict(), 404
             session.update({'is_anonymous': True})
+
         return jsonify(response, status=status)
 
     def delete(self, id):
@@ -160,15 +161,16 @@ class RoleResource(BaseResource):
             return jsonify(role_dict)
 
         role.name == app.config['ADMIN_ROLE'] or abort(403)
-        users = User.query.filter_by(role_id=role.id).all()
+        users = User.query.filter_by(role_id=role.id)\
+                    .with_entities(User.id).all()
         try:
             page_size = t.Dict({'page_size': t.Int}).check(
                 request.json)['page_size']
         except t.DataError:
             page_size = app.config['DEFAULT_PAGE_SIZE']
 
-        role_dict.update({'total': len(users), 'users': users[:page_size]})
-        return jsonify(role_dict.as_dict())
+        role_dict.update({'total': len(users), 'users_id': users[:page_size]})
+        return jsonify(role_dict)
 
     def put(self, id):
         g.user.role.name == app.config['ADMIN_ROLE'] or abort(403)
@@ -179,8 +181,10 @@ class RoleResource(BaseResource):
         except t.DataError as e:
             data, status = e.as_dict(), 400
 
-        user = User.get(data['uid']).update(role_id=data['role_id'])
-        data = user.as_dict()
+        if status == 201:
+            data = User.get(data['uid']).update(
+                role_id=data['role_id']).as_dict()
+
         return jsonify(data, status=status)
 
     # def post(self):
