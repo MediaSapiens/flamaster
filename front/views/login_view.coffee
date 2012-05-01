@@ -15,6 +15,8 @@ define [
     initialize: (options) ->
       super
 
+      @subscribeEvent 'loginFail', @loginFailed
+
       for serviceProviderName, serviceProvider of options.serviceProviders
         console.log "LoginView", serviceProviderName
 
@@ -27,6 +29,7 @@ define [
         @delegate 'click', buttonSelector, loginHandler
 
     loginWith: (serviceProviderName, serviceProvider, e) ->
+      @clearErrors()
       @preventDefault(e)
       return unless serviceProvider.isLoaded()
 
@@ -36,5 +39,18 @@ define [
       mediator.publish 'login:pickService', serviceProviderName
       mediator.publish '!login', serviceProviderName, @loginData
 
-      console.debug "LoginView#loginWith",
-        serviceProviderName, serviceProvider
+    getTemplateData: ->
+      data =
+        form:
+          id: 'login-form'
+          method: 'post'
+          action: '.'
+      data
+
+    loginFailed: (response) ->
+      console.debug "LoginView#loginFailed", response
+      @displayErrors {}, response
+
+    dispose: ->
+      $("#login").modal 'hide'
+      super

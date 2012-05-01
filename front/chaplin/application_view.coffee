@@ -23,7 +23,6 @@ define ['chaplin/mediator', 'chaplin/lib/utils'], (mediator, utils) ->
 
     constructor: ->
       @logout() unless mediator.user
-
       # Listen to global events
       mediator.subscribe 'matchRoute', @matchRoute
       mediator.subscribe '!startupController', @startupController

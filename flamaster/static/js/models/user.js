@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/model'], function(Model) {
+define(['chaplin/mediator', 'chaplin/model'], function(mediator, Model) {
   'use strict';
 
   var User;
@@ -17,6 +17,8 @@ define(['chaplin/model'], function(Model) {
     }
 
     User.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+
+    User.prototype.urlRoot = '/account/profiles/';
 
     User.prototype.defaults = {
       email: ''
@@ -38,6 +40,18 @@ define(['chaplin/model'], function(Model) {
         };
       }
       return response.status !== 'success' && response || null;
+    };
+
+    User.prototype.dispose = function() {
+      var deffered;
+      deffered = $.ajax({
+        url: "/account/sessions/" + (encodeURI(this.get('accessToken'))),
+        type: 'delete',
+        complete: function() {
+          return mediator.router.route('/');
+        }
+      });
+      return User.__super__.dispose.apply(this, arguments);
     };
 
     return User;

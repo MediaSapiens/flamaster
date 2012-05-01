@@ -29,6 +29,7 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/login.hbs'], functio
     LoginView.prototype.initialize = function(options) {
       var buttonSelector, loginHandler, serviceProvider, serviceProviderName, _ref, _results;
       LoginView.__super__.initialize.apply(this, arguments);
+      this.subscribeEvent('loginFail', this.loginFailed);
       _ref = options.serviceProviders;
       _results = [];
       for (serviceProviderName in _ref) {
@@ -42,6 +43,7 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/login.hbs'], functio
     };
 
     LoginView.prototype.loginWith = function(serviceProviderName, serviceProvider, e) {
+      this.clearErrors();
       this.preventDefault(e);
       if (!serviceProvider.isLoaded()) {
         return;
@@ -50,8 +52,29 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/login.hbs'], functio
         this.loginData = this.serializeForm(this.$el.find('form'));
       }
       mediator.publish('login:pickService', serviceProviderName);
-      mediator.publish('!login', serviceProviderName, this.loginData);
-      return console.debug("LoginView#loginWith", serviceProviderName, serviceProvider);
+      return mediator.publish('!login', serviceProviderName, this.loginData);
+    };
+
+    LoginView.prototype.getTemplateData = function() {
+      var data;
+      data = {
+        form: {
+          id: 'login-form',
+          method: 'post',
+          action: '.'
+        }
+      };
+      return data;
+    };
+
+    LoginView.prototype.loginFailed = function(response) {
+      console.debug("LoginView#loginFailed", response);
+      return this.displayErrors({}, response);
+    };
+
+    LoginView.prototype.dispose = function() {
+      $("#login").modal('hide');
+      return LoginView.__super__.dispose.apply(this, arguments);
     };
 
     return LoginView;

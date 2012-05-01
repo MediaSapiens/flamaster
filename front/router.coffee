@@ -10,8 +10,10 @@ define ['chaplin/mediator', 'chaplin/lib/route'], (mediator, Route) ->
 
       # ---- THE INTREDASTING PART STARTS: ---- #
 
+      # PageController routes
       @match '', 'page#index'
       @match 'signup', 'page#signup'
+      @match 'dashboard', 'page#dashboard'
 
       # ---- THE INTREDASTING PART ENDS. ---- #
 
@@ -36,7 +38,7 @@ define ['chaplin/mediator', 'chaplin/lib/route'], (mediator, Route) ->
 
     # Route a given URL path manually, return whether a route matched
     route: (path) =>
-      # console.debug 'Router#route', path
+      console.debug 'Router#route', path
       # Remove leading hash or slash
       path = path.replace /^(\/#|\/)/, ''
       for handler in Backbone.history.handlers

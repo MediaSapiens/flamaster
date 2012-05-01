@@ -25,6 +25,11 @@ define ->
   mediator.unsubscribe = mediator.off     = Backbone.Events.off
   mediator.publish     = mediator.trigger = Backbone.Events.trigger
 
+  mediator.publish = (args...) ->
+    console.log "signal:", args[0]
+    Backbone.Events.trigger.apply(@, args)
+
+  mediator.trigger = mediator.publish
   # Make subscribe, unsubscribe and publish properties readonly
   if Object.defineProperties
     desc = writable: false

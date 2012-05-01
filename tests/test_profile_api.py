@@ -1,7 +1,6 @@
 from flask import json
 
 from flamaster.app import db, app
-from flamaster.account.models import User
 
 from .conftest import login, url_client, create_user
 

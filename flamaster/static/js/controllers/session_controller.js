@@ -35,6 +35,7 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     SessionController.prototype.serviceProviderName = null;
 
     SessionController.prototype.initialize = function() {
+      console.debug('SessionController#initialize');
       this.subscribeEvent('loginAttempt', this.loginAttempt);
       this.subscribeEvent('serviceProviderSession', this.serviceProviderSession);
       this.subscribeEvent('logout', this.logout);
@@ -95,7 +96,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     SessionController.prototype.triggerLogin = function(serviceProviderName, loginData) {
       var serviceProvider;
       serviceProvider = SessionController.serviceProviders[serviceProviderName];
-      console.debug('SessionController#triggerLogin', serviceProviderName, serviceProvider);
       if (!serviceProvider.isLoaded()) {
         mediator.publish('serviceProviderMissing', serviceProviderName);
         return;
@@ -104,10 +104,13 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
       return serviceProvider.triggerLogin(loginData);
     };
 
-    SessionController.prototype.loginAttempt = function() {};
+    SessionController.prototype.loginAttempt = function() {
+      return console.debug('SessionController#loginAttempt');
+    };
 
     SessionController.prototype.serviceProviderSession = function(session) {
       this.serviceProviderName = session.provider.name;
+      console.debug('SessionController#serviceProviderSession', session, this.serviceProviderName);
       this.hideLoginView();
       session.id = session.userId;
       delete session.userId;
@@ -126,7 +129,6 @@ define(['chaplin/mediator', 'chaplin/lib/utils', 'chaplin/controller', 'chaplin/
     };
 
     SessionController.prototype.logout = function() {
-      console.debug('SessionController#logout');
       this.loginStatusDetermined = true;
       if (mediator.user) {
         mediator.user.dispose();

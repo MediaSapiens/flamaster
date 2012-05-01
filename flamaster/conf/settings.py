@@ -6,14 +6,14 @@ USE_X_SENDFILE = True
 SQLALCHEMY_DATABASE_URI = "mysql://flamaster@localhost.localdomain/flamaster"
 SQLALCHEMY_ECHO = False
 
-DEFAULT_MAIL_SENDER = "<noreply@findevent.com>"
+DEFAULT_PAGE_SIZE = 100
+DEFAULT_MAIL_SENDER = "<noreply@example.com>"
 MAIL_FAIL_SILENTLY = True
-ADMINS = ('admin@findevent.com', )
+ADMINS = ('admin@example.com', )
 
-ASSETS_DEBUG = False
-ASSETS_MANIFEST = False
-ASSETS_CACHE = False
-
+ASSETS_DEBUG = DEBUG
+# ASSETS_MANIFEST = False
+ASSETS_CACHE = True
 
 try:
     from local_settings import *

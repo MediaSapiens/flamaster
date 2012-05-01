@@ -172,7 +172,7 @@ class Role(db.Model, CRUDMixin):
                             backref=db.backref('role', lazy='joined'))
     permissions = db.relationship('Permissions', secondary=role_permissions,
                                   lazy='dynamic',
-                                  backref=db.backref('role', lazy='joined'))
+                                  backref=db.backref('roles', lazy='joined'))
 
     def __init__(self, name):
         self.name = name
@@ -181,7 +181,7 @@ class Role(db.Model, CRUDMixin):
         return "<Role: %r>" % self.name
 
     @classmethod
-    def get_or_create(cls, name):
+    def get_or_create(cls, name='user'):
         return cls.query.filter_by(name=name).first() or cls.create(name=name)
 
 
@@ -190,6 +190,7 @@ class Permissions(db.Model, CRUDMixin):
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'permissions'
 
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String(255))
 

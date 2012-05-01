@@ -14,8 +14,6 @@ define(['chaplin/view', 'text!templates/sign_up.hbs', 'text!templates/sign_up_co
     SignUpView.name = 'SignUpView';
 
     function SignUpView() {
-      this.displayErrors = __bind(this.displayErrors, this);
-
       this.signUp = __bind(this.signUp, this);
       return SignUpView.__super__.constructor.apply(this, arguments);
     }
@@ -58,27 +56,6 @@ define(['chaplin/view', 'text!templates/sign_up.hbs', 'text!templates/sign_up_co
         },
         error: this.displayErrors
       });
-    };
-
-    SignUpView.prototype.displayErrors = function(model, response) {
-      var field, message, _ref, _results, _results1;
-      console.log("SignUpView#displayErrors");
-      if (response.responseText != null) {
-        _ref = JSON.parse(response.responseText);
-        _results = [];
-        for (field in _ref) {
-          message = _ref[field];
-          _results.push(this.renderError(field, message));
-        }
-        return _results;
-      } else {
-        _results1 = [];
-        for (field in response) {
-          message = response[field];
-          _results1.push(this.renderError(field, message));
-        }
-        return _results1;
-      }
     };
 
     return SignUpView;

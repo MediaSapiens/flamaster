@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/view', 'text!templates/navigation.hbs'], function(View, template) {
+define(['chaplin/mediator', 'chaplin/view', 'text!templates/navigation.hbs'], function(mediator, View, template) {
   'use strict';
 
   var NavigationView;
@@ -31,15 +31,19 @@ define(['chaplin/view', 'text!templates/navigation.hbs'], function(View, templat
     NavigationView.prototype.initialize = function() {
       NavigationView.__super__.initialize.apply(this, arguments);
       this.subscribeEvent('startupController', this.render);
-      this.modelBind('change:routes', this.render);
-      return this.delegate('click', '.n-signin a', this.showLoginDialog);
+      this.delegate('click', '.n-signin a', this.showLoginDialog);
+      return this.delegate('click', '.n-signout a', this.logout);
     };
 
     NavigationView.prototype.showLoginDialog = function(ev) {
-      console.log(ev);
-      return $("#dialogs #login").modal({
+      mediator.publish('!showLogin');
+      return $("#login").modal({
         show: true
       });
+    };
+
+    NavigationView.prototype.logout = function() {
+      return mediator.publish('!logout');
     };
 
     return NavigationView;

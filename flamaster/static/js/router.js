@@ -17,7 +17,8 @@ define(['chaplin/mediator', 'chaplin/lib/route'], function(mediator, Route) {
 
     Router.prototype.registerRoutes = function() {
       this.match('', 'page#index');
-      return this.match('signup', 'page#signup');
+      this.match('signup', 'page#signup');
+      return this.match('dashboard', 'page#dashboard');
     };
 
     Router.prototype.startHistory = function() {
@@ -38,6 +39,7 @@ define(['chaplin/mediator', 'chaplin/lib/route'], function(mediator, Route) {
 
     Router.prototype.route = function(path) {
       var handler, _i, _len, _ref;
+      console.debug('Router#route', path);
       path = path.replace(/^(\/#|\/)/, '');
       _ref = Backbone.history.handlers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {

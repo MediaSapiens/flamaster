@@ -28,15 +28,15 @@ def request_reset():
 @account.route('/reset/<token>/', methods=['GET', 'POST'])
 def confirm_reset(token):
     user = User.validate_token(token) or abort(403)
+
     if len(request.form) and request.method == 'POST':
         try:
             validate_password_change(request.form.to_dict())
         except t.DataError as e:
-            error = " ".join(e.as_dict().values())
             return render_template('password_reset_confirm.html',
-                                   token=token, error=error)
+                                   token=token, error=e)
 
-        user.set_password(request.form.get('password')).save()
+        user.set_password(request.form['password']).save()
         return redirect(url_for('core.index'))
 
     return render_template('password_reset_confirm.html', token=token)
