@@ -52,9 +52,7 @@ def test_authorization():
         resp = login(c, 'test@example.com', 'test')
         j_resp = json.loads(resp.data)
 
-        #?????
-        assert 'email' in j_resp
-        #-------------------------
+        assert 'uid' in j_resp
         assert isinstance(session['uid'], long)
         assert session['is_anonymous'] == False
 
@@ -63,10 +61,10 @@ def test_authorization():
 def test_authorization_failed():
     with app.test_client() as c:
         resp = login(c, 'test@example.com', 'test')
-        j_resp = json.loads(resp.data)
-        assert 'email' in j_resp
-        assert session['is_anonymous'] == True
-
+        assert resp.status_code == 404
+        # j_resp = json.loads(resp.data)
+        # assert 'email' in j_resp
+        # assert session['is_anonymous'] == True
 
 def teardown_module(module):
     db.drop_all()

@@ -1,9 +1,9 @@
-from flask import url_for, session
+from flask import url_for, session, g
 from flask.helpers import json
 from flamaster.app import app, db
-from flamaster.account.models import User
+from flamaster.account.models import Role, User
 
-from .conftest import create_user, url_client, login#, request_context
+from .conftest import create_user, url_client, login #, request_context
 
 
 def setup_module(module):
@@ -12,12 +12,48 @@ def setup_module(module):
         create_user()
 
 
-@url_client('account.roles')
-def test_address_creation_failed_unauth(url, client):
+@url_client('account.roles', id=1)
+def test_user_role(url, client):
     login(client)
-    resp = client.get(url, content_type='application/json')
+    resp = client.get(url)
     assert resp.status_code == 200
-    assert resp.data == {}
+    assert 'id' in resp.data
+    assert 'name' in resp.data
+
+
+@url_client('account.roles', id=2)
+def test_role_administrator(url, client):
+    login(client)
+    resp = client.get(url)
+    assert resp.status_code == 403
+    role = Role.get_or_create(**{'name': 'administrator'})
+    User.get(1).update(**{'role': role})
+    login(client)
+    resp = client.get(url, data=json.dumps({'page_size': 2}),
+                      content_type='application/json')
+    assert resp.status_code == 200
+    assert 'total' in resp.data
+    assert 'name' in resp.data
+    assert 'users_id' in resp.data
+    resp = client.get(url, data=json.dumps({'page_size': 'xxx'}),
+                      content_type='application/json')
+    assert resp.status_code == 200
+    resp = client.put(url, data=json.dumps({'uid': 2, 'role_id': 2}),
+                      content_type='application/json')
+    assert resp.status_code == 201
+    assert User.get(2).role_id == 2
+    resp = client.put(url, data=json.dumps({'uid': 'xxx', 'role_id': 2}),
+                      content_type='application/json')
+    assert resp.status_code == 400
+
+
+@url_client('account.roles', id=1)
+def test_role_update_failed(url, client):
+    user = User.create(email='nobody@gmail.com')
+    user.set_password('password').save()
+    login(client, email='nobody@gmail.com', password='password')
+    resp = client.put(url)
+    assert resp.status_code == 403
 
 
 def teardown_module(module):
