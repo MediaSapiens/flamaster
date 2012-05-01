@@ -176,7 +176,7 @@ class Role(db.Model, CRUDMixin):
 
     name = db.Column(db.String(255), unique=True, nullable=False)
     users = db.relationship('User', lazy='dynamic',
-                            backref=db.backref('role', lazy='joined'))
+                            backref=db.backref('roles', lazy='joined'))
     permissions = db.relationship('Permissions', secondary=role_permissions,
                                   lazy='dynamic',
                                   backref=db.backref('roles', lazy='joined'))

@@ -10,7 +10,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
 from . import account
-from .models import User, Address
+from .models import User, Address, Role
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 

@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 from flask import g, url_for
 from conftest import create_user, request_context, login
 
 from flamaster.app import db, app
 from flamaster.account.models import Role, User, Permissions
 from flamaster.core.utils import check_permission
+=======
+from flamaster.core.utils import check_permission
+from flask import g, url_for
+from flamaster.app import db, app
+from conftest import create_user, request_context, login
+from flamaster.account.models import Role, User, Permissions
+>>>>>>> 911b741acfc34e42a95ab6631f4cc94f7480bfd5
 
 
 def setup_module(module):
