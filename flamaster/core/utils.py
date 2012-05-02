@@ -3,6 +3,7 @@ import types
 import trafaret as t
 
 from datetime import datetime
+
 from trafaret.extras import KeysSubset
 
 from flask import current_app, request, g
