@@ -157,7 +157,7 @@ class RoleResource(BaseResource):
     def get(self, id=None):
         role = g.user.role
         role_dict = role.as_dict()
-        if id == g.user.role and app.config['ADMIN_ROLE'] != g.user.role.name:
+        if id == g.user.role_id and app.config['ADMIN_ROLE'] != g.user.role.name:
             return jsonify(role_dict)
 
         role.name == app.config['ADMIN_ROLE'] or abort(403)

@@ -67,10 +67,10 @@ def test_addresses_get_success(url, client):
 
 
 @url_client('account.addresses', id=1)
-def test_addresses_put_401(url, client):
+def test_addresses_put_403(url, client):
     Address.create(**dafault_address)
     resp = client.put(url, content_type='application/json')
-    assert resp.status_code == 401
+    assert resp.status_code == 403
 
 
 @url_client('account.addresses', id=1)

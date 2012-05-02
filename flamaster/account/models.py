@@ -188,7 +188,7 @@ class Role(db.Model, CRUDMixin):
         return "<Role: %r>" % self.name
 
     @classmethod
-    def get_or_create(cls, name='user'):
+    def get_or_create(cls, name=app.config['USER_ROLE']):
         return cls.query.filter_by(name=name).first() or cls.create(name=name)
 
 

@@ -1,9 +1,8 @@
-from flask import url_for, session, g
 from flask.helpers import json
 from flamaster.app import app, db
 from flamaster.account.models import Role, User
 
-from .conftest import create_user, url_client, login #, request_context
+from .conftest import create_user, url_client, login
 
 
 def setup_module(module):
@@ -26,7 +25,7 @@ def test_role_administrator(url, client):
     login(client)
     resp = client.get(url)
     assert resp.status_code == 403
-    role = Role.get_or_create(**{'name': 'administrator'})
+    role = Role.get_or_create(**{'name': app.config['ADMIN_ROLE']})
     User.get(1).update(**{'role': role})
     login(client)
     resp = client.get(url, data=json.dumps({'page_size': 2}),
