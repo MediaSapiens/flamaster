@@ -1,3 +1,5 @@
+import urllib2
+
 from flamaster.app import db, app
 from conftest import url_client, create_user, valid_user, request_context
 from flamaster.app import mail
@@ -31,10 +33,7 @@ def test_request_reset_post_302(url, client):
         resp = client.post(url, data=data)
 
         assert len(outbox) == 1
-        assert valid_user().create_token().replace(
-            '\n', '%0A').replace(
-            '=', '%3D').replace(
-            '$', '%24') in outbox[0].body
+        assert urllib2.quote(valid_user().create_token()) in outbox[0].body
 
     assert resp.status_code == 302
 
@@ -52,20 +51,20 @@ def test_valid_token():
         resp = c.get(url)
         assert resp.status_code == 200
 
-# ?????
+
 @request_context
 def test_valid_token_not_valid_data():
     url = url_for('account.confirm_reset', token=valid_user().create_token())
     with app.test_client() as c:
         resp = c.post(url, data={'password': '111', 'password_confirm': ''})
         assert resp.status_code == 200
-        assert "Passwords don't match" in resp.data
+        assert "Passwords don&#39;t match" in resp.data
         resp = c.post(url, data={'password': '', 'password_confirm': '111'})
         assert resp.status_code == 200
-        assert 'blank value is not allowed' in resp.data
+        assert "Passwords don&#39;t match" in resp.data
         resp = c.post(url, data={'password': '111', 'password_confirm': '222'})
         assert resp.status_code == 200
-        assert 'Not equal' in resp.data
+        assert "Passwords don&#39;t match" in resp.data
         resp = c.post(url, data={'password': '111', 'password_confirm': '111'})
         assert resp.status_code == 302
 

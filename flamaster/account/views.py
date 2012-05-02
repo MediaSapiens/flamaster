@@ -32,7 +32,6 @@ def confirm_reset(token):
         try:
             validate_password_change(request.form.to_dict())
         except t.DataError as e:
-            print e.as_dict().values()[0]
             return render_template('password_reset_confirm.html',
                                    token=token, error=e.as_dict().values()[0])
 
