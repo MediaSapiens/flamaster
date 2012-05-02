@@ -1,9 +1,9 @@
 import urllib2
 
-from flamaster.app import db, app
 from conftest import url_client, create_user, valid_user, request_context
-from flamaster.app import mail
 from flask import url_for
+
+from flamaster.app import db, app, mail
 
 
 def setup_module(module):
@@ -21,7 +21,7 @@ def test_request_reset_get(url, client):
 
 @url_client('account.request_reset')
 def test_request_reset_post_404(url, client):
-    data={'email': 'no_test@example.com'}
+    data = {'email': 'no_test@example.com'}
     resp = client.post(url, data=data)
     assert resp.status_code == 404
 

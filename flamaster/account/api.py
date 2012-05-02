@@ -10,7 +10,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
 from . import account
-from .models import User, Address, Role
+from .models import User, Address
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 
@@ -126,7 +126,7 @@ class AddressResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        uid = self.current_user or abort(401)
+        uid = self.current_user or abort(403)
         data = request.json or abort(400)
         data.update({'user_id': uid})
         self.validation.make_optional('apartment', 'zip_code', 'user_id')
@@ -157,12 +157,12 @@ class RoleResource(BaseResource):
     def get(self, id=None):
         role = g.user.role
         role_dict = role.as_dict()
-        if id == g.user.role_id and 'administrator' != g.user.role.name:
+        if id == g.user.role and app.config['ADMIN_ROLE'] != g.user.role.name:
             return jsonify(role_dict)
 
-        role.name == 'administrator' or abort(403)
-        users = User.query.filter_by(
-            role_id=role.id).with_entities(User.id).all()
+        role.name == app.config['ADMIN_ROLE'] or abort(403)
+        users = User.query.filter_by(role_id=role.id)\
+                    .with_entities(User.id).all()
         try:
             page_size = t.Dict({'page_size': t.Int}).check(
                 request.json)['page_size']
@@ -173,7 +173,7 @@ class RoleResource(BaseResource):
         return jsonify(role_dict)
 
     def put(self, id):
-        g.user.role.name == 'administrator' or abort(403)
+        g.user.role.name == app.config['ADMIN_ROLE'] or abort(403)
         try:
             data = t.Dict({'uid': t.Int, 'role_id': t.Int}).check(
                 request.json)

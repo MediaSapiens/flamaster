@@ -4,11 +4,10 @@ import random
 from datetime import datetime
 from time import mktime
 
+from sqlalchemy import Table
 from sqlalchemy.orm import class_mapper
 
 from flamaster.app import db, app
-from sqlalchemy import Table
-
 from flamaster.core.utils import get_hexdigest
 
 
@@ -101,8 +100,8 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def create(cls, **kwargs):
-        admin = Role.get_or_create(name='administrator')
-        user = Role.get_or_create(name='user')
+        admin = Role.get_or_create(name=app.config['ADMIN_ROLE'])
+        user = Role.get_or_create(name=app.config['USER_ROLE'])
         instance = cls(**kwargs).set_password('*')
         if instance.email in app.config['ADMINS']:
             instance.role = admin
@@ -130,9 +129,10 @@ class User(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         if not self.role_id and self.email not in app.config['ADMINS']:
-            self.role_id = Role.get_or_create().id
-        elif not self.role_id and self.email in app.config['ADMINS']:
-            self.role_id = Role.get_or_create('administrator').id
+            self.role = Role.get_or_create(name=app.config['USER_ROLE'])
+        elif not self.role and self.email in app.config['ADMINS']:
+            self.role = Role.get_or_create(name=app.config['ADMIN_ROLE'])
+
         return super(User, self).save(commit=commit)
 
 
