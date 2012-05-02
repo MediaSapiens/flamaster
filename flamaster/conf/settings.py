@@ -11,6 +11,9 @@ DEFAULT_MAIL_SENDER = "<noreply@example.com>"
 MAIL_FAIL_SILENTLY = True
 ADMINS = ('admin@example.com', )
 
+USER_ROLE = 'user'
+ADMIN_ROLE = 'admin'
+
 ASSETS_DEBUG = DEBUG
 # ASSETS_MANIFEST = False
 ASSETS_CACHE = True

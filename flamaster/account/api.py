@@ -1,7 +1,7 @@
 import uuid
 
 from flask import abort, g, request, session
-from flamaster.app import db, app
+from flamaster.app import app
 
 import trafaret as t
 
@@ -10,7 +10,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resource_base import BaseResource
 
 from . import account
-from .models import User, Address, Role
+from .models import User, Address
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
 
@@ -156,10 +156,10 @@ class RoleResource(BaseResource):
     def get(self, id=None):
         role = g.user.role
         role_dict = role.as_dict()
-        if id == g.user.role and 'administrator' != g.user.role.name == 'administrator':
+        if id == g.user.role and app.config['ADMIN_ROLE'] != g.user.role.name:
             return jsonify(role_dict)
 
-        role.name == 'administrator' or abort(403)
+        role.name == app.config['ADMIN_ROLE'] or abort(403)
         users = User.query.filter_by(role_id=role.id).all()
         try:
             page_size = t.Dict({'page_size': t.Int}).check(
@@ -171,7 +171,7 @@ class RoleResource(BaseResource):
         return jsonify(role_dict.as_dict())
 
     def put(self, id):
-        g.user.role.name == 'administrator' or abort(403)
+        g.user.role.name == app.config['ADMIN_ROLE'] or abort(403)
         try:
             data = t.Dict({'uid': t.Int, 'role_id': t.Int}).check(
                 request.json)

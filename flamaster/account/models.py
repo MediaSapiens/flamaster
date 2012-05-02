@@ -101,8 +101,8 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def create(cls, **kwargs):
-        admin = Role.get_or_create(name='administrator')
-        user = Role.get_or_create(name='user')
+        admin = Role.get_or_create(name=app.config['ADMIN_ROLE'])
+        user = Role.get_or_create(name=app.config['USER_ROLE'])
         instance = cls(**kwargs).set_password('*')
         if instance.email in app.config['ADMINS']:
             instance.role = admin

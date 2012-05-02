@@ -6,3 +6,4 @@ flamaster.sublime-*
 env_flamaster
 .webassets-cache
 flamaster/conf/*.py
+.codeintel
