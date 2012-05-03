@@ -30,9 +30,11 @@ assets.register('style_base', less)
 
 from core import core
 from account import account
+from product import product
 
 app.register_blueprint(core)
 app.register_blueprint(account)
+app.register_blueprint(product)
 
 
 @app.errorhandler(404)

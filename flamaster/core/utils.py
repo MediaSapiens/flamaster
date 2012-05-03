@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+import re
 import hashlib
 import types
 import trafaret as t
@@ -11,6 +13,11 @@ from flask.ext.mail import Message
 from flask.helpers import json, _assert_have_json
 
 from flamaster.app import mail
+
+from sqlalchemy.orm import class_mapper
+from flamaster.app import db
+
+_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.:;]+')
 
 
 class CustomEncoder(json.JSONEncoder):
@@ -30,6 +37,21 @@ def jsonify(*args, **kwargs):
     return current_app.response_class(json.dumps(dict(*args, **kwargs),
         indent=None if request.is_xhr else 2, cls=CustomEncoder),
         status=status, mimetype='application/json')
+
+
+def slugify(date_time, text, delim='-', fallback=''):
+    result = []
+    for word in _punct_re.split(text.lower()):
+        word = unicode(word)
+        if word:
+            result.append(word)
+    slug = unicode(delim.join(result))
+    if slug and isinstance(date_time, datetime):
+        slug = delim.join((date_time.date().isoformat(), slug))
+    else:
+        slug = fallback
+    print slug
+    return slug
 
 
 def get_hexdigest(salt, raw_password):
@@ -86,6 +108,45 @@ def validate_password_change(data):
 
 
 def check_permission(name):
-    from flamaster.account.models import Role
-    return bool(
-        Role.get(g.user.role_id).permissions.filter_by(name=name).first())
+    return bool(g.user.role.permissions.filter_by(name=name).first())
+
+
+class CRUDMixin(object):
+    """ Basic CRUD mixin
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    @classmethod
+    def get(cls, id):
+        if id is not None:
+            return cls.query.get(id)
+        return None
+
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls(**kwargs)
+        return instance.save()
+
+    def update(self, commit=True, **kwargs):
+        for attr, value in kwargs.iteritems():
+            setattr(self, attr, value)
+        return commit and self.save() or self
+
+    def save(self, commit=True):
+        db.session.add(self)
+        commit and db.session.commit()
+        return self
+
+    def delete(self, commit=True):
+        db.session.delete(self)
+        commit and db.session.commit()
+
+    def as_dict(self):
+        """ method for building dictionary for model value-properties filled
+            with data from mapped storage backend
+        """
+        omit_values = ['password']
+        return dict((c.name, getattr(self, c.name))
+              for c in class_mapper(self.__class__).mapped_table.c
+              if c.name not in omit_values)

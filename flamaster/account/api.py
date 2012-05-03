@@ -12,7 +12,8 @@ from flamaster.core.resource_base import BaseResource
 from . import account
 from .models import User, Address
 
-__all__ = ['SessionResource', 'ProfileResource', 'AddressResource']
+__all__ = ['SessionResource', 'ProfileResource', 'AddressResource',
+           'RoleResource']
 
 
 @api_resource(account, 'sessions', {'id': None})

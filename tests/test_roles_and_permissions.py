@@ -18,7 +18,7 @@ def teardown_module(module):
 def test_save_in_user_check_permission():
     assert Role.query.all() == []
     create_user()
-    role = Role.query.filter_by(name='user')
+    role = Role.query.filter_by(name=app.config['USER_ROLE'])
     assert role.count() == 1
     with app.test_client() as c:
         assert getattr(g, 'user', False) == False
