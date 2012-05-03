@@ -1,6 +1,11 @@
-==============================================
-Flamaster: e-commerce framework with the Flask
-==============================================
+=========
+fevent
+=========
+
+-------------------------------
+E-commerce eventing system
+-------------------------------
+
 Setup requirements:
 ___________________
 
@@ -31,4 +36,3 @@ Running project:
 
 ./manage.py createall
 ./manage.py runserver
-
