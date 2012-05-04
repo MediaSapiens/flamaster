@@ -7,14 +7,12 @@ from flamaster.core.models import CRUDMixin
 __all__ = ['Product']
 
 
-class Product(CRUDMixin, db.Model):
-    """ By default model inherits id and created_at fields from the CRUDMixin
-    """
-
-    __table_args__ = {'extend_existing': True}
+class Product(db.Model, CRUDMixin):
+    __table_args__ = {'extend_existing': True,
+                      'mysql_charset': 'utf8'}
     __tablename__ = 'products'
 
-    title = db.Column(db.Unicode(512, convert_unicode=True), nullable=False)
+    title = db.Column(db.String(512), nullable=False)
     slug = db.Column(db.String(128), nullable=False, unique=True)
     teaser = db.Column(db.String(1024))
     description = db.Column(db.Text)
@@ -34,8 +32,7 @@ class Product(CRUDMixin, db.Model):
 
     def save(self, commit=True):
         self.updated_at = datetime.utcnow()
-        self.slug = slugify(self.created_at or self.updated_at,
-                            self.title, fallback=self.id)
+        self.slug = slugify(self.title)
         return super(Product, self).save(commit=commit)
 
     @classmethod

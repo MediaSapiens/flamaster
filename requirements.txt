@@ -9,3 +9,4 @@ https://github.com/nimnull/trafaret/zipball/master#egg=trafaret
 pytest>=2.2.3
 yuicompressor>=2.4.6.1
 closure>=20110811
+translitcodec
