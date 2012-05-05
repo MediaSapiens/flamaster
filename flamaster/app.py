@@ -10,12 +10,10 @@ import os
 app = Flask(__name__, static_url_path='/static', template_folder='static')
 
 
-# if 'runtests' in os.environ['_']:
-#     app.config.from_object('flamaster.conf.local_test_settings')
-# else:
-#     app.config.from_object('flamaster.conf.settings')
-# app.config.from_object('flamaster.conf.local_test_settings')
-app.config.from_object('flamaster.conf.settings')
+if 'runtests' in os.environ['_']:
+    app.config.from_object('flamaster.conf.local_test_settings')
+else:
+    app.config.from_object('flamaster.conf.settings')
 
 
 mail = Mail(app)

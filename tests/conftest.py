@@ -53,4 +53,4 @@ def create_user():
 
 
 def valid_user():
-    return User.query.filter_by(email='test@example.com').one()
+    return User.query.filter_by(email='test@example.com').first()
