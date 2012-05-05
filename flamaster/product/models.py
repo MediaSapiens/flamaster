@@ -21,11 +21,13 @@ class Product(CRUDMixin, db.Model):
     updated_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
                            nullable=True)
-    author = db.relationship('User', lazy='dynamic',
-                              backref=db.backref('products', lazy='dynamic'))
+    author = db.relationship('User',
+                             backref=db.backref('products', lazy='dynamic'))
 
-    def __init__(self, title):
-        self.title = title
+    def __init__(self, **kwargs):
+        for key, value in kwargs.iteritems():
+            print getattr(self, key)
+            setattr(self, key, value)
 
     def __repr__(self):
         return "<Product: %r>" % self.title
