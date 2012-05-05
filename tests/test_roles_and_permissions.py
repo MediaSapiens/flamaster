@@ -28,7 +28,7 @@ def test_save_in_user_check_permission():
 
         user.set_password('test').save()
         Permissions.create(name='test_permissions')
-        role = Role.get(user.role_id)
+        role = user.role
         role.permissions.append(Permissions(name='test_permissions_in_role'))
         role.save()
 

@@ -26,12 +26,11 @@ class User(db.Model, CRUDMixin):
     phone = db.Column(db.String(15))
 
     logged_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # Foreign kei tot the roles link represented by the role attr
+    # Foreign key fot the roles link represented by the role attr
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    role = db.relationship('Role', backref='users')
 
-    addresses = db.relationship('Address', lazy='dynamic',
-                                backref=db.backref('user', lazy='joined'),
-                                cascade="all, delete, delete-orphan")
+    addresses = db.relationship('Address', backref=db.backref('user', lazy='dynamic'))
 
     def __init__(self, email):
         self.email = email
@@ -64,13 +63,7 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def create(cls, **kwargs):
-        admin = Role.get_or_create(name=app.config['ADMIN_ROLE'])
-        user = Role.get_or_create(name=app.config['USER_ROLE'])
         instance = cls(**kwargs).set_password('*')
-        if instance.email in app.config['ADMINS']:
-            instance.role = admin
-        else:
-            instance.role = user
         return instance.save()
 
     def create_token(self):
@@ -142,11 +135,9 @@ class Role(db.Model, CRUDMixin):
     __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
-    users = db.relationship('User', lazy='dynamic',
-                            backref=db.backref('role', lazy='joined'))
+
     permissions = db.relationship('Permissions', secondary=role_permissions,
-                                  lazy='dynamic',
-                                  backref=db.backref('roles', lazy='joined'))
+                                  backref=db.backref('roles', lazy='dynamic'))
 
     def __init__(self, name):
         self.name = name

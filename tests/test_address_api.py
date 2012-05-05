@@ -5,17 +5,17 @@ from flamaster.account.models import Address
 from conftest import url_client, login, logout, create_user
 
 
-first_address = {'city': 'Kharkov',
-                 'street': '23b, Sumskaya av.',
-                 'apartment': '1',
-                 'zip_code': '626262',
+first_address = {'city': u'Kharkov',
+                 'street': u'23b, Sumskaya av.',
+                 'apartment': u'1',
+                 'zip_code': u'626262',
                  'type': 'billing'}
 
 dafault_address = {'user_id': 1,
-                   'city': 'Test_city',
-                   'street': 'Test_street',
-                   'apartment': '12',
-                   'zip_code': '121212',
+                   'city': u'Test_city',
+                   'street': u'Test_street',
+                   'apartment': u'12',
+                   'zip_code': u'121212',
                    'type': 'billing'}
 
 
@@ -98,9 +98,10 @@ def test_addresses_put_201(url, client):
     uid = json.loads(login(client).data)['uid']
     resp = client.put(url, data=json.dumps(first_address),
                       content_type='application/json')
-    address_data = first_address.copy()
-    address_data.update({'id': 1, 'user_id': uid})
-    assert json.loads(resp.data) == address_data
+
+    response_data = json.loads(resp.data)
+    assert 'id' in response_data
+    assert response_data['city'] == first_address['city']
     assert resp.status_code == 201
     logout(client, uid)
 
