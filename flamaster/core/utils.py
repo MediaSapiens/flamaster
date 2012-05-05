@@ -14,9 +14,6 @@ from flask.helpers import json, _assert_have_json
 
 from flamaster.app import mail
 
-from sqlalchemy.orm import class_mapper
-from flamaster.app import db
-
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.:;]+')
 
 
@@ -109,44 +106,3 @@ def validate_password_change(data):
 
 def check_permission(name):
     return bool(g.user.role.permissions.filter_by(name=name).first())
-
-
-class CRUDMixin(object):
-    """ Basic CRUD mixin
-    """
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    @classmethod
-    def get(cls, id):
-        if id is not None:
-            return cls.query.get(id)
-        return None
-
-    @classmethod
-    def create(cls, **kwargs):
-        instance = cls(**kwargs)
-        return instance.save()
-
-    def update(self, commit=True, **kwargs):
-        for attr, value in kwargs.iteritems():
-            setattr(self, attr, value)
-        return commit and self.save() or self
-
-    def save(self, commit=True):
-        db.session.add(self)
-        commit and db.session.commit()
-        return self
-
-    def delete(self, commit=True):
-        db.session.delete(self)
-        commit and db.session.commit()
-
-    def as_dict(self):
-        """ method for building dictionary for model value-properties filled
-            with data from mapped storage backend
-        """
-        omit_values = ['password']
-        return dict((c.name, getattr(self, c.name))
-              for c in class_mapper(self.__class__).mapped_table.c
-              if c.name not in omit_values)

@@ -8,10 +8,14 @@ from sqlalchemy import Table
 
 
 from flamaster.app import db, app
-from flamaster.core.utils import get_hexdigest, CRUDMixin
+from flamaster.core.utils import get_hexdigest
+from flamaster.core.models import CRUDMixin
 
 
 class User(db.Model, CRUDMixin):
+    """ By default model inherits id and created_at fields from the CRUDMixin
+    """
+
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'users'
 
@@ -20,15 +24,14 @@ class User(db.Model, CRUDMixin):
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     phone = db.Column(db.String(15))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
     logged_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Foreign kei tot the roles link represented by the role attr
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     addresses = db.relationship('Address', lazy='dynamic',
                                 backref=db.backref('user', lazy='joined'),
                                 cascade="all, delete, delete-orphan")
-    created = db.relationship('Product', lazy='dynamic',
-                              backref=db.backref('created', lazy='joined'))
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def __init__(self, email):
         self.email = email
@@ -98,9 +101,10 @@ class User(db.Model, CRUDMixin):
 
 
 class Address(db.Model, CRUDMixin):
+    """ representing address data for users
+        By default model inherits id and created_at fields from the CRUDMixin
     """
-        representing address data for users
-    """
+
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'addresses'
 
@@ -131,6 +135,8 @@ role_permissions = Table(
 
 
 class Role(db.Model, CRUDMixin):
+    """ By default model inherits id and created_at fields from the CRUDMixin
+    """
 
     __table_args__ = {'extend_existing': True}
     __tablename__ = 'roles'
@@ -154,6 +160,8 @@ class Role(db.Model, CRUDMixin):
 
 
 class Permissions(db.Model, CRUDMixin):
+    """ By default model inherits id and created_at fields from the CRUDMixin
+    """
 
     __table_args__ = {'extend_existing': True}
 

@@ -162,8 +162,7 @@ class RoleResource(BaseResource):
             return jsonify(role_dict)
 
         role.name == app.config['ADMIN_ROLE'] or abort(403)
-        users = User.query.filter_by(role_id=role.id)\
-                    .with_entities(User.id).all()
+        users = User.query.filter_by(role_id=role.id).all()
         try:
             page_size = t.Dict({'page_size': t.Int}).check(
                 request.json)['page_size']
