@@ -16,23 +16,23 @@ class Product(db.Model, CRUDMixin):
     slug = db.Column(db.String(128), nullable=False, unique=True)
     teaser = db.Column(db.String(1024))
     description = db.Column(db.Text)
-    updated_at = db.Column(db.DateTime)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'),
-                           nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
+                           onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     author = db.relationship('User',
                              backref=db.backref('products', lazy='dynamic'))
 
     def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
-            print getattr(self, key)
-            setattr(self, key, value)
+        assert 'title' in kwargs
+        for attr, value in kwargs.iteritems():
+            setattr(self, attr, value)
 
     def __repr__(self):
         return "<Product: %r>" % self.title
 
     def save(self, commit=True):
-        self.updated_at = datetime.utcnow()
-        self.slug = slugify(self.title)
+        self.slug = slugify(self.created_at or self.updated_at, self.title)
         return super(Product, self).save(commit=commit)
 
     @classmethod

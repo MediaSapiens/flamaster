@@ -3,8 +3,8 @@ import re
 import hashlib
 import types
 import trafaret as t
-import translitcodec
-
+#import translitcodec
+from unidecode import unidecode
 from datetime import datetime
 
 from trafaret.extras import KeysSubset
@@ -37,16 +37,17 @@ def jsonify(*args, **kwargs):
         status=status, mimetype='application/json')
 
 
-def slugify(text, delim=u'-'):
-    """Generates an ASCII-only slug."""
+def slugify(date_time, text, delim='-'):
+    result = []
     if not isinstance(text, unicode):
         text = text.decode('utf-8')
-    result = []
     for word in _punct_re.split(text.lower()):
-        word = word.encode('translit/long')
+        word = unidecode(word)
         if word:
             result.append(word)
-    return unicode(delim.join(result))
+    hesh = get_hexdigest(date_time, text)
+    result.append(hesh[:4])
+    return delim.join(result)
 
 
 def get_hexdigest(salt, raw_password):
