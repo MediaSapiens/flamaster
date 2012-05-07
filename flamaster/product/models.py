@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from flask.ext.sqlalchemy.ext.hybrid import hybrid_property
+
 from flamaster.app import db
 from flamaster.core.utils import slugify
 from flamaster.core.models import CRUDMixin
@@ -11,7 +14,7 @@ class Product(db.Model, CRUDMixin):
     __tablename__ = 'products'
 
     title = db.Column(db.String(512), nullable=False)
-    slug = db.Column(db.String(128), nullable=False, unique=True)
+    _slug = db.Column(db.String(128), nullable=False, unique=True)
     teaser = db.Column(db.String(1024))
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -29,9 +32,13 @@ class Product(db.Model, CRUDMixin):
     def __repr__(self):
         return "<Product: %r>" % self.title
 
-    def save(self, commit=True):
-        self.slug = slugify(self.created_at or self.updated_at, self.title)
-        return super(Product, self).save(commit=commit)
+    @hybrid_property
+    def slug(self):
+        return self._slug
+
+    @slug.setter
+    def slug(self, value):
+        self._slug = slugify(self.created_at or self.updated_at, self.title)
 
     @classmethod
     def get_by_slug(cls, slug):
