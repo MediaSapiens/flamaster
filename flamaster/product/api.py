@@ -16,7 +16,7 @@ __all__ = ['ProductResource']
 class ProductResource(BaseResource):
 
     def get(self, id=None):
-        uid = _creater()
+        uid = _creator()
         if id is None:
             products = Product.query.filter_by(created_by=uid)
             response = [(one_pro.slug, one_pro.as_dict())\
@@ -29,7 +29,7 @@ class ProductResource(BaseResource):
         return jsonify(response)
 
     def post(self):
-        uid = _creater()
+        uid = _creator()
         data = request.json or abort(400)
         data.update({'created_by': uid})
         try:
@@ -41,7 +41,7 @@ class ProductResource(BaseResource):
         return jsonify(data, status=status)
 
     def put(self, id):
-        uid = _creater()
+        uid = _creator()
         data = request.json or abort(400)
         data.update({'created_by': uid})
         try:
@@ -53,7 +53,7 @@ class ProductResource(BaseResource):
         return jsonify(data, status=status)
 
     def delete(self, id):
-        uid = _creater()
+        uid = _creator()
         try:
             Product.query.filter_by(id=id, created_by=uid).delete()
             data, status = {}, 200
@@ -63,7 +63,7 @@ class ProductResource(BaseResource):
         return jsonify(data, status=status)
 
 
-def _creater():
+def _creator():
     if g.user.role == app.config['ADMIN_ROLE']:
         uid = request.json.get('user_id', False) or g.user.id
     else:
