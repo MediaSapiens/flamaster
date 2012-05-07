@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask.ext.sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from flamaster.app import db
 from flamaster.core.utils import slugify
