@@ -1,6 +1,7 @@
 define [
-  'chaplin/view', 'text!templates/activate.hbs'
-], (View, template) ->
+  'chaplin/mediator', 'chaplin/view',
+  'text!templates/activate.hbs'
+], (mediator, View, template) ->
   'use strict'
 
   class ActivationView extends View
@@ -13,8 +14,10 @@ define [
     initialize: (options) ->
       if options.hasOwnProperty 'template'
         @template = require(options.template)
-      console.log "ActivationView#initialize", options
-      super options
+      # console.debug "ActivationView#initialize", options
+      super
+      console.log "ActivationView#initialize", mediator.user
+      @delegate 'submit', "#activate form", @activationHandler
 
     getTemplateData: ->
       data =
@@ -23,3 +26,7 @@ define [
           method: 'post'
           action: '.'
       data
+
+    activationHandler: (ev) ->
+      @preventDefault(ev)
+      console.log "ActivationView#activationHandler", ev

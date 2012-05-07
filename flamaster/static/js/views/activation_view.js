@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/view', 'text!templates/activate.hbs'], function(View, template) {
+define(['chaplin/mediator', 'chaplin/view', 'text!templates/activate.hbs'], function(mediator, View, template) {
   'use strict';
 
   var ActivationView;
@@ -28,8 +28,9 @@ define(['chaplin/view', 'text!templates/activate.hbs'], function(View, template)
       if (options.hasOwnProperty('template')) {
         this.template = require(options.template);
       }
-      console.log("ActivationView#initialize", options);
-      return ActivationView.__super__.initialize.call(this, options);
+      ActivationView.__super__.initialize.apply(this, arguments);
+      console.log("ActivationView#initialize", mediator.user);
+      return this.delegate('submit', "#activate form", this.activationHandler);
     };
 
     ActivationView.prototype.getTemplateData = function() {
@@ -42,6 +43,11 @@ define(['chaplin/view', 'text!templates/activate.hbs'], function(View, template)
         }
       };
       return data;
+    };
+
+    ActivationView.prototype.activationHandler = function(ev) {
+      this.preventDefault(ev);
+      return console.log("ActivationView#activationHandler", ev);
     };
 
     return ActivationView;
