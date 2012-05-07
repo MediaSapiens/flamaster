@@ -15,8 +15,6 @@ from flamaster.core.models import CRUDMixin
 class User(db.Model, CRUDMixin):
     """ By default model inherits id and created_at fields from the CRUDMixin
     """
-
-    __table_args__ = {'extend_existing': True}
     __tablename__ = 'users'
 
     email = db.Column(db.String(80), unique=True)
@@ -97,8 +95,6 @@ class Address(db.Model, CRUDMixin):
     """ representing address data for users
         By default model inherits id and created_at fields from the CRUDMixin
     """
-
-    __table_args__ = {'extend_existing': True}
     __tablename__ = 'addresses'
 
     city = db.Column(db.String(255), nullable=False)
@@ -130,8 +126,6 @@ role_permissions = Table(
 class Role(db.Model, CRUDMixin):
     """ By default model inherits id and created_at fields from the CRUDMixin
     """
-
-    __table_args__ = {'extend_existing': True}
     __tablename__ = 'roles'
 
     name = db.Column(db.String(255), unique=True, nullable=False)
@@ -154,8 +148,7 @@ class Role(db.Model, CRUDMixin):
 class Permissions(db.Model, CRUDMixin):
     """ By default model inherits id and created_at fields from the CRUDMixin
     """
-
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = 'permissions'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)

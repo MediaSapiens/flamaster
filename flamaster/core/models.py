@@ -7,6 +7,9 @@ from flamaster.app import db
 class CRUDMixin(object):
     """ Basic CRUD mixin
     """
+    __table_args__ = {'extend_existing': True,
+                      'mysql_charset': 'utf8',
+                      'mysql_engine': 'InnoDB'}
 
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -8,8 +8,6 @@ __all__ = ['Product']
 
 
 class Product(db.Model, CRUDMixin):
-    __table_args__ = {'extend_existing': True,
-                      'mysql_charset': 'utf8'}
     __tablename__ = 'products'
 
     title = db.Column(db.String(512), nullable=False)
@@ -40,7 +38,7 @@ class Product(db.Model, CRUDMixin):
         return cls.query.filter_by(slug=slug).first_or_404()
 
 
-class Price(CRUDMixin, db.Model):
+class Price(db.Model, CRUDMixin):
     """ model storage for a price version for end product
     """
     __tablename__ = 'prices'
