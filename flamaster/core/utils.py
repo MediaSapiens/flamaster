@@ -44,8 +44,8 @@ def slugify(date_time, text, delim='-'):
     for word in _punct_re.split(text.lower()):
         word = unidecode(word)
         word and result.append(word)
-    hesh = get_hexdigest(date_time, text)
-    result.append(hesh[:4])
+    hsh = get_hexdigest(date_time, text)
+    result.append(hsh[:4])
     return delim.join(result)
 
 
