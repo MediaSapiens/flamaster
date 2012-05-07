@@ -5,7 +5,7 @@ from flamaster.core.utils import send_email
 from .models import User
 
 
-__all__ = ['signal_router']
+__all__ = ['signal_map']
 
 
 def user_created(instance):
@@ -24,6 +24,8 @@ signal_map = {
 
 
 def signal_router(sender, changes):
+    """ Heper method fo routing ORM signals based on it's kind and sender model
+    """
     for change in changes:
         obj, kind = change
         try:

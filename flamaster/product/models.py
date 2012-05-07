@@ -7,7 +7,7 @@ from flamaster.core.utils import slugify
 from flamaster.core.models import CRUDMixin
 
 
-__all__ = ['Product']
+__all__ = ['Product', 'Price']
 
 
 class Product(db.Model, CRUDMixin):
