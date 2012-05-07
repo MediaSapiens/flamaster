@@ -46,9 +46,13 @@
     Application.initialize();
   });
   </script>
+  {# if we passed some context variables we should add them as JS value #}
+  {% if context %}
   <script type="text/javascript">
     var context = {{ context|to_custom_json|safe }};
   </script>
+  {% endif %}
+  {# addedfor the future use #}
   {% block extra_js %}{% endblock %}
 </head>
 <body>

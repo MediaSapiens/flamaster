@@ -1,8 +1,7 @@
 define [
-  'chaplin/mediator', 'chaplin/controller',
-  'models/user',
-  'views/index_view', 'views/signup_view', 'views/dashboard_view'
-], (mediator, Controller, User, IndexView, SignUpView, DashboardView) ->
+  'chaplin/controller', 'models/user',
+  'views/signup_view', 'views/dashboard_view', 'views/activation_view',
+], (Controller, User, SignUpView, DashboardView, ActivationView) ->
   'use strict'
 
   class PageController extends Controller
@@ -14,7 +13,6 @@ define [
     index: ->
         @view = new DashboardView
 
-
     signup: ->
       nUser = User.extend urlRoot: '/account/sessions/'
       @view = new SignUpView model: new nUser
@@ -22,6 +20,7 @@ define [
     dashboard: -> @view = new DashboardView
 
     activate: ->
-      @view = new DashboardView
-      console.log "context:", window.context
-# /bmltbnVsbEBnbWFpbC5jb20%3D%0A%24%244d11bd9c7550ee5600f29399bb9b1d0b8a2ab164/
+      options = {}
+      unless window.context?.user
+        options.template = 'some_template'
+      @view = new ActivationView options

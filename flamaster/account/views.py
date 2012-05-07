@@ -44,6 +44,6 @@ def confirm_reset(token):
 @account.route('/activate')
 def activate():
     user = User.validate_token(request.args.get('token'))
-    return render_template('base.html', context={
-                           'user': user and user.as_dict() or None,
-                           'token': request.args.get('token')})
+    context = {'user': user and user.as_dict() or {},
+               'token': request.args.get('token', '')}
+    return render_template('base.html', context=context)

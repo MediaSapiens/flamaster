@@ -32,14 +32,14 @@ define ['chaplin/mediator', 'chaplin/lib/route'], (mediator, Route) ->
 
       # Create a route
       route = new Route pattern, target, options
-      console.debug 'created route', route
+      # console.debug 'created route', route
 
       # Register the route at the Backbone History instance
       Backbone.history.route route, route.handler
 
     # Route a given URL path manually, return whether a route matched
     route: (path) =>
-      console.debug 'Router#route', path
+      # console.debug 'Router#route', path
       # Remove leading hash or slash
       path = path.replace /^(\/#|\/)/, ''
       for handler in Backbone.history.handlers

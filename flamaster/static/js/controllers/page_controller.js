@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/mediator', 'chaplin/controller', 'models/user', 'views/index_view', 'views/signup_view', 'views/dashboard_view'], function(mediator, Controller, User, IndexView, SignUpView, DashboardView) {
+define(['chaplin/controller', 'models/user', 'views/signup_view', 'views/dashboard_view', 'views/activation_view'], function(Controller, User, SignUpView, DashboardView, ActivationView) {
   'use strict';
 
   var PageController;
@@ -40,8 +40,12 @@ define(['chaplin/mediator', 'chaplin/controller', 'models/user', 'views/index_vi
     };
 
     PageController.prototype.activate = function() {
-      this.view = new DashboardView;
-      return console.log("context:", window.context);
+      var options, _ref;
+      options = {};
+      if (!((_ref = window.context) != null ? _ref.user : void 0)) {
+        options.template = 'some_template';
+      }
+      return this.view = new ActivationView(options);
     };
 
     return PageController;
