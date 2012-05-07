@@ -39,6 +39,11 @@ define(['chaplin/mediator', 'chaplin/controller', 'models/user', 'views/index_vi
       return this.view = new DashboardView;
     };
 
+    PageController.prototype.activate = function() {
+      this.view = new DashboardView;
+      return console.log("context:", window.context);
+    };
+
     return PageController;
 
   })(Controller);

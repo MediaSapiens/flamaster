@@ -14,6 +14,7 @@ define ['chaplin/mediator', 'chaplin/lib/route'], (mediator, Route) ->
       @match '', 'page#index'
       @match 'signup', 'page#signup'
       @match 'dashboard', 'page#dashboard'
+      @match 'account/activate', 'page#activate'
 
       # ---- THE INTREDASTING PART ENDS. ---- #
 
@@ -31,7 +32,7 @@ define ['chaplin/mediator', 'chaplin/lib/route'], (mediator, Route) ->
 
       # Create a route
       route = new Route pattern, target, options
-      #console.debug 'created route', route
+      console.debug 'created route', route
 
       # Register the route at the Backbone History instance
       Backbone.history.route route, route.handler

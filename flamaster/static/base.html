@@ -46,7 +46,9 @@
     Application.initialize();
   });
   </script>
-
+  <script type="text/javascript">
+    var context = {{ context|to_custom_json|safe }};
+  </script>
   {% block extra_js %}{% endblock %}
 </head>
 <body>

@@ -39,3 +39,11 @@ def confirm_reset(token):
         user.set_password(request.form['password']).save()
         return redirect(url_for('core.index'))
     return render_template('password_reset_confirm.html', token=token)
+
+
+@account.route('/activate')
+def activate():
+    user = User.validate_token(request.args.get('token'))
+    return render_template('base.html', context={
+                           'user': user and user.as_dict() or None,
+                           'token': request.args.get('token')})

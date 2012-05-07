@@ -74,6 +74,7 @@ define [
     loginHandler: (loginContext, status) =>
       # console.debug 'Custom#loginHandler', loginContext, status
       response = JSON.parse(loginContext.responseText)
+
       switch status
         when 'error' then mediator.publish 'loginFail', response
         when 'success' then mediator.publish 'loginSuccessful', response

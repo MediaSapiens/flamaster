@@ -59,6 +59,8 @@ class SessionResource(BaseResource):
 
     def _authenticate(self, data_dict):
         user = User.authenticate(**data_dict)
+        if user is None:
+            raise t.DataError({'email': "There are no user with this email"})
         session.update({'uid': user.id, 'is_anonymous': False})
         return data_dict
 

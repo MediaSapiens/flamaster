@@ -38,7 +38,7 @@ class User(db.Model, CRUDMixin):
 
     @classmethod
     def authenticate(cls, email, password):
-        user = cls.query.filter_by(email=email.lower()).first_or_404()
+        user = cls.query.filter_by(email=email.lower()).first()
         if user is not None:
             salt, hsh = user.password.split('$')
             if hsh == get_hexdigest(salt, password):
@@ -53,8 +53,7 @@ class User(db.Model, CRUDMixin):
     def validate_token(cls, token=None):
         if token is not None and '$$' in token:
             key, hsh = token.split('$$')
-            user = cls.query.filter_by(email=base64.decodestring(key)).\
-                    first_or_404()
+            user = cls.query.filter_by(email=base64.decodestring(key)).first()
             if user and token == user.create_token():
                 return user
         return None
