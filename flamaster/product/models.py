@@ -37,8 +37,12 @@ class Product(db.Model, CRUDMixin):
         return self._slug
 
     @slug.setter
-    def slug(self, value):
-        self._slug = slugify(self.created_at or self.updated_at, self.title)
+    def slug(self, title):
+        self._slug = slugify(self.created_at or self.updated_at, title)
+
+    def save(self, commit=True):
+        self.slug = self.title
+        return super(Product, self).save(commit)
 
     @classmethod
     def get_by_slug(cls, slug):

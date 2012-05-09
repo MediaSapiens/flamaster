@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/mediator', 'chaplin/model'], function(mediator, Model) {
+define(['chaplin/mediator', 'models/base_user'], function(mediator, BaseUser) {
   'use strict';
 
   var User;
@@ -16,45 +16,37 @@ define(['chaplin/mediator', 'chaplin/model'], function(mediator, Model) {
       return User.__super__.constructor.apply(this, arguments);
     }
 
-    User.prototype.emailRegex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-
     User.prototype.urlRoot = '/account/profiles/';
 
-    User.prototype.defaults = {
-      email: ''
-    };
-
-    User.prototype.initialize = function() {
-      return console.log("User#initialize", this.urlRoot);
-    };
-
     User.prototype.validate = function(attrs) {
-      var response;
+      var attr, response, _i, _len, _ref;
       response = {
         status: 'success'
       };
-      if (!this.emailRegex.test(attrs.email)) {
-        response = {
+      _ref = ['first_name', 'last_name', 'phone'];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attr = _ref[_i];
+        if (attrs[attr].length === 0) {
+          response.status = 'failed';
+          response[attr] = "Can't be zero-length";
+        }
+      }
+      if (attrs.password.length < 6) {
+        _(response).extend({
           status: 'failed',
-          email: 'This is not valid email address'
-        };
+          password: "Password should be more than 5 symbols"
+        });
+      }
+      if (attrs.password.length && (attrs.password !== attrs.password_confirm)) {
+        _(response).extend({
+          status: 'failed',
+          password: "Password and confirmation don't match"
+        });
       }
       return response.status !== 'success' && response || null;
     };
 
-    User.prototype.dispose = function() {
-      var deffered;
-      deffered = $.ajax({
-        url: "/account/sessions/" + (encodeURI(this.get('accessToken'))),
-        type: 'delete',
-        complete: function() {
-          return mediator.router.route('/');
-        }
-      });
-      return User.__super__.dispose.apply(this, arguments);
-    };
-
     return User;
 
-  })(Model);
+  })(BaseUser);
 });

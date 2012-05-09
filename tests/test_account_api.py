@@ -11,6 +11,7 @@ def setup_module(module):
 
 
 def teardown_module(module):
+    db.session.remove()
     db.drop_all()
 
 

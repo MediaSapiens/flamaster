@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/controller', 'models/user', 'views/signup_view', 'views/dashboard_view', 'views/activation_view'], function(Controller, User, SignUpView, DashboardView, ActivationView) {
+define(['chaplin/controller', 'models/base_user', 'views/signup_view', 'views/dashboard_view', 'views/activation_view'], function(Controller, BaseUser, SignUpView, DashboardView, ActivationView) {
   'use strict';
 
   var PageController;
@@ -26,12 +26,8 @@ define(['chaplin/controller', 'models/user', 'views/signup_view', 'views/dashboa
     };
 
     PageController.prototype.signup = function() {
-      var nUser;
-      nUser = User.extend({
-        urlRoot: '/account/sessions/'
-      });
       return this.view = new SignUpView({
-        model: new nUser
+        model: new BaseUser
       });
     };
 

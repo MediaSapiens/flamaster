@@ -25,6 +25,10 @@ def setup_module(module):
         create_user()
 
 
+def teardown_module(module):
+    db.session.remove()
+    db.drop_all()
+
 @url_client('account.addresses')
 def test_address_creation_failed_unauth(url, client):
     data = first_address.copy()
@@ -119,7 +123,3 @@ def test_addresses_delete_400(url, client):
 
     assert resp.status_code == 200
     logout(client, uid)
-
-
-def teardown_module(module):
-    db.drop_all()

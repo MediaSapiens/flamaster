@@ -110,7 +110,6 @@ class AddressResource(BaseResource):
         if id is None:
             addresses = Address.query.filter_by(user_id=uid)
             response = [addr.as_dict() for addr in addresses]
-
         else:
             addr = Address.query.filter_by(id=id, user_id=uid).first_or_404()
             response = addr.as_dict()

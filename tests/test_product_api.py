@@ -1,9 +1,8 @@
 from flask.helpers import json
-from flask import url_for
 from flamaster.app import db, app
 from flamaster.product.models import Product
 
-from conftest import url_client, login, create_user, request_context#, logout
+from conftest import url_client, login, create_user  # logout
 
 
 first_product = {'title': 'first_product',
@@ -15,6 +14,11 @@ def setup_module(module):
     db.create_all()
     with app.test_request_context('/'):
         create_user()
+
+
+def teardown_module(module):
+    db.session.remove()
+    db.drop_all()
 
 
 @url_client('product.products')
@@ -48,17 +52,21 @@ def test_product_get_failed(url, client):
 def test_get_product(url, client):
     login(client)
     resp = client.get(url, content_type='application/json')
+    response_data = json.loads(resp.data)
+
     assert resp.status_code == 200
-    assert Product.get(1).slug in json.loads(resp.data)
+    assert 'slug' in response_data
 
 
 @url_client('product.products', id=1)
 def test_get_product_id(url, client):
     login(client)
     resp = client.get(url, content_type='application/json')
+    response_data = json.loads(resp.data)
+
     assert resp.status_code == 200
-    assert 'slug' in json.loads(resp.data)
+    assert Product.get(1).slug == response_data['slug']
 
 
-def teardown_module(module):
-    db.drop_all()
+
+

@@ -1,7 +1,7 @@
 define [
-  'chaplin/controller', 'models/user',
+  'chaplin/controller', 'models/base_user',
   'views/signup_view', 'views/dashboard_view', 'views/activation_view',
-], (Controller, User, SignUpView, DashboardView, ActivationView) ->
+], (Controller, BaseUser, SignUpView, DashboardView, ActivationView) ->
   'use strict'
 
   class PageController extends Controller
@@ -14,8 +14,7 @@ define [
         @view = new DashboardView
 
     signup: ->
-      nUser = User.extend urlRoot: '/account/sessions/'
-      @view = new SignUpView model: new nUser
+      @view = new SignUpView model: new BaseUser
 
     dashboard: -> @view = new DashboardView
 

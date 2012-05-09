@@ -12,6 +12,11 @@ def setup_module(module):
         create_user()
 
 
+def teardown_module(module):
+    db.session.remove()
+    db.drop_all()
+
+
 @url_client('account.request_reset')
 def test_request_reset_get(url, client):
     resp = client.get(url)
@@ -67,7 +72,3 @@ def test_valid_token_not_valid_data():
         assert "Passwords don&#39;t match" in resp.data
         resp = c.post(url, data={'password': '111', 'password_confirm': '111'})
         assert resp.status_code == 302
-
-
-def teardown_module(module):
-    db.drop_all()

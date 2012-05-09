@@ -2,7 +2,7 @@
 var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['chaplin/mediator', 'chaplin/view', 'text!templates/activate.hbs'], function(mediator, View, template) {
+define(['chaplin/mediator', 'chaplin/view', 'models/user', 'text!templates/activate.hbs'], function(mediator, View, User, template) {
   'use strict';
 
   var ActivationView;
@@ -25,11 +25,26 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/activate.hbs'], func
     ActivationView.template = template;
 
     ActivationView.prototype.initialize = function(options) {
+      var model_data;
       if (options.hasOwnProperty('template')) {
         this.template = require(options.template);
       }
       ActivationView.__super__.initialize.apply(this, arguments);
-      console.log("ActivationView#initialize", mediator.user);
+      if (typeof window.context !== 'undefined') {
+        if (window.context.hasOwnProperty('user') && window.context.hasOwnProperty('token')) {
+          model_data = _(window.context.user).extend({
+            token: window.context.token
+          });
+          this.model = new User(model_data);
+          console.debug("ActivationView#initialize", this.model);
+        } else {
+          console.debug("ActivationView#initialize", window.context);
+        }
+      } else {
+        false;
+
+      }
+      console.debug("ActivationView#model", this.model);
       return this.delegate('submit', "#activate form", this.activationHandler);
     };
 
@@ -46,8 +61,22 @@ define(['chaplin/mediator', 'chaplin/view', 'text!templates/activate.hbs'], func
     };
 
     ActivationView.prototype.activationHandler = function(ev) {
+      var data,
+        _this = this;
       this.preventDefault(ev);
-      return console.log("ActivationView#activationHandler", ev);
+      this.clearErrors();
+      data = this.serializeForm(ev.target);
+      console.log("ActivationView#activationHandler", data);
+      return this.model.save(data, {
+        success: function(model, data) {
+          console.log(model);
+          mediator.publish('login:pickService', 'custom');
+          return mediator.publish('!login', 'custom', model.toJSON());
+        },
+        error: function(model, response) {
+          return _this.displayErrors(model, response);
+        }
+      });
     };
 
     return ActivationView;
