@@ -1,8 +1,0 @@
-Hello!
-
-You've just registered at the <service name>, to proceed working with it please confirm
-your email address following this link:
-{{ request.url_root|rstrip('/') }}{{ url_for('account.activate', token=token) }}
-
-If you didn't register at the <service name> or think that this message was sent by a
-mistake just delete it.

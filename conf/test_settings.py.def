@@ -1,0 +1,17 @@
+
+from .settings import *
+
+
+DEBUG = True
+TESTING = True
+DEBUG = True
+SQLALCHEMY_ECHO = False
+
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://000159@localhost/test_flamaster"
+MONGODB_DATABASE = "test_fevent"
+
+ADMINS = ('example@gmail.com', )
+try:
+    from test_local_settings import *
+except ImportError:
+    pass

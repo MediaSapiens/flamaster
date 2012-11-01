@@ -1,9 +1,6 @@
-flamaster.sublime-*
 *.swp
 *~
 .DS_Store
 *.py[co]
-env_flamaster
-.webassets-cache
-flamaster/conf/*.py
+conf/*.py
 .codeintel

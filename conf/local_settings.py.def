@@ -1,0 +1,27 @@
+DEBUG = True
+
+USE_X_SENDFILE = False
+
+SECRET_KEY = "your secret"
+# Key for use for Google Maps API
+MAP_API_KEY = ""
+
+SQLALCHEMY_ECHO = True
+
+SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
+
+ADMINS = ('test@example.com', )
+
+SOCIAL_TWITTER = {
+    'consumer_key': 'twitter consumer key',
+    'consumer_secret': 'twitter consumer secret'
+}
+
+SOCIAS_FACEBOOK = {
+    'consumer_key': 'facebook app id',
+    'consumer_secret': 'facebook app secret',
+    'request_token_params': {
+        'scope': 'email'
+}
+
+SOCIAL_GOOGLE = {}

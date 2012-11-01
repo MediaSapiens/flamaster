@@ -1,7 +1,0 @@
-Hello!
-
-You've requested the password reset for the Findevent service.
-If you want to continue with the password reset, please, proceed with the link:
-{{ request.url_root|rstrip('/') }}{{ url_for('account.confirm_reset', token=token) }}
-
-If you didn't request the password reset action then just ignore this message

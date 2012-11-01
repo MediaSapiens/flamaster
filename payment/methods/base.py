@@ -1,0 +1,2 @@
+class BasePaymentMethod(object):
+    pass
