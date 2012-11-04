@@ -2,14 +2,15 @@ import re
 import json
 import hashlib
 import os
+
+from flask import current_app
 from PIL import Image
 
-from flamaster.app import app
 from . import settings
 
 
-EXTENSIONS = app.config.get('EXTENSIONS', settings.EXTENSIONS)
-DESTINATION = app.config.get('THUMBNAIL_DEST',
+EXTENSIONS = current_app.config.get('EXTENSIONS', settings.EXTENSIONS)
+DESTINATION = current_app.config.get('THUMBNAIL_DEST',
                             settings.THUMBNAIL_DEST)
 
 
@@ -28,10 +29,10 @@ def get_default_options():
     """Configures default options from built-in settings
     and application settings
     """
-    conf = app.config
+    conf = current_app.config
     default_conf = settings.__dict__
-    options_list = ('format', 'quality', 'colorspace', 'upscale',
-                    'progressive', 'orientation')
+    options_list = ('FORMAT', 'QUALITY', 'COLORSPACE', 'UPSCALE',
+                    'PROGRESSIVE', 'ORIENTATION')
 
     def get_option(opt_name):
         attr = "THUMBNAIL_{}".format(opt_name.upper())

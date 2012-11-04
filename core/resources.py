@@ -11,10 +11,6 @@ from flask.views import MethodView, MethodViewType
 from flask.ext.mongoset import signal_map
 # from flask.ext.security import login_required
 from sqlalchemy import event
-from sphinxalchemy import select
-from sphinxalchemy.schema import Index, Attribute, ArrayAttribute
-
-from flamaster.indexer import index_objects
 
 from . import http, indexer
 from .decorators import classproperty
