@@ -47,7 +47,7 @@ class SessionResource(Resource):
 
             user = User.create(email=data['email'], password='')
 
-            if _security.confirm_email:
+            if _security.confirmable:
                 send_confirmation_instructions(user,
                         generate_confirmation_token(user))
             response, status = self._get_response(), http.CREATED
