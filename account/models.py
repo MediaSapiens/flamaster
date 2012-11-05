@@ -149,9 +149,9 @@ class BankAccount(db.Model, CRUDMixin):
     iban = db.Column(db.String(256))
     swift = db.Column(db.String(256))
     updated_at = db.Column(db.DateTime, onupdate=datetime.now)
-    user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
-    users = db.relationship('User', backref=db.backref('accounts',
-                            lazy='dynamic'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref=db.backref('accounts',
+                           lazy='dynamic'))
 
     def check_owner(self, user_id):
         return user_id == self.user_id
