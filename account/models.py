@@ -45,6 +45,8 @@ class User(db.Model, CRUDMixin, UserMixin):
     __mapper_args__ = {
         'order_by': ['email']
     }
+    api_fields = ['email', 'logged_at', 'active', 'current_login_at',
+            'first_name', 'last_name', 'phone']
 
     email = db.Column(db.String(80), unique=True, index=True)
     password = db.Column(db.String(512))

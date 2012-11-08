@@ -7,8 +7,8 @@ TESTING = True
 DEBUG = True
 SQLALCHEMY_ECHO = False
 
-SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://000159@localhost/test_flamaster"
-MONGODB_DATABASE = "test_fevent"
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://user:password@host/test_dbname"
+MONGODB_DATABASE = "test_dbname"
 
 ADMINS = ('example@gmail.com', )
 try:
