@@ -2,7 +2,7 @@
 
 import trafaret as t
 
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from bson.errors import InvalidId
 
 from decorators import classproperty
@@ -53,6 +53,11 @@ class Document(DocumentMixin):
     """
     __abstract__ = True
     inc_id = False
+
+    @property
+    def db_ref(self):
+        """ Helper method for DBRef construction """
+        return DBRef(self.__collection__, self.id)
 
 
 class EmbeddedDocument(DocumentMixin):
