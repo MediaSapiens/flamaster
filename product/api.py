@@ -1,6 +1,6 @@
 # encoding: utf-8
 import trafaret as t
-from flask import abort, current_app, request, session
+from flask import abort, current_app, request, session, g
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -87,9 +87,8 @@ class CartResource(ModelResource):
             if product is None:
                 raise t.DataError({'product_id': _('Product not fount')})
 
-            cart = product.add_to_cart(amount=data['amount'],
-                                customer_id=data['customer_id'],
-                                price_category_id=data['price_category_id'])
+            cart = product.add_to_cart(customer=g.user, amount=data['amount'],
+                                       price_option_id=data['price_option_id'])
 
             response = cart.as_dict()
         except t.DataError as e:
