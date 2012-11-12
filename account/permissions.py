@@ -9,7 +9,7 @@ from .models import User
 def profile_owner(id=None):
     """ Check if profile accessed by it's owner or an superuser
     """
-    if g.user.is_superuser:
+    if g.user.is_superuser():
         return True
     elif id:
         user = User.query.get(id)
@@ -20,4 +20,4 @@ def profile_owner(id=None):
 
 @permissions.register
 def is_superuser(*args, **kwargs):
-    return g.user.is_superuser
+    return g.user.is_superuser()

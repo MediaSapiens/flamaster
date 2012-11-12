@@ -10,6 +10,8 @@ from flask.ext.security.confirmable import (send_confirmation_instructions,
                                             generate_confirmation_token,
                                             confirm_email_token_status,
                                             confirm_user)
+from flask.ext.security.registerable import register_user
+
 from flask.ext.babel import lazy_gettext as _
 
 
@@ -45,11 +47,8 @@ class SessionResource(Resource):
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
-            user = User.create(email=data['email'], password='')
+            register_user(email=data['email'])
 
-            if _security.confirmable:
-                send_confirmation_instructions(user,
-                        generate_confirmation_token(user))
             response, status = self._get_response(), http.CREATED
 
         except t.DataError as e:
