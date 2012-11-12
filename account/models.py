@@ -136,6 +136,10 @@ class User(db.Model, CRUDMixin, UserMixin):
         """ Flag signalized that user is superuse """
         return self.has_role(app.config['ADMIN_ROLE'])
 
+    def has_role(self, role_name):
+        role = Role.query.filter_by(name=role_name).first()
+        return super(User, self).has_role(role)
+
     @property
     def full_name(self):
         """ User full name helper """
