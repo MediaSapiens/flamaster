@@ -4,13 +4,35 @@ from flask.ext.security import user_registered
 from operator import attrgetter
 from sqlalchemy import event
 # from flamaster.account.models import User
-from . import mail
-from .models import Order, Customer
+from . import mail, db
+from .documents import price_created, price_updated, price_deleted
+from .models import Customer, Order, Shelf
 
 
 @user_registered.connect
 def create_customer_for_newcommer(sender, app):
     sender['user'].customer = Customer()
+
+
+@price_created.connect
+def put_on_shelf(price_option):
+    """ Putting newly created priced item on shelf
+    """
+    Shelf.create(price_option_id=price_option.id,
+                 quantity=price_option.quantity)
+
+
+@price_updated.connect
+def update_on_shelf(price_option):
+    Shelf.query.update(quantity=price_option.quantity) \
+                .where(price_option_id=price_option.id)
+    db.session.commit()
+
+
+@price_deleted.connect
+def remove_from_shelf(price_option):
+    Shelf.query.delete().where(price_option_id=price_option.id)
+    db.session.commit()
 
 
 def order_creation_sender(mapper, connection, instance):
