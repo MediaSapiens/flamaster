@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask.ext.security import (UserMixin, RoleMixin, Security,
                                 SQLAlchemyUserDatastore)
-from flask.ext.security.registerable import register_user
+
 from flask.ext.social import Social, SQLAlchemyConnectionDatastore
 
 from flamaster.core.models import CRUDMixin
@@ -41,7 +41,8 @@ class User(db.Model, CRUDMixin, UserMixin):
     """ User representation from the datastore view.
         By default model inherits id and created_at fields from the CRUDMixin
     """
-
+    api_fields = ['email', 'active', 'created_at', 'logged_at', 'first_name',
+                  'last_name', 'phone']
     __mapper_args__ = {
         'order_by': ['email']
     }
@@ -64,31 +65,30 @@ class User(db.Model, CRUDMixin, UserMixin):
         return "<User: %r>" % self.email
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-
-    @classmethod
-    def create(cls, **kwargs):
         """ User creation process, set up role for user
             :params kwargs: should contains `email`, `password` and `active`
                             flag to set up base user data
         """
+        admin_role = app.config['ADMIN_ROLE']
+        user_role = app.config['USER_ROLE']
+        email, admins = kwargs['email'], app.config['ADMINS']
+        # detect if user should have and admin role
+        role = email in admins and admin_role or user_role
+        kwargs['roles'] = [Role.get_or_create(name=role)]
+
         customer_args = {
             'first_name': kwargs.pop('first_name', ''),
             'last_name': kwargs.pop('last_name', ''),
             'phone': kwargs.pop('phone', ''),
-            'email': kwargs.get('email')
+            'email': kwargs['email']
         }
+        self.customer.update(**customer_args)
+        super(User, self).__init__(**kwargs)
 
-        admin_role, user_role = (app.config['ADMIN_ROLE'],
-                                 app.config['USER_ROLE'])
-        email, admins = kwargs['email'], app.config['ADMINS']
-
-        role = email in admins and admin_role or user_role
-        # ensure on role existence
-        kwargs['roles'] = [Role.get_or_create(name=role)]
-        instance = register_user(**kwargs)
-        instance.customer.update(**customer_args)
-        return instance
+    @classmethod
+    def create(cls, **kwargs):
+        raise NotImplementedError("You should user security datastore"
+                                  " 'create_user' method for this operation")
 
     @classmethod
     def is_unique(cls, email):
