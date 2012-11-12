@@ -132,7 +132,6 @@ class User(db.Model, CRUDMixin, UserMixin):
 
         map(self.customer.addresses.append, value)
 
-    @property
     def is_superuser(self):
         """ Flag signalized that user is superuse """
         return self.has_role(app.config['ADMIN_ROLE'])
