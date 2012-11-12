@@ -8,6 +8,8 @@ mongo = LocalProxy(lambda: current_app.extensions['mongoset'])
 mail = LocalProxy(lambda: current_app.extensions['mail'])
 
 import api
-import models
 import signals
+
+from .models import *
+from .documents import *
 from .exceptions import ShelfNotAvailable
