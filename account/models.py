@@ -99,7 +99,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     @hybrid_property
     def first_name(self):
-        return self.customer.first_name
+        return self.customer and self.customer.first_name or ''
 
     @first_name.setter
     def first_name(self, value):
@@ -107,7 +107,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     @hybrid_property
     def last_name(self):
-        return self.customer.last_name
+        return self.customer and self.customer.last_name or ''
 
     @last_name.setter
     def last_name(self, value):
