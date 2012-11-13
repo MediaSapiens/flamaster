@@ -1,32 +1,11 @@
 class BasePaymentMethod(object):
     """ Base API handler class, established with respect to the PayPal API.
     """
-    _endpoint = ''
-    _cancel_url = ''
-    _return_url = ''
-    _format = ''
+    method_name = 'base'
 
-    def call(self):
-        """ Provide all call elements and meke request
-        """
-        raise NotImplementedError
+    def __init__(self, settings, order):
+        self.settings = settings
 
-    def paylod(self):
-        """ Provide call payloads
-        """
-        raise NotImplementedError
+    def process_payment(self, amount, currency, description):
+        raise NotImplemented()
 
-    def method(self, case):
-        """ The API operation you are addressing
-        """
-        raise NotImplementedError
-
-    def amount(self, total):
-        """ Calculate payment cash amount
-        """
-        raise NotImplementedError
-
-    def headers(self):
-        """ Provide request headers
-        """
-        raise NotImplementedError
