@@ -40,7 +40,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         By default model inherits id and created_at fields from the CRUDMixin
     """
     api_fields = ['email', 'active', 'created_at', 'logged_at',
-                  'current_login_at' 'first_name', 'last_name', 'phone']
+                  'current_login_at', 'first_name', 'last_name', 'phone']
     __mapper_args__ = {
         'order_by': ['email']
     }
