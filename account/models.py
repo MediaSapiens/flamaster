@@ -39,13 +39,11 @@ class User(db.Model, CRUDMixin, UserMixin):
     """ User representation from the datastore view.
         By default model inherits id and created_at fields from the CRUDMixin
     """
-    api_fields = ['email', 'active', 'created_at', 'logged_at', 'first_name',
-                  'last_name', 'phone']
+    api_fields = ['email', 'active', 'created_at', 'logged_at',
+                  'current_login_at' 'first_name', 'last_name', 'phone']
     __mapper_args__ = {
         'order_by': ['email']
     }
-    api_fields = ['email', 'logged_at', 'active', 'current_login_at',
-            'first_name', 'last_name', 'phone']
 
     email = db.Column(db.String(80), unique=True, index=True)
     password = db.Column(db.String(512))
@@ -115,7 +113,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     @hybrid_property
     def phone(self):
-        return self.customer.phone
+        return self.customer and self.customer.phone or None
 
     @phone.setter
     def phone(self, value):
