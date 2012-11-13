@@ -13,9 +13,8 @@ ADMINS = ('admin@example.com', )
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
-RESELLER_ROLE = 'reseller'
-ORGANISER_ROLE = 'organiser'
-ROLES = [USER_ROLE, ADMIN_ROLE, RESELLER_ROLE, ORGANISER_ROLE]
+
+ROLES = [USER_ROLE, ADMIN_ROLE]
 
 ACCEPT_LANGUAGES = ['de', 'en', 'ru']
 
@@ -25,7 +24,7 @@ SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
 SQLALCHEMY_ECHO = False
 
 # MongoSet configuration ----------------
-MONGODB_DATABASE = "fevent"
+MONGODB_DATABASE = ""
 MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
 MONGODB_AUTOREF = True
@@ -57,13 +56,9 @@ SECURITY_PASSWORD_HASH = 'sha512_crypt'
 SECURITY_PASSWORD_SALT = ')(*ENB%WOI3j3kf'
 
 SOCIAL_URL_PREFIX = "/social"
-# SOCIAL_APP_URL = "http://fevent.mediasapiens.co/social"
+
 SOCIAL_CONNECT_ALLOW_VIEW = "/account/"
 SOCIAL_CONNECT_DENY_VIEW = "/account/"
-
-SPHINX_DIR = 'sphinxdata'
-
-MAP_API_URL = "http://maps.googleapis.com/maps/api/geocode/json"
 
 pictures_path = '/'.join(map(lambda x: str(getattr(datetime.utcnow(), x)),
                                  ['year', 'month', 'day']))
@@ -71,8 +66,6 @@ UPLOADS_IMAGES_DIR = '{}/'.format(pictures_path)
 UPLOADS_DEFAULT_DEST = os.path.abspath("flamaster/static/uploads")
 UPLOADS_DEFAULT_URL = "/static/uploads"
 
-FLICKR_API_KEY = '809d3abac86759d46d3e77f86e82654f'
-WIKI_URL = "http://en.wikipedia.org/w/api.php"
 
 PAYMENT_MEHODS = {
     'skrill': {
@@ -89,11 +82,6 @@ PAYMENT_MEHODS = {
     }
 }
 
-#FLICKR_API_SECRET = '2c81c7c12491ae4e'
-##YOUTUBE_DEVELOPER_KEY = 'AI39si6bveFM4rV7I4p-7dD73ZpO5KE2qLxAMReqvWkcLSJ7ZZtNdMtjQm-fKvFYZKg8FfLXKAL9vyzIaESimZR4R_QT5atgvA'
-##YOUTUBE_CLIENT_ID = 'fevent_id'
-#YOUTUBE_API_KEY = 'AIzaSyChBit_-W404d-88vvpwxbrOJ-5SekxK9I'
-#YOUTUBE_API_SECRET = '8M8bjG4UNlJuJB6SJLM77EUl'
 
 try:
     ls = importlib.import_module('flamaster.conf.local_settings')

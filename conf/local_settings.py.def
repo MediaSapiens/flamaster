@@ -8,7 +8,8 @@ MAP_API_KEY = ""
 
 SQLALCHEMY_ECHO = True
 
-SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://user:password@host/dbname"
+MONGODB_DATABASE = "dbname"
 
 ADMINS = ('test@example.com', )
 
@@ -22,6 +23,7 @@ SOCIAS_FACEBOOK = {
     'consumer_secret': 'facebook app secret',
     'request_token_params': {
         'scope': 'email'
+    }
 }
 
 SOCIAL_GOOGLE = {}
