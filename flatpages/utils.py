@@ -3,12 +3,12 @@
 from flask import render_template, request, current_app
 from flask.ext.security import login_required
 
-from . import flatpages
+from . import bp
 from .models import FlatPage
 
 
 # TODO: need to decide, how we handle 404 error?
-@flatpages.after_app_request
+@bp.after_app_request
 def view_flatpage(response):
     if response.status_code == 404:
         path = request.path.strip('/')

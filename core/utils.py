@@ -2,18 +2,31 @@
 import re
 import types
 import uuid
-
 from bson import ObjectId
 from datetime import datetime
+from flask import current_app, abort
+from flask.ext.mail import Message
+from flask.helpers import json
 from functools import wraps
 from importlib import import_module
 from os.path import abspath, dirname, join
 from unidecode import unidecode
+from werkzeug import import_string, cached_property
 
-from flask import current_app, abort
-from flask.ext.mail import Message
-from flask.helpers import json
 
+class LazyResource(object):
+
+    def __init__(self, import_name, endpoint):
+        self.__module__, self.__name__ = import_name.rsplit('.', 1)
+        self.import_name = import_name
+        self.endpoint = endpoint
+
+    @cached_property
+    def view(self):
+        return import_string(self.import_name).as_view(self.endpoint)
+
+    def __call__(self, *args, **kwargs):
+        return self.view(*args, **kwargs)
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')

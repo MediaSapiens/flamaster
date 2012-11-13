@@ -1,16 +1,13 @@
 import trafaret as t
-from flask.ext.security import roles_required
-
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
+from flask.ext.security import roles_required
 
-from . import flatpages
+from . import bp
 from .models import FlatPage
 
-__all__ = ['FlatPageResource']
 
-
-@api_resource(flatpages, 'pages', {'id': None})
+@api_resource(bp, 'pages', {'id': None})
 class FlatPageResource(ModelResource):
 
     validation = t.Dict({'name': t.String,

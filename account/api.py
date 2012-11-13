@@ -1,38 +1,33 @@
 # -*- encoding: utf-8 -*-
-from flask import abort, request, session, g
-
-from flask.ext.principal import AnonymousIdentity, identity_changed
-
-from flask.ext.security import (logout_user, login_user, current_user,
-                                roles_required)
-from flask.ext.security.utils import verify_password
-from flask.ext.security.confirmable import (send_confirmation_instructions,
-                                            generate_confirmation_token,
-                                            confirm_email_token_status,
-                                            confirm_user)
-from flask.ext.security.registerable import register_user
-
-from flask.ext.babel import lazy_gettext as _
-
-
 import trafaret as t
-from trafaret import extras as te
-from sqlalchemy import or_
 
 from flamaster.core import http
-from flamaster.core.decorators import api_resource, login_required
+from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product.models import Address
 
-from . import app, account, _security
+from flask import abort, request, session, g, current_app
+from flask.ext.babel import lazy_gettext as _
+from flask.ext.principal import AnonymousIdentity, identity_changed
+from flask.ext.security import (logout_user, login_user, current_user,
+                                roles_required)
+from flask.ext.security.utils import verify_password
+from flask.ext.security.confirmable import (confirm_email_token_status,
+                                            confirm_user)
+from flask.ext.security.registerable import register_user
+
+from sqlalchemy import or_
+from trafaret import extras as te
+
+from . import bp, _security
 from .models import User, Role, BankAccount
 
 __all__ = ['SessionResource', 'ProfileResource', 'AddressResource',
            'RoleResource']
 
 
-@api_resource(account, 'sessions', {'id': None})
+@api_resource(bp, 'sessions', {'id': None})
 class SessionResource(Resource):
     validation = t.Dict({'email': t.Email}).allow_extra('*')
 
@@ -74,7 +69,8 @@ class SessionResource(Resource):
         for key in ('identity.name', 'identity.auth_type'):
             session.pop(key, None)
 
-        identity_changed.send(app, identity=AnonymousIdentity())
+        identity_changed.send(current_app._get_current_object(),
+                              identity=AnonymousIdentity())
         logout_user()
         return jsonify_status_code(self._get_response(), http.NO_CONTENT)
 
@@ -100,7 +96,7 @@ class SessionResource(Resource):
         return response
 
 
-@api_resource(account, 'profiles', {'id': int})
+@api_resource(bp, 'profiles', {'id': int})
 class ProfileResource(ModelResource):
 
     validation = t.Dict({'first_name': t.String,
@@ -151,7 +147,7 @@ class ProfileResource(ModelResource):
                 role = Role.query.get(value['role_id'])
                 if user.has_role(role):
                     return value
-                elif current_user.has_role(app.config['ADMIN_ROLE']):
+                elif current_user.has_role(current_app.config['ADMIN_ROLE']):
                     user.roles.append(role)
                     user.save()
                     return value
@@ -187,7 +183,7 @@ class ProfileResource(ModelResource):
         return self.model.query.filter(or_(*filters))
 
 
-@api_resource(account, 'addresses', {'id': int})
+@api_resource(bp, 'addresses', {'id': int})
 class AddressResource(ModelResource):
 
     validation = t.Dict({'city': t.String,
@@ -214,7 +210,7 @@ class AddressResource(ModelResource):
         return g.user.addresses
 
 
-@api_resource(account, 'roles', {'id': int})
+@api_resource(bp, 'roles', {'id': int})
 class RoleResource(ModelResource):
 
     model = Role
@@ -228,7 +224,7 @@ class RoleResource(ModelResource):
         abort(http.METHOD_NOT_ALLOWED)
 
 
-@api_resource(account, 'bank_accounts', {'id': int})
+@api_resource(bp, 'bank_accounts', {'id': int})
 class BankAccountResource(ModelResource):
     model = BankAccount
     validation = t.Dict({

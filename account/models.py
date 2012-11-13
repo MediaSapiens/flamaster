@@ -1,15 +1,13 @@
 # -*- encoding: utf-8 -*-
 from datetime import datetime
-
-from sqlalchemy.ext.hybrid import hybrid_property
+from flask import current_app
 from flask.ext.security import (UserMixin, RoleMixin, Security,
                                 SQLAlchemyUserDatastore)
-
 from flask.ext.social import Social, SQLAlchemyConnectionDatastore
-
 from flamaster.core.models import CRUDMixin
+from sqlalchemy.ext.hybrid import hybrid_property
 
-from . import app, db
+from . import db
 
 
 user_roles = db.Table('user_roles', db.metadata,
@@ -33,7 +31,7 @@ class Role(db.Model, CRUDMixin, RoleMixin):
         return "<Role: %r>" % self.name
 
     @classmethod
-    def get_or_create(cls, name=app.config['USER_ROLE']):
+    def get_or_create(cls, name=current_app.config['USER_ROLE']):
         return cls.query.filter_by(name=name).first() or cls.create(name=name)
 
 
@@ -69,9 +67,9 @@ class User(db.Model, CRUDMixin, UserMixin):
             :params kwargs: should contains `email`, `password` and `active`
                             flag to set up base user data
         """
-        admin_role = app.config['ADMIN_ROLE']
-        user_role = app.config['USER_ROLE']
-        email, admins = kwargs['email'], app.config['ADMINS']
+        admin_role = current_app.config['ADMIN_ROLE']
+        user_role = current_app.config['USER_ROLE']
+        email, admins = kwargs['email'], current_app.config['ADMINS']
         # detect if user should have and admin role
         role = email in admins and admin_role or user_role
         kwargs['roles'] = [Role.get_or_create(name=role)]
@@ -82,7 +80,7 @@ class User(db.Model, CRUDMixin, UserMixin):
             'phone': kwargs.pop('phone', ''),
             'email': kwargs['email']
         }
-        self.customer.update(**customer_args)
+        self.customer and self.customer.update(**customer_args)
         super(User, self).__init__(**kwargs)
 
     @classmethod
@@ -134,7 +132,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     def is_superuser(self):
         """ Flag signalized that user is superuse """
-        return self.has_role(app.config['ADMIN_ROLE'])
+        return self.has_role(current_app.config['ADMIN_ROLE'])
 
     def has_role(self, role_name):
         role = Role.query.filter_by(name=role_name).first()
@@ -173,6 +171,7 @@ class SocialConnection(db.Model, CRUDMixin):
     image_url = db.Column(db.String(512))
     rank = db.Column(db.Integer)
 
+
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-Security(app, user_datastore)
-Social(app, SQLAlchemyConnectionDatastore(db, SocialConnection))
+Security(current_app, user_datastore)
+Social(current_app, SQLAlchemyConnectionDatastore(db, SocialConnection))
