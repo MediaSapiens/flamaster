@@ -35,9 +35,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
 #        url_endpoint = self.settings['endpoint']
-        request_params.update(self.settings['payload'])
-        # or self.endpoint
-        resp = requests.get(self.endpoint, params=request_params)
+        payload = self.settings.copy()
+        del payload['SANDBOX']
+        request_params.update(payload)
+        resp = requests.get(self.__endpoint, params=request_params)
         return parse_qs(resp.text)
 
     def __set_checkout(self, amount, currency):
@@ -72,13 +73,13 @@ class PayPalPaymentMethod(BasePaymentMethod):
             used above.
         """
         request_params = {
-            'METHOD': GET_CHECKOUT,
+            'METHOD': DO_PAYMENT,
             'TOKEN': token,
         }
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             return self.__capture_the_payment(token=token,
-                    payer_id=response['PAYERID'])
+                    payer_id=response.json['PAYERID'])
         logger.debug("get checkout err: %s", response)
 
     def __capture_the_payment(self, token, payer_id):
@@ -93,8 +94,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             order = self.__restore_order(response['TOKEN'])
-            order.update(payment_details = ' '.join(response))
-            return order.save()
+            return order.update(payment_details = ' '.join(response))
         logger.debug("get checkout err: %s", response)
 
     def init_payment(self, amount, currency):
@@ -112,8 +112,16 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return self.order.query.filter_by(payment_details=token).first()
 
     def __prepare_redirect_url(self, response):
-        redirect_tpl = "{}?cmd=_express-checkout&token={}"
-        return redirect_tpl.format(self.settings['webface'], self.ec_token)
+        face = "https://{}paypal.com/webscr?cmd=_express-checkout&token={}"
+        return face.format(
+                self.settings['SANDBOX'] and 'www.sandbox.' or 'www.',
+                response.json['token'])
+
+    @property
+    def __prepare_endpoint(self):
+        endpoint_args = (self.settings['SIGNATURE'] and '-3t' or '',
+                self.settings['SANDBOX'] and 'sandbox' or '')
+        return 'https://api{}.{}paypal.com/nvp'.format(endpoint_args)
 
 
 class InitPaymentView(View):

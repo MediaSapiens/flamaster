@@ -28,8 +28,3 @@ class BasePaymentMethod(object):
         """
         raise NotImplementedError
 
-    @property
-    def endpoint(self):
-        endpoint_args = (SIGNATURE_AUTH and '-3t' or '',
-                SANDBOX_ENV and 'sandbox' or '')
-        return 'https://api{}.{}paypal.com/nvp'.format(endpoint_args)
