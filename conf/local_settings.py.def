@@ -2,28 +2,35 @@ DEBUG = True
 
 USE_X_SENDFILE = False
 
-SECRET_KEY = "your secret"
-# Key for use for Google Maps API
-MAP_API_KEY = ""
+SECRET_KEY = "<don't forget to update>"
+MAP_API_KEY = "Google Maps API key"
 
-SQLALCHEMY_ECHO = True
+SQLALCHEMY_ECHO = False
 
-SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://user:password@host/dbname"
+SQLALCHEMY_DATABASE_URI = "postgresql://user:passwd@host:port/dbname"
 MONGODB_DATABASE = "dbname"
 
 ADMINS = ('test@example.com', )
 
 SOCIAL_TWITTER = {
-    'consumer_key': 'twitter consumer key',
-    'consumer_secret': 'twitter consumer secret'
+    'consumer_key': "",
+    'consumer_secret': ""
+}
+SOCIAL_FACEBOOK = {
+    'consumer_key': '',
+    'consumer_secret': ''
 }
 
-SOCIAS_FACEBOOK = {
-    'consumer_key': 'facebook app id',
-    'consumer_secret': 'facebook app secret',
-    'request_token_params': {
-        'scope': 'email'
+PAYPAL_SELLER = {
+    # 'app_id': 'APP-80W284485P519543T',
+    'endpoint': 'https://api-3t.sandbox.paypal.com/nvp',
+    'webface': 'https://www.sandbox.paypal.com/webscr',
+    'settings': {
+        'USER': '',
+        'PWD': '',
+        'SIGNATURE': '',
+        'VERSION': '94.0',
     }
 }
 
-SOCIAL_GOOGLE = {}
+# SOCIAL_GOOGLE = {}

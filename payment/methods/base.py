@@ -6,20 +6,13 @@ SIGNATURE_AUTH = True # if `True` auth would be done with signature else with ce
 class BasePaymentMethod(object):
     """ Base API handler class, established with respect to the PayPal API.
     """
-    _endpoint = ''
-    _cancel_url = ''
-    _return_url = ''
-    _format = ''
+    method_name = 'base'
 
-    def call(self):
-        """ Provide all call elements and meke request
-        """
-        raise NotImplementedError
+    def __init__(self, settings, order):
+        self.settings = settings
 
-    def paylod(self):
-        """ Provide call payloads
-        """
-        raise NotImplementedError
+    def process_payment(self, amount, currency, description):
+        raise NotImplemented()
 
     def method(self, case):
         """ The API operation you are addressing
@@ -40,5 +33,4 @@ class BasePaymentMethod(object):
     def endpoint(self):
         endpoint_args = (SIGNATURE_AUTH and '-3t' or '',
                 SANDBOX_ENV and 'sandbox' or '')
-        return 'https://api{}.{}paypal.com/2.0/'.format(endpoint_args)
-
+        return 'https://api{}.{}paypal.com/nvp'.format(endpoint_args)

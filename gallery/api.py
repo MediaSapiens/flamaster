@@ -1,16 +1,19 @@
 # encoding: utf-8
-
 import trafaret as t
-from flask import abort, g, request
-from flask.ext.security import login_required, current_user
-from werkzeug import FileStorage
 
 from flamaster.core import http
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from . import gallery, db
+from flask import abort, g, request
+from flask.ext.security import login_required, current_user
+
+from werkzeug import FileStorage
+
+from sqlalchemy import or_
+
+from . import bp
 from .models import Image, Album
 
 
@@ -21,7 +24,7 @@ def get_access_type(data_dict):
     return data_dict
 
 
-@api_resource(gallery, 'images', {'id': int})
+@api_resource(bp, 'images', {'id': int})
 class ImageResource(ModelResource):
     model = Image
 
@@ -78,12 +81,12 @@ class ImageResource(ModelResource):
         elif current_user.is_superuser:
             return query
         else:
-            return query.filter(db.or_(self.model.author_id == current_user.id,
+            return query.filter(or_(self.model.author_id == current_user.id,
                                        self.model.is_public is True))
 
 
 # TODO: Establish why GET params does not pass to request.args
-@api_resource(gallery, 'albums', {'id': int})
+@api_resource(bp, 'albums', {'id': int})
 class AlbumResource(ImageResource):
     model = Album
 

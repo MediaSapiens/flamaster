@@ -1,22 +1,19 @@
 # -*- encoding: utf-8 -*-
-import trafaret as t
-
 from datetime import datetime
-from bson import DBRef, ObjectId
 from flask import current_app
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
-from flamaster.core.documents import Document
+
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 from flamaster.core.utils import resolve_class
 
-from . import db, mongo
+from . import db
 
 
-__all__ = ['Category', 'Customer', 'Favorite', 'BaseProduct', 'Shelf',
-           'Address']
+__all__ = ['Address', 'Cart', 'Category', 'Customer', 'Delivery', 'Favorite',
+            'Order', 'Shelf']
 
 
 class Address(db.Model, CRUDMixin):
@@ -46,65 +43,16 @@ class Address(db.Model, CRUDMixin):
     def __repr__(self):
         return "<Address:('%s','%s')>" % (self.city, self.street)
 
-    def save(self, commit=True):
-        if self.type == 'billing':
-            Address.query.filter_by(user=self.user).\
-                          update({'type': 'delivery'})
-        return super(Address, self).save(commit)
-
-
-class BaseProduct(Document):
-    __abstract__ = True
-    __collection__ = 'products'
-    structure = t.Dict({
-        'sku': t.String,
-        'name': t.String,
-        'type': t.String,
-        'teaser': t.String,
-        'description': t.String,
-        # 'producer': t.Int,
-        'categories': t.List[t.Int],
-        'updated_at': t.Any,
-        'created_by': t.Int,
-        'accessories': t.List[t.Type(Document) | t.Type(DBRef)],
-        t.Key('created_at', default=datetime.utcnow): t.Any
-    })
-    required_fields = ['name', 'type', 'categories', 'created_by']
-    i18n = ['name', 'teaser', 'description']
-    indexes = ['id', 'categories', ('updated_at', -1), ('created_at', -1),
-               'created_by', 'type']
-
-    def get_price(self, *args, **kwargs):
-    # WARNING!
-    # We have another architectural problem here.
-    # We get ID PriceCategory to price calculation.
-    # But PriceCategory class is in the module event,
-    # which should be completely encapsulated from the module product.
-        raise NotImplemented('Method is not implemented')
-
-    def add_to_shelf(self, prices):
-        for price in prices:
-            Shelf.create(price_category_id=str(price.id),
-                         quantity=price.quantity)
-
-    def get_from_shelf(self, **kwargs):
-        return Shelf.query.with_lockmode('update_nowait').filter_by(**kwargs)
-
-    def add_to_cart(self, *args, **kwargs):
-        kwargs['product'] = self
-        return Cart.create(*args, **kwargs)
-
 
 class Cart(db.Model, CRUDMixin):
     """ Cart record for concrete product
     """
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
     product_id = db.Column(db.String, nullable=False)
-    concrete_product_id = db.Column(db.String, nullable=False)
-    price_category_id = db.Column(db.String, nullable=False)
+    product_variant_id = db.Column(db.String, nullable=False)
+    price_option_id = db.Column(db.String, nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
-    final_price = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
@@ -113,32 +61,25 @@ class Cart(db.Model, CRUDMixin):
                                backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, amount, customer_id, product, product_variant,
+               price_option):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
-        :param concrete_product_id: bson.ObjectId key for concrete product
-                                    value
-        :param price_categoey_id: bson.ObjectId key for price category
-                                  identifier
+        :param product_variant: instance of BaseProductVariant subclass
+        :param price_option: instance of BasePriceOption subclass
         :param amount: amount of products to place in cart
-        :param customer_id: int value for customer id instance
+        :param customer_id: instance of Customer model
         """
-        product = kwargs.pop('product')
-        price, final_price = product.get_price(kwargs['price_category_id'],
-                                        kwargs['amount'])
+        price = product.get_price(price_option.id, amount)
 
-        kwargs.update({
+        instance_kwargs = {
             'product_id': str(product.id),
-            'concrete_product_id': str(kwargs['concrete_product_id']),
-            'price_category_id': str(kwargs['price_category_id']),
+            'product_variant_id': str(product_variant.id),
+            'price_option_id': str(price_option.id),
             'price': price,
-            'final_price': final_price,
-        })
-        return super(Cart, cls).create(commit=False, **kwargs)
-
-    @property
-    def product(self):
-        return BaseProduct.query.find_one({'_id': ObjectId(self.product_id)})
+            'customer_id': customer_id
+        }
+        return super(Cart, cls).create(**instance_kwargs)
 
     @classmethod
     def for_customer(cls, customer_id):
@@ -202,17 +143,22 @@ class Customer(db.Model, CRUDMixin):
         return "{0.first_name} {0.last_name}".format(self)
 
     @property
-    def addresses_ids(self):
+    def __addresses_ids(self):
         return map(attrgetter('id'), self.addresses)
 
-    def set_address(self, addr_type, value):
+    def __set_address(self, addr_type, value):
+        """
+        :param addr_type: Either `billing` or `delivery` to describe type the
+                          address will be used for
+        :param value:     Instance of the Address model
+        """
         if not isinstance(value, (int, Address)):
             raise ValueError('value is neither int nor Address instance')
 
         if isinstance(value, int):
             value = Address.query.get(value)
 
-        if value.id not in self.addresses_ids:
+        if value.id not in self.__addresses_ids:
             self.addresses.append(value)
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
@@ -227,7 +173,7 @@ class Customer(db.Model, CRUDMixin):
     def billing_address(self, value):
         """ setter for billing_address property
         """
-        self.set_address('billing', value)
+        self.__set_address('billing', value)
 
     @hybrid_property
     def delivery_address(self):
@@ -239,7 +185,7 @@ class Customer(db.Model, CRUDMixin):
     def delivery_address(self, value):
         """ setter for delivery_address property
         """
-        self.set_address('delivery', value)
+        self.__set_address('delivery', value)
 
 
 class Favorite(db.Model, CRUDMixin):
@@ -338,24 +284,16 @@ class Order(db.Model, CRUDMixin):
         return delivery.calculate_price()
 
 
-@mongo.register
-class ProductType(Document):
-
-    structure = t.Dict({
-        'name': t.String,
-        'attrs': t.Mapping(t.String, t.String),
-        t.Key('created_at', default=datetime.utcnow): t.Any
-    })
-
-    i18n = ['attrs']
-    indexes = ['name']
-
-
 class Shelf(db.Model, CRUDMixin):
     """ Model to keep available products
     """
-    price_category_id = db.Column(db.String(24), unique=True, index=True)
+    price_option_id = db.Column(db.String(24), unique=True, index=True)
     quantity = db.Column(db.Integer, default=0)
+
+    @classmethod
+    def create(cls, price_category_id, quantity):
+        return cls(price_category_id=price_category_id,
+                   quantity=quantity).save()
 
 
 class Delivery(db.Model, CRUDMixin):

@@ -1,9 +1,7 @@
 # encoding: utf-8
-
-from sqlalchemy.ext.hybrid import hybrid_property
-
 from flamaster.core.models import SlugMixin
 from flamaster.core.utils import slugify
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from . import db
 
