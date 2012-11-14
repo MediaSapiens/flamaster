@@ -218,6 +218,7 @@ class Order(db.Model, CRUDMixin):
     delivery_cost = db.Column(db.Numeric(precision=18, scale=2))
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_cost = db.Column(db.Numeric(precision=18, scale=2))
+    payment_details = db.Column(db.Unicode(255), unique=True)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     customer = db.relationship('Customer',

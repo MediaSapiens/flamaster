@@ -1,3 +1,6 @@
+from flask import current_app
+from flamaster.product.models import Order
+
 # PayPal configurations
 SANDBOX_ENV = True # if `False` it is all be truly
 SIGNATURE_AUTH = True # if `True` auth would be done with signature else with certificate
@@ -8,20 +11,16 @@ class BasePaymentMethod(object):
     """
     method_name = 'base'
 
-    def __init__(self, settings, order):
-        self.settings = settings
+    def __init__(self, order=Order):
+        self.settings = current_app.config[
+                '{}_SETTINGS'.format(self.method_name.upper())
+                ]
+        self.order = order
 
-    def process_payment(self, amount, currency, description):
-        raise NotImplemented()
-
-    def method(self, case):
-        """ The API operation you are addressing
-        """
+    def init_payment(self, amount, currency, description):
         raise NotImplementedError
 
-    def amount(self, total):
-        """ Calculate payment cash amount
-        """
+    def precess_payment_response(self, *args, **kwargs):
         raise NotImplementedError
 
     def headers(self):
