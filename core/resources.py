@@ -120,7 +120,7 @@ class Resource(MethodView):
         response = {'meta': {
                         'total': total,
                         'pages': pages},
-                    'objects': [item.as_dict() for item in items]}
+                    'objects': [self.serialize(item) for item in items]}
         return response
 
 
@@ -135,7 +135,7 @@ class ModelResource(Resource):
             page = int(request.args.get('page', 1))
             response = self.gen_list_response(page=page)
         else:
-            response = self.get_object(id).as_dict()
+            response = self.serialize(self.get_object(id))
         return jsonify_status_code(response)
 
     def post(self):
@@ -144,7 +144,7 @@ class ModelResource(Resource):
 
         try:
             data = self.validation.check(data)
-            response = self.model.create(**data).as_dict()
+            response = self.serialize(self.model.create(**data))
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
@@ -157,7 +157,7 @@ class ModelResource(Resource):
         try:
             data = self.validation.check(data)
             instance = self.get_object(id)
-            response = instance.update(**data).as_dict()
+            response = self.serialize(instance.update(**data))
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
@@ -183,6 +183,12 @@ class ModelResource(Resource):
         paging = self._prepare_pagination(page, page_size, **kwargs)
         items = paging['objects'].limit(page_size).offset(paging['offset'])
         return items, paging['count'], paging['last_page']
+
+    @classmethod
+    def serialize(cls, instance, include=None):
+        """ Method to controls model serialization in derived classes
+        """
+        return instance.as_dict(api_fields=include)
 
 
 class MongoResource(ModelResource):
@@ -311,7 +317,7 @@ class SearchResource(ModelResource):
     @classmethod
     def get_values(cls, instance):
         index_fields = cls.index_fields
-        values = instance.as_dict(api_fields=index_fields.keys())
+        values = self.serialize(instance, include=index_fields.keys())
         for key, value in values.iteritems():
             if value is None:
                 if index_fields[key] == str:
@@ -356,8 +362,8 @@ class MongoSearchResource(SearchResource, MongoResource):
 
     @classmethod
     def get_values(cls, instance):
-        api_fields = cls.conversion_map or cls.index_fields.keys()
-        return instance.as_dict(api_fields=api_fields)
+        include_fields = cls.conversion_map or cls.index_fields.keys()
+        return cls.serialize(instance, include=include_fields)
 
 
 # TODO: translation ?????
