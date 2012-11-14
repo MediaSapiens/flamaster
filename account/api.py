@@ -182,6 +182,13 @@ class ProfileResource(ModelResource):
         self.model is None and abort(http.INTERNAL_ERR)
         return self.model.query.filter(or_(*filters))
 
+    def serialize(self, instance, include=None):
+        exclude = ['password']
+        if g.user.id != instance.id or g.user.is_superuser() is False:
+            exclude.append('email')
+
+        return instance.as_dict(include, exclude)
+
 
 @api_resource(bp, 'addresses', {'id': int})
 class AddressResource(ModelResource):

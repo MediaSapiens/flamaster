@@ -40,7 +40,8 @@ class User(db.Model, CRUDMixin, UserMixin):
         By default model inherits id and created_at fields from the CRUDMixin
     """
     api_fields = ['email', 'active', 'created_at', 'logged_at',
-                  'current_login_at', 'first_name', 'last_name', 'phone']
+                  'current_login_at', 'first_name', 'last_name', 'phone',
+                  'billing_address']
     __mapper_args__ = {
         'order_by': ['email']
     }
@@ -129,6 +130,10 @@ class User(db.Model, CRUDMixin, UserMixin):
             value = [value]
 
         map(self.customer.addresses.append, value)
+
+    @property
+    def billing_address(self):
+        return self.customer and self.customer.billing_address or None
 
     def is_superuser(self):
         """ Flag signalized that user is superuse """

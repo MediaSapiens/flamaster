@@ -10,6 +10,9 @@ SQLALCHEMY_ECHO = False
 SQLALCHEMY_DATABASE_URI = "postgresql://user:passwd@host:port/dbname"
 MONGODB_DATABASE = "dbname"
 
+WIKI_URL = "http://en.wikipedia.org/w/api.php"
+FLICKR_API_KEY = ""
+
 ADMINS = ('test@example.com', )
 
 SOCIAL_TWITTER = {
