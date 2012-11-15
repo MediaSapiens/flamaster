@@ -24,11 +24,16 @@ class DocumentMixin(Model):
     def __collection__(cls):
         return plural_underscored(cls.__name__)
 
-    def as_dict(self, api_fields=None, exclude=['_ns', '_int_id']):
+    def as_dict(self, api_fields=None, exclude=None):
         """ Returns instance as dict in selected language
         """
+        exclude_by_default = ['_ns', '_int_id', '_class']
+
+        if exclude is not None:
+            exclude_by_default.extend(exclude)
+
         fields = api_fields or self.keys()
-        fields = set(fields) - set(exclude or [])
+        fields = set(fields) - set(exclude_by_default)
 
         result = dict(zip(fields, attrgetter(*fields)(self)))
         result['id'] = result.pop('_id')
