@@ -290,11 +290,6 @@ class Shelf(db.Model, CRUDMixin):
     price_option_id = db.Column(db.String(24), unique=True, index=True)
     quantity = db.Column(db.Integer, default=0)
 
-    @classmethod
-    def create(cls, price_category_id, quantity):
-        return cls(price_category_id=price_category_id,
-                   quantity=quantity).save()
-
 
 class Delivery(db.Model, CRUDMixin):
     name = db.Column(db.Unicode(255), unique=True, index=True)
