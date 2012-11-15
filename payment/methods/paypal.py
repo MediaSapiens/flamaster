@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, request
+from flask import redirect, request, render_template
 from flask.views import View
 from urlparse import parse_qs
 
@@ -125,18 +125,23 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
 
 class InitPaymentView(View):
+    """ The view redirects user to authorize payment
+    """
     def dispatch_request(self):
-        amount = request.json.get('amount')
-        currency = request.json.get('currency')
-        order = Order.create(customer_id=request.json.get('customer_id'))
+        amount = request.json['amount']
+        currency = request.json['currency']
+        order = Order.create(customer_id=request.json['customer_id'])
 
         return PayPalPaymentMethod(order).init_payment(amount, currency)
 
 
 class ProcessPaymentView(View):
+    """ Capture payment and show to user an order data
+    """
     def dispatch_request(self):
-        token = request.json.get('TOKEN')
-        return PayPalPaymentMethod().process_payment(token)
+        token = request.json['TOKEN']
+        order_data = PayPalPaymentMethod().process_payment(token)
+        return render_template('success_order.html', order=order_data)
 
 
 bp.add_url_rule('/initialization', view_func=InitPaymentView.as_view())
