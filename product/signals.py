@@ -18,7 +18,7 @@ def create_customer_for_newcommer(sender, app):
 def put_on_shelf(price_option):
     """ Putting newly created priced item on shelf
     """
-    Shelf.create(price_option_id=price_option.id,
+    Shelf.create(price_option_id=str(price_option.id),
                  quantity=price_option.quantity)
 
 
