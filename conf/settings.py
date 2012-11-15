@@ -13,8 +13,9 @@ ADMINS = ('admin@example.com', )
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
+ORGANIZER_ROLE = 'organizer'
 
-ROLES = [USER_ROLE, ADMIN_ROLE]
+ROLES = [USER_ROLE, ADMIN_ROLE, ORGANIZER_ROLE]
 
 ACCEPT_LANGUAGES = ['de', 'en', 'ru']
 
