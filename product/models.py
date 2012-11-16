@@ -290,6 +290,12 @@ class Shelf(db.Model, CRUDMixin):
     price_option_id = db.Column(db.String(24), unique=True, index=True)
     quantity = db.Column(db.Integer, default=0)
 
+    @classmethod
+    def get_by_price_option(cls, price_option_id):
+        """ Filter shelf items by price options
+        """
+        return cls.query.filter_by(price_option_id=price_option_id)
+
 
 class Delivery(db.Model, CRUDMixin):
     name = db.Column(db.Unicode(255), unique=True, index=True)

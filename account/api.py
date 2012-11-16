@@ -254,6 +254,6 @@ class BankAccountResource(ModelResource):
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
-        if instance.check_owner(current_user.id):
+        if instance.check_owner(current_user) or current_user.is_superuser():
             return instance
         return abort(http.UNAUTHORIZED)

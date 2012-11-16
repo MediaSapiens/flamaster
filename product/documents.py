@@ -60,7 +60,7 @@ class BasePriceOption(Document):
 
 
 class BaseProductVariant(Document):
-    """ Keeps event options
+    """ Keeps event variants for different venues
     """
     __abstract__ = True
     __collection__ = 'product_variants'
@@ -69,15 +69,19 @@ class BaseProductVariant(Document):
         'price_options': t.List[t.Type(DBRef)],
     })
 
-    required_fields = ['price_options']
+    def __get_prices(self):
+        prices = [0]
+        if self.price_options:
+            prices = map(operator.attrgetter('price'), self.price_options)
+        return prices
 
     @property
     def max_price(self):
-        return max(map(operator.attrgetter('price'), self.price_options))
+        return max(self.__get_prices())
 
     @property
     def min_price(self):
-        return min(map(operator.attrgetter('price'), self.price_options))
+        return min(self.__get_prices())
 
     @property
     def total_quantity(self):
