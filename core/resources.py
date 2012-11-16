@@ -167,11 +167,11 @@ class ModelResource(Resource):
         self.get_object(id).delete()
         return jsonify_status_code({}, http.NO_CONTENT)
 
-    def get_objects(self):
+    def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query
+        return self.model.query.filter_by(**kwargs)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
@@ -194,6 +194,13 @@ class ModelResource(Resource):
 class MongoResource(ModelResource):
     """ Resource for typical views, based on mongo models
     """
+
+    def get_objects(self, **kwargs):
+        """ Method for extraction object list query
+        """
+        self.model is None and abort(http.BAD_REQUEST)
+        return self.model.query.find(**kwargs)
+
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
@@ -202,8 +209,8 @@ class MongoResource(ModelResource):
 
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)
-        objects, offset = paging['objects'], paging['offset']
-        return objects[offset:offset], paging['count'], paging['last_page']
+        items = paging['objects'].limit(page_size).skip(paging['offset'])
+        return items, paging['count'], paging['last_page']
 
 
 class SearchViewType(MethodViewType):
