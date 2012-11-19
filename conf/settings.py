@@ -68,20 +68,27 @@ UPLOADS_DEFAULT_DEST = os.path.abspath("flamaster/static/uploads")
 UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
-PAYMENT_MEHODS = {
-    'skrill': {
-        'module': 'flamaster.payment.methods.SkrillPaymentMethod'
-    },
-    'paypal': {
-        'module': 'flamaster.payment.methods.PayPalPaymentMethod'
-    },
-    'card': {
-        'module': 'flamaster.payment.methods.CardPaymentMethod'
-    },
-    'bank transfer': {
-        'module': 'flamaster.payment.methods.BankPaymentMethod'
-    }
-}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PAYPAL_SETTINGS = {
+        'SANDBOX': True,
+        'USER': '',
+        'PWD': '',
+        'SIGNATURE': ''
+        }
+#PAYMENT_MEHODS = {
+#    'skrill': {
+#        'module': 'flamaster.payment.methods.SkrillPaymentMethod'
+#    },
+#    'paypal': {
+#        'module': 'flamaster.payment.methods.PayPalPaymentMethod'
+#    },
+#    'card': {
+#        'module': 'flamaster.payment.methods.CardPaymentMethod'
+#    },
+#    'bank transfer': {
+#        'module': 'flamaster.payment.methods.BankPaymentMethod'
+#    }
+#}
 
 
 try:

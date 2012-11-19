@@ -5,7 +5,6 @@ from flamaster.core import http
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
-from flamaster.product.models import Address
 
 from flask import abort, request, session, g, current_app
 from flask.ext.babel import lazy_gettext as _
@@ -21,10 +20,9 @@ from sqlalchemy import or_
 from trafaret import extras as te
 
 from . import bp, _security
-from .models import User, Role, BankAccount
+from .models import User, Role, BankAccount, Address
 
-__all__ = ['SessionResource', 'ProfileResource', 'AddressResource',
-           'RoleResource']
+__all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
 
 @api_resource(bp, 'sessions', {'id': None})
@@ -195,17 +193,35 @@ class ProfileResource(ModelResource):
 
 @api_resource(bp, 'addresses', {'id': int})
 class AddressResource(ModelResource):
-
-    validation = t.Dict({'city': t.String,
-                         'street': t.String,
-                         'type': t.String(regex="(billing|delivery)")}) \
-                    .allow_extra('*')
     model = Address
+    validation = t.Dict({
+        'country_id': t.Int,
+        'city': t.String,
+        'street': t.String,
+        'type': t.String(regex="(billing|delivery)")
+    }).allow_extra('*')
 
     def post(self):
-        g.user.is_anonymous() and abort(http.UNAUTHORIZED)
-        request.json.update({'user_id': g.user.id})
-        return super(AddressResource, self).post()
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.validation.check(data)
+            address_type = data.pop('type')
+            address = self.model.create(commit=False, **data)
+            if g.user.is_anonymous() and 'customer_id' in session:
+                customer = Customer.query.get_or_404(session['customer_id'])
+            else:
+                customer = g.user.customer
+
+            customer.set_address(address_type, address)
+            customer.save()
+
+            response = self.serialize()
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
 
     def put(self, id):
         self.validation.make_optional('apartment', 'zip_code', 'user_id')

@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 from flask.ext.mail import Message
-from flask.ext.security import user_registered
 from operator import attrgetter
 from sqlalchemy import event
 # from flamaster.account.models import User
 from . import mail, db
 from .documents import price_created, price_updated, price_deleted
-from .models import Customer, Order, Shelf
+from .models import Order, Shelf
 
 
-@user_registered.connect
-def create_customer_for_newcommer(sender, app):
-    sender['user'].customer = Customer()
+# @user_registered.connect
+# def create_customer_for_newcommer(sender, app):
+#     sender['user'].customer = Customer()
 
 
 @price_created.connect

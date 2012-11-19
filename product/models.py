@@ -1,47 +1,17 @@
 # -*- encoding: utf-8 -*-
-from datetime import datetime
 from flask import current_app
 from operator import attrgetter
-from sqlalchemy.ext.hybrid import hybrid_property
+
+from flamaster.account.models import Address
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
-
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 from flamaster.core.utils import resolve_class
 
 from . import db
 
 
-__all__ = ['Address', 'Cart', 'Category', 'Customer', 'Delivery', 'Favorite',
-            'Order', 'Shelf']
-
-
-class Address(db.Model, CRUDMixin):
-    """ Represents address data for users
-        By default model inherits id and created_at fields from the CRUDMixin
-    """
-    __mapper_args__ = {
-        'order_by': ['city', 'street']
-    }
-    city = db.Column(db.Unicode(255), nullable=False)
-    street = db.Column(db.Unicode(255), nullable=False)
-    apartment = db.Column(db.Unicode(20), nullable=False)
-    zip_code = db.Column(db.String(20))
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id',
-                                                      ondelete='CASCADE',
-                                                      use_alter=True,
-                                                      name='fk_customer_id'))
-    country_id = db.Column(db.Integer, db.ForeignKey('countries.id'))
-    country = db.relationship('Country')
-
-    def __init__(self, **kwargs):
-        assert 'city' in kwargs and 'street' in kwargs
-        self.type = kwargs.pop('type', 'delivery')
-        for attr, value in kwargs.iteritems():
-            setattr(self, attr, value)
-
-    def __repr__(self):
-        return "<Address:('%s','%s')>" % (self.city, self.street)
+__all__ = ['Cart', 'Category', 'Delivery', 'Favorite', 'Order', 'Shelf']
 
 
 class Cart(db.Model, CRUDMixin):
@@ -103,89 +73,13 @@ class Category(db.Model, TreeNode):
 
 class Country(db.Model, CRUDMixin):
     """ Model holding countries list """
-    api_fields = ['id', 'short', 'long']
+    api_fields = ['id', 'short', 'name']
 
     short = db.Column(db.Unicode(3), nullable=False, index=True)
 
     @property
-    def long(self):
+    def name(self):
         return COUNTRY_CHOICES[self.short]
-
-
-class Customer(db.Model, CRUDMixin):
-
-    first_name = db.Column(db.Unicode(255), default=u'')
-    last_name = db.Column(db.Unicode(255), default=u'')
-    email = db.Column(db.String(80), index=True)
-    phone = db.Column(db.String(80), default='')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
-    notes = db.Column(db.UnicodeText)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship("User", backref=db.backref("customer",
-                                                      uselist=False))
-    addresses = db.relationship('Address', backref=db.backref('customer'),
-                        primaryjoin="Address.customer_id==Customer.id",
-                        cascade='all, delete', lazy='dynamic')
-    billing_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id',
-                        use_alter=True, name='fk_billing_address'))
-    _billing_address = db.relationship("Address", cascade='all, delete',
-                        primaryjoin="Customer.billing_address_id==Address.id",
-                        backref=db.backref("billing_for_customer",
-                                           uselist=False))
-    delivery_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id',
-                        use_alter=True, name='fk_delivery_address'))
-    _delivery_address = db.relationship("Address", cascade='all, delete',
-                        primaryjoin="Customer.delivery_address_id==Address.id",
-                        backref=db.backref("delivery_for_customer",
-                                           uselist=False))
-
-    def __unicode__(self):
-        return "{0.first_name} {0.last_name}".format(self)
-
-    @property
-    def __addresses_ids(self):
-        return map(attrgetter('id'), self.addresses)
-
-    def __set_address(self, addr_type, value):
-        """
-        :param addr_type: Either `billing` or `delivery` to describe type the
-                          address will be used for
-        :param value:     Instance of the Address model
-        """
-        if not isinstance(value, (int, Address)):
-            raise ValueError('value is neither int nor Address instance')
-
-        if isinstance(value, int):
-            value = Address.query.get(value)
-
-        if value.id not in self.__addresses_ids:
-            self.addresses.append(value)
-
-        setattr(self, "{}_address_id".format(addr_type), value.id)
-
-    @hybrid_property
-    def billing_address(self):
-        """ Hybrid property allowing only one billing-address per-customer
-        """
-        return self._billing_address
-
-    @billing_address.setter
-    def billing_address(self, value):
-        """ setter for billing_address property
-        """
-        self.__set_address('billing', value)
-
-    @hybrid_property
-    def delivery_address(self):
-        """ Hybrid property allowing only one delivery_address per-customer
-        """
-        return self._delivery_address
-
-    @delivery_address.setter
-    def delivery_address(self, value):
-        """ setter for delivery_address property
-        """
-        self.__set_address('delivery', value)
 
 
 class Favorite(db.Model, CRUDMixin):
@@ -218,6 +112,7 @@ class Order(db.Model, CRUDMixin):
     delivery_cost = db.Column(db.Numeric(precision=18, scale=2))
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_cost = db.Column(db.Numeric(precision=18, scale=2))
+    payment_details = db.Column(db.Unicode(255), unique=True)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     customer = db.relationship('Customer',
