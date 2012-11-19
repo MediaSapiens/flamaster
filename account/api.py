@@ -184,6 +184,9 @@ class ProfileResource(ModelResource):
 
     def serialize(self, instance, include=None):
         exclude = ['password']
+        if g.user.is_anonymous() or instance.is_anonymous():
+            return instance.as_dict(include, exclude)
+
         if g.user.id != instance.id or g.user.is_superuser() is False:
             exclude.append('email')
 
@@ -254,6 +257,6 @@ class BankAccountResource(ModelResource):
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
-        if instance.check_owner(current_user.id):
+        if instance.check_owner(current_user) or current_user.is_superuser():
             return instance
         return abort(http.UNAUTHORIZED)

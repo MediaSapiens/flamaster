@@ -151,7 +151,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
 
 class BankAccount(db.Model, CRUDMixin):
-    bank_name = db.Column(db.String(512))
+    bank_name = db.Column(db.Unicode(512))
     iban = db.Column(db.String(256))
     swift = db.Column(db.String(256))
     updated_at = db.Column(db.DateTime, onupdate=datetime.now)
@@ -159,8 +159,8 @@ class BankAccount(db.Model, CRUDMixin):
     user = db.relationship('User', backref=db.backref('accounts',
                            lazy='dynamic'))
 
-    def check_owner(self, user_id):
-        return user_id == self.user_id
+    def check_owner(self, user):
+        return user.id == self.user_id
 
 
 class SocialConnection(db.Model, CRUDMixin):
