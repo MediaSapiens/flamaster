@@ -6,7 +6,7 @@ from flask.views import View
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
-from . import bp
+from .. import payment
 from flamaster.product.models import Order
 
 
@@ -128,9 +128,9 @@ class InitPaymentView(View):
     """ The view redirects user to authorize payment
     """
     def dispatch_request(self):
-        amount = request.json['amount']
-        currency = request.json['currency']
-        order = Order.create(customer_id=request.json['customer_id'])
+        amount = request.args['amount']
+        currency = request.args['currency']
+        order = Order.create(customer_id=request.args['customer_id'])
 
         return PayPalPaymentMethod(order).init_payment(amount, currency)
 
@@ -144,5 +144,7 @@ class ProcessPaymentView(View):
         return render_template('success_order.html', order=order_data)
 
 
-bp.add_url_rule('/initialization', view_func=InitPaymentView.as_view())
-bp.add_url_rule('/process', view_func=ProcessPaymentView.as_view())
+payment.add_url_rule('/initialization',
+        view_func=InitPaymentView.as_view('init_payment'))
+payment.add_url_rule('/process',
+        view_func=ProcessPaymentView.as_view('process_payment'))
