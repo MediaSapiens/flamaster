@@ -157,10 +157,10 @@ class BaseProduct(Document):
                 product_variant = mongo.db.product_variants.find_one({
                                     'price_options': price_opt.ref})
 
-                cart = Cart.create(amount, customer_id, self, product_variant,
+                cart = Cart.create(amount, customer, self, product_variant,
                                    price_opt)
                 return cart
-        except (InternalError, OperationalError) as error:
+        except Exception as error:
             current_app.logger.debug(error.message)
             db.session.rollback()
 

@@ -4,15 +4,16 @@ from flask import abort, current_app, request, session, g
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
-from flamaster.core.decorators import api_resource
-from flamaster.core.resources import ModelResource, MongoResource
+from flamaster.account.models import Customer
+
 from flamaster.core import http
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.decorators import api_resource
 from flamaster.core.documents import MongoId
-#from flamaster.event.models import ConcreteProduct, PriceCategory, Event
+from flamaster.core.resources import ModelResource, MongoResource
+from flamaster.core.utils import jsonify_status_code
 
 from . import mongo, product as bp
-from .models import Cart, Category, Customer, Country
+from .models import Cart, Category, Country
 from .helpers import resolve_parent
 
 __all__ = ['CategoryResource']
@@ -91,7 +92,7 @@ class CartResource(ModelResource):
         validation = self.validation.make_optional('concrete_product_id')
 
         # condition to ensure that we have a customer when item added to cart
-        if not current_user.is_authenticated():
+        if current_user.is_anonymous():
             customer = Customer.create()
             session['customer_id'] = customer.id
         else:
