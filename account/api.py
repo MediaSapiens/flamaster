@@ -196,10 +196,12 @@ class ProfileResource(ModelResource):
 @api_resource(bp, 'addresses', {'id': int})
 class AddressResource(ModelResource):
 
-    validation = t.Dict({'city': t.String,
-                         'street': t.String,
-                         'type': t.String(regex="(billing|delivery)")}) \
-                    .allow_extra('*')
+    validation = t.Dict({
+        'country_id': t.Int,
+        'city': t.String,
+        'street': t.String,
+        'type': t.String(regex="(billing|delivery)")
+    }).allow_extra('*')
     model = Address
 
     def post(self):

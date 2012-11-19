@@ -21,7 +21,7 @@ class Address(db.Model, CRUDMixin):
         By default model inherits id and created_at fields from the CRUDMixin
     """
     __mapper_args__ = {
-        'order_by': ['city', 'street']
+        'order_by': ['country_id', 'city']
     }
     city = db.Column(db.Unicode(255), nullable=False)
     street = db.Column(db.Unicode(255), nullable=False)

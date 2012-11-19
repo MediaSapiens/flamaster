@@ -10,6 +10,7 @@ from flask.helpers import json
 from functools import wraps
 from importlib import import_module
 from os.path import abspath, dirname, join
+from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
 
@@ -40,6 +41,8 @@ class CustomEncoder(json.JSONEncoder):
             return obj.ctime()
         elif isinstance(obj, ObjectId):
             return str(obj)
+        elif isinstance(obj, _LazyString):
+            return unicode(obj)
         return super(CustomEncoder, self).default(obj)
 
 

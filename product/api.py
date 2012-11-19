@@ -12,7 +12,7 @@ from flamaster.core.documents import MongoId
 #from flamaster.event.models import ConcreteProduct, PriceCategory, Event
 
 from . import mongo, product as bp
-from .models import Cart, Category, Customer
+from .models import Cart, Category, Customer, Country
 from .helpers import resolve_parent
 
 __all__ = ['CategoryResource']
@@ -53,6 +53,24 @@ class ProductResource(MongoResource):
         'put': [login_required],
         'delete': [login_required]
     }
+
+
+@api_resource(bp, 'countries', {'id': int})
+class CountriesResource(ModelResource):
+    model = Country
+
+    def put(self, id):
+        abort(http.METHOD_NOT_ALLOWED)
+
+    def post(self):
+        abort(http.METHOD_NOT_ALLOWED)
+
+    def delete(self, id=None):
+        abort(http.METHOD_NOT_ALLOWED)
+
+    def gen_list_response(self, page, **kwargs):
+        return super(CountriesResource, self) \
+            .gen_list_response(page, page_size=1000, **kwargs)
 
 
 @api_resource(bp, 'carts', {'id': int})
