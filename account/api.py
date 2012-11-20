@@ -20,7 +20,7 @@ from sqlalchemy import or_
 from trafaret import extras as te
 
 from . import bp, _security
-from .models import User, Role, BankAccount, Address
+from .models import User, Role, BankAccount, Address, Customer
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
@@ -196,10 +196,11 @@ class AddressResource(ModelResource):
     model = Address
     validation = t.Dict({
         'country_id': t.Int,
+        'apartment': t.String,
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)")
-    }).allow_extra('*')
+    }).make_optional('zip_code').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -217,7 +218,7 @@ class AddressResource(ModelResource):
             customer.set_address(address_type, address)
             customer.save()
 
-            response = self.serialize()
+            response = self.serialize(address)
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
