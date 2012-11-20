@@ -6,7 +6,7 @@ from bson import ObjectId
 from datetime import datetime
 from operator import itemgetter, methodcaller
 
-from flask import abort, request
+from flask import abort, request, current_app
 from flask.views import MethodView, MethodViewType
 from flask.ext.mongoset import signal_map
 # from flask.ext.security import login_required
@@ -177,7 +177,7 @@ class ModelResource(Resource):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        return self.get_objects().get_or_404(id)
+        return self.get_objects().filter_by(id=id).first_or_404()
 
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)

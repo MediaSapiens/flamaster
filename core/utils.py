@@ -4,9 +4,11 @@ import types
 import uuid
 from bson import ObjectId
 from datetime import datetime
+
 from flask import current_app, abort
 from flask.ext.mail import Message
 from flask.helpers import json
+
 from functools import wraps
 from importlib import import_module
 from os.path import abspath, dirname, join
@@ -39,10 +41,12 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.ctime()
-        elif isinstance(obj, ObjectId):
+        if isinstance(obj, ObjectId):
             return str(obj)
-        elif isinstance(obj, _LazyString):
+        if isinstance(obj, _LazyString):
             return unicode(obj)
+        if hasattr(obj, 'as_dict'):
+            return obj.as_dict()
         return super(CustomEncoder, self).default(obj)
 
 

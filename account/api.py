@@ -224,17 +224,16 @@ class AddressResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def put(self, id):
-        self.validation.make_optional('apartment', 'zip_code', 'user_id')
-        return super(AddressResource, self).put(id)
-
     def get_objects(self):
         """ Method for extraction object list query
         """
-        self.model is None and abort(http.INTERNAL_ERR)
-        not g.user.is_anonymous() or abort(http.UNAUTHORIZED)
-
-        return g.user.addresses
+        query = super(AddressResource, self).get_objects()
+        if g.user.is_anonymous():
+            return query.filter_by(customer_id=session['customer_id'])
+        elif g.user.is_superuser():
+            return query
+        else:
+            return query.filter_by(customer_id=g.user.customer_id)
 
 
 @api_resource(bp, 'roles', {'id': int})
