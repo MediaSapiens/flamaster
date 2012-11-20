@@ -209,7 +209,7 @@ class AddressResource(ModelResource):
         try:
             data = self.validation.check(data)
             address_type = data.pop('type')
-            address = self.model.create(commit=False, **data)
+            address = self.model.create(**data)
             if g.user.is_anonymous() and 'customer_id' in session:
                 customer = Customer.query.get_or_404(session['customer_id'])
             else:
