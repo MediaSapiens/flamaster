@@ -244,7 +244,8 @@ class Order(db.Model, CRUDMixin):
                                 by default it is True
         """
         # TODO: Need to decide what kind of addresses is more impotant:
-        assert kwargs['payment_method'] in current_app.config['PAYMENT_MEHODS']
+
+        assert kwargs['payment_method'] in current_app.config #['PAYMENT_MEHODS']
         delivery_address_id = kwargs.pop('delivery_address_id')
         billing_address_id = kwargs.pop('billing_address_id')
         kwargs.update(cls.__set_address(delivery_address_id, 'delivery'))

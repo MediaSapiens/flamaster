@@ -69,7 +69,7 @@ UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PAYPAL_SETTINGS = {
+PAYPAL = {
         'SANDBOX': True,
         'USER': '',
         'PWD': '',

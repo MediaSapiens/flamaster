@@ -86,7 +86,7 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     @classmethod
     def create(cls, **kwargs):
-        raise NotImplementedError("You should user security datastore"
+        raise NotImplementedError("You should use security datastore"
                                   " 'create_user' method for this operation")
 
     @classmethod

@@ -1,13 +1,12 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, request, render_template
-from flask.views import View
+from flask import redirect, render_template, request
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
 from .. import payment
-from flamaster.product.models import Order
+from flamaster.product.models import Order, Customer
 
 
 ACTION = 'SELL'
@@ -15,6 +14,7 @@ SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
 DO_PAYMENT = 'DoExpressCheckoutPayment'
 RESPONSE_OK = 'Success'
+PAYMENT_METHOD = 'PAYPAL'
 logger = logging.getLogger(__name__)
 
 
@@ -124,27 +124,28 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return 'https://api{}.{}paypal.com/nvp'.format(endpoint_args)
 
 
-class InitPaymentView(View):
-    """ The view redirects user to authorize payment
-    """
-    def dispatch_request(self):
-        amount = request.args['amount']
-        currency = request.args['currency']
-        order = Order.create(customer_id=request.args['customer_id'])
-
-        return PayPalPaymentMethod(order).init_payment(amount, currency)
+@payment.route('/paypal/initialization', methods=['POST',])
+def init_payment():
+    amount = request.json['amount']
+    currency = request.json['currency']
+    customer_id = request.json['customer_id']
+    customer = Customer.query.get(customer_id).first()
+    delivery_address_id = customer.delivery_address_id
 
 
-class ProcessPaymentView(View):
-    """ Capture payment and show to user an order data
-    """
-    def dispatch_request(self):
-        token = request.json['TOKEN']
-        order_data = PayPalPaymentMethod().process_payment(token)
-        return render_template('success_order.html', order=order_data)
+    order = Order.create(payment_method=PAYMENT_METHOD,
+            customer_id=customer_id, delivery_address_id=delivery_address_id)
+
+    return PayPalPaymentMethod(order).init_payment(amount, currency)
 
 
-payment.add_url_rule('/initialization',
-        view_func=InitPaymentView.as_view('init_payment'))
-payment.add_url_rule('/process',
-        view_func=ProcessPaymentView.as_view('process_payment'))
+@payment.route('/paypal/process/<string:token>', methods=['POST',])
+def dispatch_request(self, token):
+    order_data = PayPalPaymentMethod().process_payment(token)
+    return render_template('success_order.html', order=order_data)
+
+
+#payment.add_url_rule('/initialization',
+#        view_func=InitPaymentView.as_view('init_payment'))
+#payment.add_url_rule('/process',
+#        view_func=ProcessPaymentView.as_view('process_payment'))
