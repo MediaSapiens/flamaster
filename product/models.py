@@ -55,7 +55,7 @@ class Cart(db.Model, CRUDMixin):
     def for_customer(cls, customer_id):
         """ helper method for obtaining cart records for concrete customer
         """
-        return cls.filter_by(customer_id=customer_id, is_ordered=False)
+        return cls.query.filter_by(customer_id=customer_id, is_ordered=False)
 
 
 class Category(db.Model, TreeNode):
@@ -115,6 +115,7 @@ class Order(db.Model, CRUDMixin):
     payment_details = db.Column(db.Unicode(255), unique=True)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
+    paid = db.Column(db.Boolean, default=False)
     customer = db.relationship('Customer',
                                backref=db.backref('orders', **lazy_cascade))
 
@@ -139,7 +140,7 @@ class Order(db.Model, CRUDMixin):
         """
         # TODO: Need to decide what kind of addresses is more impotant:
 
-        assert kwargs['payment_method'] in current_app.config #['PAYMENT_MEHODS']
+        assert kwargs['payment_method'] in current_app.config['PAYMENT_METHODS']
         delivery_address_id = kwargs.pop('delivery_address_id')
         billing_address_id = kwargs.pop('billing_address_id')
         kwargs.update(cls.__set_address(delivery_address_id, 'delivery'))
@@ -163,21 +164,32 @@ class Order(db.Model, CRUDMixin):
 
     @classmethod
     def __set_address(cls, address_id, addr_type):
+        current_app.logger.debug(address_id)
         address_set = Address.query.get(address_id) \
                         .as_dict(exclude=['customer_id', 'created_at', 'id'])
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_set.iteritems())
 
     def resolve_payment(self):
-        method = current_app.config['PAYMENT_MEHODS'][self.payment_method]
+        method = current_app.config['PAYMENT_METHODS'][self.payment_method]
         class_string = method['module']
         PaymentMethod = resolve_class(class_string)
-        return PaymentMethod()
+        return PaymentMethod(self)
 
     @classmethod
     def __resolve_delivery(cls, delivery_id, address_id):
         delivery = Delivery.query.get(delivery_id)
         return delivery.calculate_price()
+
+    def set_payment_details(self, payment_details):
+        return self.update(payment_details=payment_details)
+
+    @classmethod
+    def get_by_payment_details(cls, payment_details):
+        return cls.query.filter_by(payment_details)
+
+    def mark_as_paid(self):
+        return self.update(paid=True)
 
 
 class Shelf(db.Model, CRUDMixin):

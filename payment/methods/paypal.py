@@ -1,12 +1,11 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, render_template, request
+from flask import redirect, render_template
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
 from .. import payment
-from flamaster.product.models import Order, Customer
 
 
 ACTION = 'SELL'
@@ -29,15 +28,16 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Obtaining authorized payment details.
             Capturing the payment.
     """
-    method_name = 'paypal'
+    # Must be uppercased
+    method_name = 'PAYPAL'
 
     def __do_request(self, request_params):
         """ Directly request
         """
-#        url_endpoint = self.settings['endpoint']
-        payload = self.settings.copy()
-        del payload['SANDBOX']
+        payload = self.settings['payload']
         request_params.update(payload)
+        logger.debug(self.__endpoint)
+        logger.debug(self.__endpoint)
         resp = requests.get(self.__endpoint, params=request_params)
         return parse_qs(resp.text)
 
@@ -60,7 +60,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         response = self.__do_request(request_params)
 
         if response['ACK'] == RESPONSE_OK:
-            self.__store_token(response['TOKEN'])
+            self.order.set_payment_details(response['TOKEN'])
             webface_url = self.__prepare_redirect_url(response)
             return redirect(webface_url)
         else:
@@ -93,8 +93,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 }
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
-            order = self.__restore_order(response['TOKEN'])
-            return order.update(payment_details = ' '.join(response))
+            self.order.get_by_payment_details(response['TOKEN'])
+            self.order.set_payment_details(' '.join(response))
+            return self.order.mark_paid()
         logger.debug("get checkout err: %s", response)
 
     def init_payment(self, amount, currency):
@@ -105,38 +106,17 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def process_payment(self, token):
         return self.__obtain_authorized_payment_details(token)
 
-    def __store_token(self, token):
-        return self.order.update(payment_details = token)
-
-    def __restore_order(self, token):
-        return self.order.query.filter_by(payment_details=token).first()
-
     def __prepare_redirect_url(self, response):
         face = "https://{}paypal.com/webscr?cmd=_express-checkout&token={}"
         return face.format(
-                self.settings['SANDBOX'] and 'www.sandbox.' or 'www.',
+                self.settings['SANDBOX'] and 'sandbox.',
                 response.json['token'])
 
     @property
-    def __prepare_endpoint(self):
-        endpoint_args = (self.settings['SIGNATURE'] and '-3t' or '',
-                self.settings['SANDBOX'] and 'sandbox' or '')
-        return 'https://api{}.{}paypal.com/nvp'.format(endpoint_args)
-
-
-@payment.route('/paypal/initialization', methods=['POST',])
-def init_payment():
-    amount = request.json['amount']
-    currency = request.json['currency']
-    customer_id = request.json['customer_id']
-    customer = Customer.query.get(customer_id).first()
-    delivery_address_id = customer.delivery_address_id
-
-
-    order = Order.create(payment_method=PAYMENT_METHOD,
-            customer_id=customer_id, delivery_address_id=delivery_address_id)
-
-    return PayPalPaymentMethod(order).init_payment(amount, currency)
+    def __endpoint(self):
+        endpoint_args = (self.settings['payload']['SIGNATURE'] and '-3t' or '',
+                self.settings['SANDBOX'] and 'sandbox.' or '',)
+        return 'https://api{}.{}paypal.com/nvp'.format(*endpoint_args)
 
 
 @payment.route('/paypal/process/<string:token>', methods=['POST',])

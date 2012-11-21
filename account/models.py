@@ -31,12 +31,6 @@ class Address(db.Model, CRUDMixin):
     country_id = db.Column(db.Integer, db.ForeignKey('countries.id'))
     country = db.relationship('Country')
 
-    def __init__(self, **kwargs):
-        assert 'city' in kwargs and 'street' in kwargs
-        self.type = kwargs.pop('type', 'delivery')
-        for attr, value in kwargs.iteritems():
-            setattr(self, attr, value)
-
     def __repr__(self):
         return "<Address:('%s','%s')>" % (self.city, self.street)
 

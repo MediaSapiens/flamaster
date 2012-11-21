@@ -69,26 +69,33 @@ UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PAYPAL = {
-        'SANDBOX': True,
-        'USER': '',
-        'PWD': '',
-        'SIGNATURE': ''
-        }
-#PAYMENT_MEHODS = {
-#    'skrill': {
-#        'module': 'flamaster.payment.methods.SkrillPaymentMethod'
-#    },
-#    'paypal': {
-#        'module': 'flamaster.payment.methods.PayPalPaymentMethod'
-#    },
-#    'card': {
-#        'module': 'flamaster.payment.methods.CardPaymentMethod'
-#    },
-#    'bank transfer': {
-#        'module': 'flamaster.payment.methods.BankPaymentMethod'
-#    }
-#}
+#PAYPAL = {
+#        'SANDBOX': True,
+#        'USER': '',
+#        'PWD': '',
+#        'SIGNATURE': ''
+#        }
+PAYMENT_METHODS = {
+    'skrill': {
+        'module': 'flamaster.payment.methods.SkrillPaymentMethod'
+    },
+    'PAYPAL': {
+        'module': 'flamaster.payment.methods.paypal.PayPalPaymentMethod',
+        'payload': {
+            'USER': 'good_1352716404_biz_api1.gmail.com',
+            'PWD': '1352716424',
+            'SIGNATURE': 'AGTSAEECQ6cq.TSFDgUDIFbbxDSzA4-zsDl3G1uv8zaJMxNNdP1X0cuH',
+            'VERSION': 94.0
+            },
+        'SANDBOX': True
+    },
+    'card': {
+        'module': 'flamaster.payment.methods.CardPaymentMethod'
+    },
+    'bank transfer': {
+        'module': 'flamaster.payment.methods.BankPaymentMethod'
+    }
+}
 
 
 try:

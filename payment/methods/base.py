@@ -13,10 +13,8 @@ class BasePaymentMethod(object):
     """
     method_name = 'base'
 
-    def __init__(self, order=Order):
-        self.settings = current_app.config[
-                '{}_SETTINGS'.format(self.method_name.upper())
-                ]
+    def __init__(self, order):
+        self.settings = current_app.config['PAYMENT_METHODS'][self.method_name]
         self.order = order
 
     def init_payment(self, amount, currency, description):
