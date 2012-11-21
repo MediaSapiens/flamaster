@@ -20,7 +20,7 @@ from sqlalchemy import or_
 from trafaret import extras as te
 
 from . import bp, _security
-from .models import User, Role, BankAccount, Address
+from .models import User, Role, BankAccount, Address, Customer
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
@@ -196,10 +196,11 @@ class AddressResource(ModelResource):
     model = Address
     validation = t.Dict({
         'country_id': t.Int,
+        'apartment': t.String,
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)")
-    }).allow_extra('*')
+    }).make_optional('zip_code').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -208,7 +209,7 @@ class AddressResource(ModelResource):
         try:
             data = self.validation.check(data)
             address_type = data.pop('type')
-            address = self.model.create(commit=False, **data)
+            address = self.model.create(**data)
             if g.user.is_anonymous() and 'customer_id' in session:
                 customer = Customer.query.get_or_404(session['customer_id'])
             else:
@@ -217,23 +218,22 @@ class AddressResource(ModelResource):
             customer.set_address(address_type, address)
             customer.save()
 
-            response = self.serialize()
+            response = self.serialize(address)
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
 
-    def put(self, id):
-        self.validation.make_optional('apartment', 'zip_code', 'user_id')
-        return super(AddressResource, self).put(id)
-
     def get_objects(self):
         """ Method for extraction object list query
         """
-        self.model is None and abort(http.INTERNAL_ERR)
-        not g.user.is_anonymous() or abort(http.UNAUTHORIZED)
-
-        return g.user.addresses
+        query = super(AddressResource, self).get_objects()
+        if g.user.is_anonymous():
+            return query.filter_by(customer_id=session['customer_id'])
+        elif g.user.is_superuser():
+            return query
+        else:
+            return query.filter_by(customer_id=g.user.customer_id)
 
 
 @api_resource(bp, 'roles', {'id': int})
@@ -265,11 +265,11 @@ class BankAccountResource(ModelResource):
         try:
             data = self.validation.check(request.json)
             data['user_id'] = current_user.id
-            response = self.model.create(**data).as_dict()
+            response = self.serialize(self.model.create(**data))
         except t.DataError as e:
             response, status = e.as_dict(), http.BAD_REQUEST
 
-        jsonify_status_code(response, status)
+        return jsonify_status_code(response, status)
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
