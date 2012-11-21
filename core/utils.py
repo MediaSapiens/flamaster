@@ -136,7 +136,6 @@ def send_email(to, subject, body):
     """
     recipients = isinstance(to, basestring) and [to] or to
     msg = Message(subject=subject, body=body, recipients=recipients)
-    current_app.logger.debug(body)
     current_app.mail.send(msg)
 
 

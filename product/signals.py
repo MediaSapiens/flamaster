@@ -39,7 +39,7 @@ def remove_from_shelf(price_option):
 
 #def order_creation_sender(mapper, connection, instance):
 #    owners = list(set(map(attrgetter('product.created_by'), instance.goods)))
-#
+
 #    with mail.connect() as conn:
 #        for owner in owners:
 #            conn.send(Message(
@@ -55,7 +55,7 @@ def remove_from_shelf(price_option):
 #            subject="Your order #{0.id}".format(instance),
 #            body="Thank you for ordering"
 #        ))
-#
+
 #event.listen(Order, 'after_insert', order_creation_sender)
 
 # after_insert(cls, mapper=None, connection=None, instance=None):

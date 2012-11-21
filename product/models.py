@@ -164,7 +164,6 @@ class Order(db.Model, CRUDMixin):
 
     @classmethod
     def __set_address(cls, address_id, addr_type):
-        current_app.logger.debug(address_id)
         address_set = Address.query.get(address_id) \
                         .as_dict(exclude=['customer_id', 'created_at', 'id'])
         return dict(('{}_{}'.format(addr_type, key), value)

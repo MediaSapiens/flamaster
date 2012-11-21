@@ -1,11 +1,27 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, render_template
+from flask import redirect, render_template, url_for
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
 from .. import payment
+
+
+@payment.route('/paypal/process/<string:token>', methods=['POST',])
+def process(self, token):
+    order_data = PayPalPaymentMethod().process_payment(token)
+    return render_template('success_order.html', order=order_data)
+
+
+@payment.route('/paypal/cancel')
+def cancel(self):
+    return render_template('cancel.html')
+
+
+@payment.route('/paypal/error')
+def error(self):
+    return render_template('error.html')
 
 
 ACTION = 'SELL'
@@ -36,8 +52,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """
         payload = self.settings['payload']
         request_params.update(payload)
-        logger.debug(self.__endpoint)
-        logger.debug(self.__endpoint)
         resp = requests.get(self.__endpoint, params=request_params)
         return parse_qs(resp.text)
 
@@ -54,8 +68,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_AMT': amount,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': currency,
-            'returnUrl': '',
-            'cancelUrl': '',
+            # FIXME: BuildError
+            'RETURNURL': url_for('process'),
+            'CANCELURL': url_for('cancel')
         }
         response = self.__do_request(request_params)
 
@@ -63,8 +78,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
             self.order.set_payment_details(response['TOKEN'])
             webface_url = self.__prepare_redirect_url(response)
             return redirect(webface_url)
-        else:
-            logger.debug("set checkout err: %s", response)
+        logger.debug("set checkout err: %s", response)
+        return redirect(url_for('error'))
 
     def __obtain_authorized_payment_details(self, token):
         """ If the customer authorizes the payment, the customer is redirected
@@ -81,6 +96,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             return self.__capture_the_payment(token=token,
                     payer_id=response.json['PAYERID'])
         logger.debug("get checkout err: %s", response)
+        return redirect(url_for('error'))
 
     def __capture_the_payment(self, token, payer_id):
         """ Final step. The payment can be captured (collected) using the
@@ -119,13 +135,3 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return 'https://api{}.{}paypal.com/nvp'.format(*endpoint_args)
 
 
-@payment.route('/paypal/process/<string:token>', methods=['POST',])
-def dispatch_request(self, token):
-    order_data = PayPalPaymentMethod().process_payment(token)
-    return render_template('success_order.html', order=order_data)
-
-
-#payment.add_url_rule('/initialization',
-#        view_func=InitPaymentView.as_view('init_payment'))
-#payment.add_url_rule('/process',
-#        view_func=ProcessPaymentView.as_view('process_payment'))

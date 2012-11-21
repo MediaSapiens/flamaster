@@ -87,7 +87,7 @@ PAYMENT_METHODS = {
             'SIGNATURE': 'AGTSAEECQ6cq.TSFDgUDIFbbxDSzA4-zsDl3G1uv8zaJMxNNdP1X0cuH',
             'VERSION': 94.0
             },
-        'SANDBOX': True
+        'SANDBOX': True,
     },
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'
@@ -96,7 +96,6 @@ PAYMENT_METHODS = {
         'module': 'flamaster.payment.methods.BankPaymentMethod'
     }
 }
-
 
 try:
     ls = importlib.import_module('flamaster.conf.local_settings')
