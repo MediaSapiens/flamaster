@@ -265,11 +265,11 @@ class BankAccountResource(ModelResource):
         try:
             data = self.validation.check(request.json)
             data['user_id'] = current_user.id
-            response = self.model.create(**data).as_dict()
+            response = self.serialize(self.model.create(**data))
         except t.DataError as e:
             response, status = e.as_dict(), http.BAD_REQUEST
 
-        jsonify_status_code(response, status)
+        return jsonify_status_code(response, status)
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
