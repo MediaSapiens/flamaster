@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, render_template, url_for
+from flask import redirect, render_template, url_for, request
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
@@ -63,14 +63,15 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Step 2 contained. Redirect the Customer to PayPal for
             Authorization.
         """
+        logger.debug(request.blueprint)
         request_params = {
             'METHOD': SET_CHECKOUT,
             'PAYMENTREQUEST_0_AMT': amount,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': currency,
             # FIXME: BuildError
-            'RETURNURL': url_for('process'),
-            'CANCELURL': url_for('cancel')
+            'RETURNURL': url_for('.process'),
+            'CANCELURL': url_for('.cancel')
         }
         response = self.__do_request(request_params)
 
@@ -79,7 +80,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             webface_url = self.__prepare_redirect_url(response)
             return redirect(webface_url)
         logger.debug("set checkout err: %s", response)
-        return redirect(url_for('error'))
+        return redirect(url_for('.error'))
 
     def __obtain_authorized_payment_details(self, token):
         """ If the customer authorizes the payment, the customer is redirected
