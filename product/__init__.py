@@ -12,4 +12,4 @@ from .models import *
 from .documents import *
 from .exceptions import ShelfNotAvailable
 
-import api, signals
+import api, signals, views

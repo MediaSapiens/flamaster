@@ -8,19 +8,19 @@ from .base import BasePaymentMethod
 from .. import payment
 
 
-@payment.route('/paypal/process/<string:token>', methods=['POST',])
-def process(self, token):
+@payment.route('/paypal/process/<string:token>', methods=['POST'])
+def process_paypal(token):
     order_data = PayPalPaymentMethod().process_payment(token)
     return render_template('success_order.html', order=order_data)
 
 
 @payment.route('/paypal/cancel')
-def cancel(self):
+def cancel_paypal():
     return render_template('cancel.html')
 
 
 @payment.route('/paypal/error')
-def error(self):
+def error_paypal():
     return render_template('error.html')
 
 
@@ -29,7 +29,6 @@ SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
 DO_PAYMENT = 'DoExpressCheckoutPayment'
 RESPONSE_OK = 'Success'
-PAYMENT_METHOD = 'PAYPAL'
 logger = logging.getLogger(__name__)
 
 
@@ -44,14 +43,12 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Obtaining authorized payment details.
             Capturing the payment.
     """
-    # Must be uppercased
-    method_name = 'PAYPAL'
+    method_name = 'paypal'
 
     def __do_request(self, request_params):
         """ Directly request
         """
-        payload = self.settings['payload']
-        request_params.update(payload)
+        request_params.update(self.settings)
         resp = requests.get(self.__endpoint, params=request_params)
         return parse_qs(resp.text)
 
@@ -70,8 +67,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': currency,
             # FIXME: BuildError
-            'RETURNURL': url_for('.process'),
-            'CANCELURL': url_for('.cancel')
+            'RETURNURL': url_for('payment.process_paypal'),
+            'CANCELURL': url_for('payment.cancel_paypal')
         }
         response = self.__do_request(request_params)
 
@@ -80,7 +77,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             webface_url = self.__prepare_redirect_url(response)
             return redirect(webface_url)
         logger.debug("set checkout err: %s", response)
-        return redirect(url_for('.error'))
+        return redirect(url_for('payment.error_paypal'))
 
     def __obtain_authorized_payment_details(self, token):
         """ If the customer authorizes the payment, the customer is redirected
@@ -97,7 +94,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             return self.__capture_the_payment(token=token,
                     payer_id=response.json['PAYERID'])
         logger.debug("get checkout err: %s", response)
-        return redirect(url_for('error'))
+        return redirect(url_for('payment.error_paypal'))
 
     def __capture_the_payment(self, token, payer_id):
         """ Final step. The payment can be captured (collected) using the
@@ -107,7 +104,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'METHOD': GET_CHECKOUT,
                 'TOKEN': token,
                 'PAYERID': payer_id
-                }
+        }
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.get_by_payment_details(response['TOKEN'])
@@ -123,16 +120,13 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def process_payment(self, token):
         return self.__obtain_authorized_payment_details(token)
 
-    def __prepare_redirect_url(self, response):
+    def __get_redirect_url(self, response):
         face = "https://{}paypal.com/webscr?cmd=_express-checkout&token={}"
-        return face.format(
-                self.settings['SANDBOX'] and 'sandbox.',
-                response.json['token'])
+        return face.format(self.sandbox and 'sandbox.' or '',
+                           response.json['token'])
 
     @property
-    def __endpoint(self):
-        endpoint_args = (self.settings['payload']['SIGNATURE'] and '-3t' or '',
-                self.settings['SANDBOX'] and 'sandbox.' or '',)
+    def endpoint(self):
+        endpoint_args = (self.settings['SIGNATURE'] and '-3t' or '',
+                         self.sandbox and 'sandbox.' or '',)
         return 'https://api{}.{}paypal.com/nvp'.format(*endpoint_args)
-
-
