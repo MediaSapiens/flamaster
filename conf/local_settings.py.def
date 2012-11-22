@@ -24,16 +24,5 @@ SOCIAL_FACEBOOK = {
     'consumer_secret': ''
 }
 
-PAYPAL_SELLER = {
-    # 'app_id': 'APP-80W284485P519543T',
-    'endpoint': 'https://api-3t.sandbox.paypal.com/nvp',
-    'webface': 'https://www.sandbox.paypal.com/webscr',
-    'settings': {
-        'USER': '',
-        'PWD': '',
-        'SIGNATURE': '',
-        'VERSION': '94.0',
-    }
-}
 
 # SOCIAL_GOOGLE = {}

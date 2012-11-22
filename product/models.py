@@ -2,8 +2,6 @@
 from flask import current_app
 from operator import attrgetter
 
-from flamaster.account.models import Address
-
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 from flamaster.core.utils import resolve_class
@@ -31,7 +29,7 @@ class Cart(db.Model, CRUDMixin):
                                backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
-    def create(cls, amount, customer_id, product, product_variant,
+    def create(cls, amount, customer, product, product_variant,
                price_option):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
@@ -40,22 +38,20 @@ class Cart(db.Model, CRUDMixin):
         :param amount: amount of products to place in cart
         :param customer_id: instance of Customer model
         """
-        price = product.get_price(price_option.id, amount)
-
         instance_kwargs = {
             'product_id': str(product.id),
             'product_variant_id': str(product_variant.id),
             'price_option_id': str(price_option.id),
-            'price': price,
-            'customer_id': customer_id
+            'price': product.get_price(price_option.id, amount),
+            'customer': customer
         }
         return super(Cart, cls).create(**instance_kwargs)
 
     @classmethod
-    def for_customer(cls, customer_id):
+    def for_customer(cls, customer):
         """ helper method for obtaining cart records for concrete customer
         """
-        return cls.query.filter_by(customer_id=customer_id, is_ordered=False)
+        return cls.query.filter_by(customer_id=customer.id, is_ordered=False)
 
 
 class Category(db.Model, TreeNode):
@@ -93,7 +89,6 @@ class Favorite(db.Model, CRUDMixin):
 class Order(db.Model, CRUDMixin):
     """ Model to keep ordered goods
     """
-    payment_method = db.Column(db.String, nullable=False, index=True)
     billing_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                     use_alter=True, name='fk_billing_country'))
     billing_city = db.Column(db.Unicode(255), nullable=False)
@@ -109,13 +104,16 @@ class Order(db.Model, CRUDMixin):
     # summary cost of all cart items linked with this order
     goods_price = db.Column(db.Numeric(precision=18, scale=2))
     # stored cost for the order delivery
-    delivery_cost = db.Column(db.Numeric(precision=18, scale=2))
+    delivery_price = db.Column(db.Numeric(precision=18, scale=2))
     vat = db.Column(db.Numeric(precision=18, scale=2))
-    total_cost = db.Column(db.Numeric(precision=18, scale=2))
-    payment_details = db.Column(db.Unicode(255), unique=True)
+    total_price = db.Column(db.Numeric(precision=18, scale=2))
 
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
+    payment_details = db.Column(db.Unicode(255), unique=True)
+    payment_method = db.Column(db.String, nullable=False, index=True)
     paid = db.Column(db.Boolean, default=False)
+
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
+                            nullable=False, index=True)
     customer = db.relationship('Customer',
                                backref=db.backref('orders', **lazy_cascade))
 
@@ -130,30 +128,29 @@ class Order(db.Model, CRUDMixin):
         """ Order creation method. Accepted params are:
         :param customer_id: int value for Customer id instance
         :param delivery_id: int value for Delivery id instance
-        :param payment_method: int value for Payment id instance
-        :param delivery_address_id: int value for Address id instance,
+
+        :param delivery_address: int value for Address id instance,
                                 witch sets as delivery address
-        :param billing_address_id: int value for Address id instance,
+        :param billing_address: int value for Address id instance,
                                 witch sets as billing address
         :param commit: Boolean value to do commit after save or not,
                                 by default it is True
         """
         # TODO: Need to decide what kind of addresses is more impotant:
 
-        assert kwargs['payment_method'] in current_app.config['PAYMENT_METHODS']
-        delivery_address_id = kwargs.pop('delivery_address_id')
-        billing_address_id = kwargs.pop('billing_address_id')
-        kwargs.update(cls.__set_address(delivery_address_id, 'delivery'))
-        kwargs.update(cls.__set_address(billing_address_id, 'billing'))
+        delivery_address = kwargs.pop('delivery_address')
+        billing_address = kwargs.pop('billing_address')
+        kwargs.update(cls.__set_address(delivery_address, 'delivery'))
+        kwargs.update(cls.__set_address(billing_address, 'billing'))
 
-        goods = Cart.for_customer(kwargs['customer_id'])
-        goods_price = sum(map(attrgetter('final_price'), goods))
-        delivery_cost = cls.__resolve_delivery(kwargs['delivery_id'],
-                                               delivery_address_id)
+        goods = Cart.for_customer(kwargs['customer'])
+        goods_price = sum(map(attrgetter('price'), goods))
+        delivery_price = cls.__resolve_delivery(kwargs['delivery'],
+                                               delivery_address)
 
         kwargs.update({'goods': goods,
                        'goods_price': goods_price,
-                       'total_cost': goods_price + delivery_cost})
+                       'total_price': goods_price + delivery_price})
 
         return super(Order, cls).create(**kwargs)
         # Some of fields can be calculated:
@@ -163,11 +160,10 @@ class Order(db.Model, CRUDMixin):
         # - goods_cost, total_cost
 
     @classmethod
-    def __set_address(cls, address_id, addr_type):
-        address_set = Address.query.get(address_id) \
-                        .as_dict(exclude=['customer_id', 'created_at', 'id'])
+    def __set_address(cls, address, addr_type):
+        address_dict = address.as_dict(exclude=['customer_id', 'created_at', 'id'])
         return dict(('{}_{}'.format(addr_type, key), value)
-                    for key, value in address_set.iteritems())
+                    for key, value in address_dict.iteritems())
 
     def resolve_payment(self):
         method = current_app.config['PAYMENT_METHODS'][self.payment_method]
@@ -176,8 +172,7 @@ class Order(db.Model, CRUDMixin):
         return PaymentMethod(self)
 
     @classmethod
-    def __resolve_delivery(cls, delivery_id, address_id):
-        delivery = Delivery.query.get(delivery_id)
+    def __resolve_delivery(cls, delivery, address):
         return delivery.calculate_price()
 
     def set_payment_details(self, payment_details):
@@ -185,7 +180,7 @@ class Order(db.Model, CRUDMixin):
 
     @classmethod
     def get_by_payment_details(cls, payment_details):
-        return cls.query.filter_by(payment_details)
+        return cls.query.filter_by(payment_details=payment_details).first()
 
     def mark_as_paid(self):
         return self.update(paid=True)

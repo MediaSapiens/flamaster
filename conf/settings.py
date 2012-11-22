@@ -79,15 +79,15 @@ PAYMENT_METHODS = {
     'skrill': {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
     },
-    'PAYPAL': {
+    'paypal': {
         'module': 'flamaster.payment.methods.paypal.PayPalPaymentMethod',
-        'payload': {
-            'USER': 'good_1352716404_biz_api1.gmail.com',
-            'PWD': '1352716424',
-            'SIGNATURE': 'AGTSAEECQ6cq.TSFDgUDIFbbxDSzA4-zsDl3G1uv8zaJMxNNdP1X0cuH',
-            'VERSION': 94.0
-            },
         'SANDBOX': True,
+        'settings': {
+            'USER': '<paypal user>',
+            'PWD': '<paypal password>',
+            'SIGNATURE': '<paypal signature>',
+            'VERSION': '<api version>',
+        }
     },
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'
