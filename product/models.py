@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
-from flask import current_app
+#from flask import current_app
 from operator import attrgetter
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
-from flamaster.core.utils import resolve_class
+from flamaster.core.utils import resolve_payment_method #resolve_class
 
 from . import db
 
@@ -166,9 +166,9 @@ class Order(db.Model, CRUDMixin):
                     for key, value in address_dict.iteritems())
 
     def resolve_payment(self):
-        method = current_app.config['PAYMENT_METHODS'][self.payment_method]
-        class_string = method['module']
-        PaymentMethod = resolve_class(class_string)
+#        method = current_app.config['PAYMENT_METHODS'][self.payment_method]
+#        class_string = method['module']
+        PaymentMethod = resolve_payment_method(self.payment_method)
         return PaymentMethod(self)
 
     @classmethod

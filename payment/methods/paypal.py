@@ -1,27 +1,11 @@
 # -*- encoding: utf-8 -*-
 import logging
 import requests
-from flask import redirect, render_template, url_for, request
+from flask import redirect, url_for, request
 from urlparse import parse_qs
 
 from .base import BasePaymentMethod
-from .. import payment
 
-
-@payment.route('/paypal/process/<string:token>', methods=['POST'])
-def process_paypal(token):
-    order_data = PayPalPaymentMethod().process_payment(token)
-    return render_template('success_order.html', order=order_data)
-
-
-@payment.route('/paypal/cancel')
-def cancel_paypal():
-    return render_template('cancel.html')
-
-
-@payment.route('/paypal/error')
-def error_paypal():
-    return render_template('error.html')
 
 
 ACTION = 'SELL'
@@ -49,7 +33,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
         request_params.update(self.settings)
-        resp = requests.get(self.__endpoint, params=request_params)
+        resp = requests.get(self.endpoint, params=request_params)
         return parse_qs(resp.text)
 
     def __set_checkout(self, amount, currency):
@@ -60,24 +44,27 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Step 2 contained. Redirect the Customer to PayPal for
             Authorization.
         """
-        logger.debug(request.blueprint)
         request_params = {
             'METHOD': SET_CHECKOUT,
             'PAYMENTREQUEST_0_AMT': amount,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': currency,
             # FIXME: BuildError
-            'RETURNURL': url_for('payment.process_paypal'),
-            'CANCELURL': url_for('payment.cancel_paypal')
+            'RETURNURL': request.url_root.rstrip('/') + url_for(
+                                            'payment.process_payment',
+                                            payment_method=self.method_name),
+            'CANCELURL': request.url_root.rstrip('/') + url_for(
+                                            'payment.cancel_payment',
+                                            payment_method=self.method_name)
         }
         response = self.__do_request(request_params)
 
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'][0] == RESPONSE_OK:
             self.order.set_payment_details(response['TOKEN'])
-            webface_url = self.__prepare_redirect_url(response)
+            webface_url = self.__get_redirect_url(response)
             return redirect(webface_url)
-        logger.debug("set checkout err: %s", response)
-        return redirect(url_for('payment.error_paypal'))
+        return redirect(url_for('payment.error_payment',
+                                payment_method=self.method_name))
 
     def __obtain_authorized_payment_details(self, token):
         """ If the customer authorizes the payment, the customer is redirected
@@ -90,11 +77,11 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'TOKEN': token,
         }
         response = self.__do_request(request_params)
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'][0] == RESPONSE_OK:
             return self.__capture_the_payment(token=token,
                     payer_id=response.json['PAYERID'])
         logger.debug("get checkout err: %s", response)
-        return redirect(url_for('payment.error_paypal'))
+        return redirect(url_for('payment.error_payment'))
 
     def __capture_the_payment(self, token, payer_id):
         """ Final step. The payment can be captured (collected) using the
@@ -106,7 +93,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'PAYERID': payer_id
         }
         response = self.__do_request(request_params)
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'][0] == RESPONSE_OK:
             self.order.get_by_payment_details(response['TOKEN'])
             self.order.set_payment_details(' '.join(response))
             return self.order.mark_paid()
@@ -115,15 +102,16 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def init_payment(self, amount, currency):
         """ Initialization payment process.
         """
-        self.__set_checkout(amount, currency)
+        return self.__set_checkout(amount, currency)
 
-    def process_payment(self, token):
+    def process_payment(self):
+        token = request.args['TOKEN']
         return self.__obtain_authorized_payment_details(token)
 
     def __get_redirect_url(self, response):
-        face = "https://{}paypal.com/webscr?cmd=_express-checkout&token={}"
+        face = "https://www.{}paypal.com/webscr?cmd=_express-checkout&token={}"
         return face.format(self.sandbox and 'sandbox.' or '',
-                           response.json['token'])
+                           response['TOKEN'][0])
 
     @property
     def endpoint(self):

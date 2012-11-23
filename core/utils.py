@@ -104,6 +104,12 @@ def resolve_class(class_path):
     return getattr(import_module(module_name), class_name)
 
 
+def resolve_payment_method(payment_method):
+    method = current_app.config['PAYMENT_METHODS'][payment_method]
+    class_string = method['module']
+    return resolve_class(class_string)
+
+
 def rules(language):
     """ helper method for getting plural form rules from the text file
     """
