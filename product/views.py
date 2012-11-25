@@ -7,6 +7,7 @@ from .models import Order, Delivery
 
 
 logger = logging.getLogger(__name__)
+from .models import Order
 
 
 @bp.route('/test_checkout/<method>/')
@@ -18,6 +19,11 @@ def test_checkout(method):
                                          apartment='1',
                                          zip_code='626262')
 
+        print user
+        address = Address.create(city='New York',
+                                 street='70 Lincoln Center Plz',
+                                 apartment='1',
+                                 zip_code='626262')
         customer = user.customer
         customer.billing_address = address
         customer.delivery_address = address
@@ -25,7 +31,6 @@ def test_checkout(method):
 
         order = Order.create(customer=customer,
                              payment_method=method,
-                             delivery=Delivery(),
                              delivery_address=customer.delivery_address,
                              billing_address=customer.billing_address)
 

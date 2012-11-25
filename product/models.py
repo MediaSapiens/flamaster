@@ -9,7 +9,7 @@ from flamaster.core.utils import resolve_payment_method #resolve_class
 from . import db
 
 
-__all__ = ['Cart', 'Category', 'Delivery', 'Favorite', 'Order', 'Shelf']
+__all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
 
 
 class Cart(db.Model, CRUDMixin):
@@ -103,22 +103,20 @@ class Order(db.Model, CRUDMixin):
     delivery_zip_code = db.Column(db.String(20))
     # summary cost of all cart items linked with this order
     goods_price = db.Column(db.Numeric(precision=18, scale=2))
-    # stored cost for the order delivery
-    delivery_price = db.Column(db.Numeric(precision=18, scale=2))
+
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_price = db.Column(db.Numeric(precision=18, scale=2))
 
     payment_details = db.Column(db.Unicode(255), unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
-    paid = db.Column(db.Boolean, default=False)
+    is_paid = db.Column(db.Boolean, default=False)
+    # stored cost for the order delivery
+    delivery_method = db.Column(db.String, nullable=False, index=True)
+    delivery_price = db.Column(db.Numeric(precision=18, scale=2))
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
                             nullable=False, index=True)
     customer = db.relationship('Customer',
-                               backref=db.backref('orders', **lazy_cascade))
-
-    delivery_id = db.Column(db.Integer, db.ForeignKey('deliveries.id'))
-    delivery = db.relationship('Delivery',
                                backref=db.backref('orders', **lazy_cascade))
 
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
@@ -161,7 +159,8 @@ class Order(db.Model, CRUDMixin):
 
     @classmethod
     def __set_address(cls, address, addr_type):
-        address_dict = address.as_dict(exclude=['customer_id', 'created_at', 'id'])
+        exclude_fields = ['customer_id', 'created_at', 'id']
+        address_dict = address.as_dict(exclude=exclude_fields)
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
 
@@ -183,7 +182,7 @@ class Order(db.Model, CRUDMixin):
         return cls.query.filter_by(payment_details=payment_details).first()
 
     def mark_as_paid(self):
-        return self.update(paid=True)
+        return self.update(is_paid=True)
 
 
 class Shelf(db.Model, CRUDMixin):
@@ -198,14 +197,6 @@ class Shelf(db.Model, CRUDMixin):
         """
         return cls.query.filter_by(price_option_id=price_option_id)
 
-
-class Delivery(db.Model, CRUDMixin):
-    name = db.Column(db.Unicode(255), unique=True, index=True)
-
-    def calculate_price(self):
-        """ method stub for delivery calculation
-        """
-        return 0
 
 # TODO: add favorites
 # TODO: what about related products?
