@@ -23,18 +23,19 @@ class BasePaymentMethod(object):
         raise NotImplementedError
 
 
-@payment.route('/<payment_method>/process')
+@payment.route('/<payment_method>/process/')
 def process_payment(payment_method):
     PaymentMethod = resolve_payment_method(payment_method)
-    order_data = PaymentMethod().process_payment()
-    return render_template('success_order.html', order=order_data)
+    return PaymentMethod().process_payment()
+#    return render_template('success_order.html',
+#                    payment_details=payment_details)
 
 
-@payment.route('/<payment_method>/cancel')
+@payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
     return render_template('cancel.html')
 
 
-@payment.route('/<payment_method>/error')
+@payment.route('/<payment_method>/error/')
 def error_payment(payment_method):
     return render_template('error.html')
