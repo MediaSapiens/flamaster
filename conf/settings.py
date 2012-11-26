@@ -25,7 +25,7 @@ SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
 SQLALCHEMY_ECHO = False
 
 # MongoSet configuration ----------------
-MONGODB_DATABASE = ""
+MONGODB_DATABASE = "fevent"
 MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
 MONGODB_AUTOREF = True
@@ -34,15 +34,13 @@ MONGODB_FALLBACK_LANG = 'en'
 # ----------------
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender
-DEFAULT_EMAIL_FROM = "<fevent@mediasapiens.co>"
-#TODO: add default album coverage
 DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
 
 MAIL_FAIL_SILENTLY = True
 # TODO: for flask-mail:
-DEFAULT_MAIL_SENDER = DEFAULT_EMAIL_FROM
+DEFAULT_MAIL_SENDER = "<fevent@mediasapiens.co>"
 # Flask-Security settings for default email sender
-SECURITY_EMAIL_SENDER = DEFAULT_EMAIL_FROM
+SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
 # either user should confirm email after registration or no
 SECURITY_CONFIRMABLE = True
 SECURITY_RECOVERABLE = True
@@ -69,12 +67,6 @@ UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#PAYPAL = {
-#        'SANDBOX': True,
-#        'USER': '',
-#        'PWD': '',
-#        'SIGNATURE': ''
-#        }
 PAYMENT_METHODS = {
     'skrill': {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
@@ -94,6 +86,19 @@ PAYMENT_METHODS = {
     },
     'bank transfer': {
         'module': 'flamaster.payment.methods.BankPaymentMethod'
+    }
+}
+
+DELIVERY_OPTIONS = {
+    'standard': {
+        'module': 'flamaster.delivery.methods.StandardDelivery',
+    },
+    'express': {
+        'module': 'flamaster.delivery.methods.ExpressDelivery',
+    },
+    'download': {
+        'module': 'flamaster.delivery.methods.PerProductDownload',
+        'default': True
     }
 }
 
