@@ -3,11 +3,11 @@ from flask import render_template
 from flamaster.account.models import Address, User
 
 from . import product as bp
-from .models import Order, Delivery
+from .models import Order
+from flamaster.conf.settings import DELIVERY_OPTIONS
 
 
 logger = logging.getLogger(__name__)
-from .models import Order
 
 
 @bp.route('/test_checkout/<method>/')
@@ -19,7 +19,6 @@ def test_checkout(method):
                                          apartment='1',
                                          zip_code='626262')
 
-        print user
         address = Address.create(city='New York',
                                  street='70 Lincoln Center Plz',
                                  apartment='1',
@@ -31,9 +30,12 @@ def test_checkout(method):
 
         order = Order.create(customer=customer,
                              payment_method=method,
+                             delivery_method = DELIVERY_OPTIONS.keys()[0],
                              delivery_address=customer.delivery_address,
                              billing_address=customer.billing_address)
+        order.total_price = 12.5
+        order.save()
 
-        payment_meth = order.resolve_payment()
-        return payment_meth.init_payment(order.total_price + 1, 'USD')
+        payment_meth = order.resolve_payment(method)
+        return payment_meth.init_payment()
     return render_template('test.html', method=method)

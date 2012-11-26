@@ -1,8 +1,7 @@
 from flask import current_app, render_template
+from werkzeug.utils import import_string
 
 from .. import payment
-from flamaster.core.utils import resolve_payment_method
-from flamaster.product.models import Order
 
 
 class BasePaymentMethod(object):
@@ -10,7 +9,7 @@ class BasePaymentMethod(object):
     """
     method_name = 'base'
 
-    def __init__(self, order=Order):
+    def __init__(self, order=None):
         my_method = current_app.config['PAYMENT_METHODS'][self.method_name]
         self.settings = my_method['settings']
         self.sandbox = my_method['SANDBOX']
@@ -23,12 +22,17 @@ class BasePaymentMethod(object):
         raise NotImplementedError
 
 
+def resolve_payment_method(payment_method):
+    method = current_app.config['PAYMENT_METHODS'][payment_method]
+    class_string = method['module']
+    return import_string(class_string)
+
+
+
 @payment.route('/<payment_method>/process/')
 def process_payment(payment_method):
     PaymentMethod = resolve_payment_method(payment_method)
     return PaymentMethod().process_payment()
-#    return render_template('success_order.html',
-#                    payment_details=payment_details)
 
 
 @payment.route('/<payment_method>/cancel/')

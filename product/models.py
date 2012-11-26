@@ -1,10 +1,11 @@
 # -*- encoding: utf-8 -*-
-#from flask import current_app
+from flask import current_app
 from operator import attrgetter
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
-from flamaster.core.utils import resolve_payment_method #resolve_class
+
+from werkzeug.utils import import_string
 
 from . import db
 
@@ -107,7 +108,7 @@ class Order(db.Model, CRUDMixin):
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_price = db.Column(db.Numeric(precision=18, scale=2))
 
-    payment_details = db.Column(db.Unicode(255), unique=True)
+    payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
     is_paid = db.Column(db.Boolean, default=False)
     # stored cost for the order delivery
@@ -143,12 +144,12 @@ class Order(db.Model, CRUDMixin):
 
         goods = Cart.for_customer(kwargs['customer'])
         goods_price = sum(map(attrgetter('price'), goods))
-        delivery_price = cls.__resolve_delivery(kwargs['delivery'],
-                                               delivery_address)
+#        delivery_price = cls.__resolve_delivery(kwargs['delivery'],
+#                                               delivery_address)
 
         kwargs.update({'goods': goods,
                        'goods_price': goods_price,
-                       'total_price': goods_price + delivery_price})
+                       'total_price': goods_price})  # + delivery_price})
 
         return super(Order, cls).create(**kwargs)
         # Some of fields can be calculated:
@@ -164,10 +165,11 @@ class Order(db.Model, CRUDMixin):
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
 
-    def resolve_payment(self):
-#        method = current_app.config['PAYMENT_METHODS'][self.payment_method]
-#        class_string = method['module']
-        PaymentMethod = resolve_payment_method(self.payment_method)
+    def resolve_payment(self, method=None):
+        payment_method = self.payment_method or method
+        method = current_app.config['PAYMENT_METHODS'][payment_method]
+        class_string = method['module']
+        PaymentMethod = import_string(class_string)
         return PaymentMethod(self)
 
     @classmethod
@@ -181,7 +183,7 @@ class Order(db.Model, CRUDMixin):
     def get_by_payment_details(cls, payment_details):
         return cls.query.filter_by(payment_details=payment_details).first()
 
-    def mark_as_paid(self):
+    def mark_paid(self):
         return self.update(is_paid=True)
 
 
