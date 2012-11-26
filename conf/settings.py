@@ -69,12 +69,6 @@ UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#PAYPAL = {
-#        'SANDBOX': True,
-#        'USER': '',
-#        'PWD': '',
-#        'SIGNATURE': ''
-#        }
 PAYMENT_METHODS = {
     'skrill': {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
@@ -97,10 +91,16 @@ PAYMENT_METHODS = {
     }
 }
 
+DELIVERY_OPTIONS = {
+    'standard': 'flamaster.delivery.methods.StandardDelivery',
+    'express': 'flamaster.delivery.methods.ExpressDelivery',
+    'download': 'flamaster.delivery.methods.PerProductDownload'
+}
+
 try:
-    ls = importlib.import_module('flamaster.conf.local_settings')
+    ls = importlib.import_module('city_lang.settings_local')
     for attr in dir(ls):
         if '__' not in attr:
             setattr(sys.modules[__name__], attr, getattr(ls, attr))
 except ImportError:
-    print "local_settings undefined"
+    print "settings_local undefined"
