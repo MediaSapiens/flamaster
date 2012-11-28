@@ -72,7 +72,7 @@ PAYMENT_METHODS = {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
     },
     'paypal': {
-        'module': 'flamaster.payment.methods.paypal.PayPalPaymentMethod',
+        'module': 'flamaster.payment.methods.paypal_method.PayPalPaymentMethod',
         'SANDBOX': True,
         'settings': {
             'USER': '<paypal user>',
@@ -82,7 +82,7 @@ PAYMENT_METHODS = {
         }
     },
     'klarna': {
-        'module': 'flamaster.payment.methods.klarna.KlarnaPaymentMethod',
+        'module': 'flamaster.payment.methods.klarna_method.KlarnaPaymentMethod',
         'SANDBOX': True
     },
     'card': {

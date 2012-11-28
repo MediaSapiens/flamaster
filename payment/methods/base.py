@@ -15,7 +15,7 @@ class BasePaymentMethod(object):
         self.sandbox = my_method['SANDBOX']
         self.order = order
 
-    def init_payment(self, amount, currency, description):
+    def init_payment(self): #, amount, currency, description):
         raise NotImplementedError
 
     def precess_payment_response(self, *args, **kwargs):

@@ -38,8 +38,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """
         request_params.update(self.settings)
         resp = requests.get(self.endpoint, params=request_params)
-        # current_app.logger.debug('args: %s', dir(resp.request))
-        current_app.logger.debug('args: %s', resp.request.full_url)
         return dict(parse_qsl(resp.text))
 
     def __set_checkout(self, amount):
@@ -65,12 +63,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         response = self.__do_request(request_params)
 
-        current_app.logger.debug('SET CHECK: %s', response)
-
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
-            current_app.logger.debug('redirect url: %s', webface_url)
             return redirect(webface_url)
 
         return redirect(url_for('payment.error_payment',
@@ -94,7 +89,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
         }
         response = self.__do_request(request_params)
-        current_app.logger.debug('DO PAYMENT response: %s', response)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(unicode(response))
             self.order.mark_paid()
@@ -118,7 +112,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
 
         response = self.__do_request(request_params)
-        current_app.logger.debug("get checkout: %s", response)
 
         if response['ACK'] == RESPONSE_OK:
             return self.__capture_payment(response)
@@ -132,7 +125,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return self.__set_checkout(self.order.total_price)
 
     def process_payment(self):
-        current_app.logger.debug("PP redirect: %s", request.args)
         return self.__get_payment_details(**dict(request.args))
 
     def __get_redirect_url(self, response):
