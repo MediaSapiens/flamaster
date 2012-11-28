@@ -81,6 +81,10 @@ PAYMENT_METHODS = {
             'VERSION': '<api version>',
         }
     },
+    'klarna': {
+        'module': 'flamaster.payment.methods.klarna.KlarnaPaymentMethod',
+        'SANDBOX': True
+    },
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'
     },

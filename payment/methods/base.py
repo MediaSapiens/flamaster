@@ -8,7 +8,7 @@ class BasePaymentMethod(object):
 
     def __init__(self, order):
         my_method = current_app.config['PAYMENT_METHODS'][self.method_name]
-        self.settings = my_method['settings']
+        self.settings = my_method.get('settings')
         self.sandbox = my_method['SANDBOX']
         self.order = order
 
