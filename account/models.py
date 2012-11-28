@@ -162,7 +162,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         admin_role = current_app.config['ADMIN_ROLE']
         user_role = current_app.config['USER_ROLE']
         email, admins = kwargs['email'], current_app.config['ADMINS']
-        # detect if user should have and admin role
+        # detect if user should have an admin role
         role = email in admins and admin_role or user_role
         kwargs['roles'] = [Role.get_or_create(name=role)]
 
