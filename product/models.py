@@ -3,6 +3,7 @@ from flask import current_app
 from operator import attrgetter
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
+from flamaster.core.decorators import multilingual
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 
 from werkzeug.utils import import_string
@@ -55,6 +56,7 @@ class Cart(db.Model, CRUDMixin):
         return cls.query.filter_by(customer_id=customer.id, is_ordered=False)
 
 
+@multilingual
 class Category(db.Model, TreeNode):
     """ Product category mixin
     """
@@ -62,6 +64,7 @@ class Category(db.Model, TreeNode):
     __mp_manager__ = 'mp'
 
     description = db.Column(db.UnicodeText)
+    category_type = db.Column(db.String, nullable=False)
 
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,
