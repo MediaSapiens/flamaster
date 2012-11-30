@@ -64,7 +64,7 @@ class Category(db.Model, TreeNode):
     __mp_manager__ = 'mp'
 
     description = db.Column(db.UnicodeText)
-    category_type = db.Column(db.String, nullable=False)
+    category_type = db.Column(db.String, nullable=False, default='catalog')
 
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,
