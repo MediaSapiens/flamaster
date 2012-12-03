@@ -2,6 +2,7 @@
 from functools import wraps
 from flask import abort
 from flask.ext.security import current_user
+from flask.ext.babel import get_locale
 from flamaster.core.utils import plural_name, underscorize, LazyResource
 
 from . import db, http
@@ -68,7 +69,7 @@ def multilingual(cls):
         if db.metadata.tables.get(tablename) is not None:
             return
         # TODO: pass language from the babel detection
-        lang = u'en'
+        lang = get_locale().language # u'en'
         cls_columns = cls.__table__.get_children()
         columns = dict([(c.name, c.copy()) for c in cls_columns if isinstance(c.type, (db.Unicode, db.UnicodeText))])
         localized_names = columns.keys()
