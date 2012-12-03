@@ -24,6 +24,7 @@ class CategoryResource(ModelResource):
     validation = t.Dict({
         'name': t.String,
         'description': t.String,
+        'category_type': t.String,
         'parent_id': t.Int | t.Null,
     }).append(resolve_parent).make_optional('parent_id').ignore_extra('*')
 

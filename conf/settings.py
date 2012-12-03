@@ -25,7 +25,7 @@ SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
 SQLALCHEMY_ECHO = False
 
 # MongoSet configuration ----------------
-MONGODB_DATABASE = "fevent"
+MONGODB_DATABASE = ""
 MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
 MONGODB_AUTOREF = True
@@ -62,7 +62,7 @@ SOCIAL_CONNECT_DENY_VIEW = "/account/"
 pictures_path = '/'.join(map(lambda x: str(getattr(datetime.utcnow(), x)),
                                  ['year', 'month', 'day']))
 UPLOADS_IMAGES_DIR = '{}/'.format(pictures_path)
-UPLOADS_DEFAULT_DEST = os.path.abspath("flamaster/static/uploads")
+UPLOADS_DEFAULT_DEST = os.path.abspath("static/uploads")
 UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
