@@ -96,7 +96,7 @@ def multilingual(cls):
 
             setattr(cls, field, hybrid_property(getter, setter, expr=expression))
 
-        closure(cls)
+    closure(cls)
 
     return cls
 

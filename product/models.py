@@ -63,6 +63,7 @@ class Category(db.Model, TreeNode):
     __metaclass__ = NodeMetaClass
     __mp_manager__ = 'mp'
 
+    name = db.Column(db.Unicode(256))
     description = db.Column(db.UnicodeText)
     category_type = db.Column(db.String, nullable=False, default='catalog')
 

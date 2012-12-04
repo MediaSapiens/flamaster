@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- encoding: utf-8 -*-
 import sqlamp
 from datetime import datetime
 
@@ -126,7 +126,7 @@ class NodeMetaClass(type(db.Model), sqlamp.DeclarativeMeta):
             self.__table__.info['bind_key'] = bind_key
 
 
-class TreeNode(SlugMixin):
+class TreeNode(CRUDMixin):
     """ Mixin for self-Referential relationships.
         The final model should be with NodeMetaClass and
         a special class variable ``__mp_manager__ = 'mp'`` should exist
