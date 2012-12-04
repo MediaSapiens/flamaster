@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 from functools import wraps
 from flask import abort
-from flask.ext.security import current_user
 from flask.ext.babel import get_locale
-from flamaster.core.utils import plural_name, underscorize, LazyResource
+from flask.ext.security import current_user
+from flamaster.core.utils import plural_underscored, LazyResource
 
-from . import db, http
+from . import db, http, babel
 
 
 def api_resource(bp, endpoint, pk_def):
@@ -62,19 +62,46 @@ def multilingual(cls):
     from sqlalchemy.ext.hybrid import hybrid_property
     from flamaster.core.models import CRUDMixin
 
+    locale = get_locale() or babel.default_locale
+    lang = unicode(locale.language)
+
+    def create_property(cls, localized, columns, field):
+
+        def getter(self):
+            instance = localized.query.filter_by(parent_id=self.id,
+                                                 locale=lang).first()
+            return getattr(instance, field) or None
+
+        def setter(self, value):
+            from_db = localized.query.filter_by(parent_id=self.id,
+                                                locale=lang).first()
+
+            instance = from_db or localized(parent=self, locale=lang)
+            setattr(instance, field, value)
+            instance.save()
+
+        def expression(self):
+            return db.Query(columns[field]) \
+                .filter(localized.parent_id == self.id,
+                        localized.locale == lang).as_scalar()
+
+        setattr(cls, field, hybrid_property(getter, setter, expr=expression))
+
     def closure(cls):
         class_name = cls.__name__ + 'Localized'
-        tablename = plural_name(underscorize(class_name))
+        tablename = plural_underscored(class_name)
 
         if db.metadata.tables.get(tablename) is not None:
-            return
-        # TODO: pass language from the babel detection
-        lang = get_locale().language # u'en'
+            return cls
+
         cls_columns = cls.__table__.get_children()
         columns = dict([(c.name, c.copy()) for c in cls_columns if isinstance(c.type, (db.Unicode, db.UnicodeText))])
         localized_names = columns.keys()
+
         columns.update({
-            'parent_id': db.Column(db.Integer, db.ForeignKey(cls.__tablename__ + '.id'), nullable=False),
+            'parent_id': db.Column(db.Integer,
+                                   db.ForeignKey(cls.__tablename__ + '.id'),
+                                   nullable=False),
             'parent': db.relationship(cls, backref='localized_ref'),
             'locale': db.Column(db.Unicode(255), default=lang, index=True)
         })
@@ -82,24 +109,11 @@ def multilingual(cls):
         cls_localized = type(class_name, (db.Model, CRUDMixin), columns)
 
         for field in localized_names:
+            create_property(cls, cls_localized, columns, field)
 
-            def getter(self):
-                localized = cls_localized.query.filter_by(parent_id=self.id, locale=lang).first()
-                return getattr(localized, field) or None
+        return cls
 
-            def setter(self, value):
-                localized = cls_localized.query.filter_by(parent_id=self.id, locale=lang).first() or cls_localized(parent=self, locale=lang)
-                setattr(localized, field, value)
-                localized.save()
-
-            def expression(self):
-                return db.Query(columns[field]).filter(cls_localized.parent_id == self.id, cls_localized.locale == lang).as_scalar()
-
-            setattr(cls, field, hybrid_property(getter, setter, expr=expression))
-
-    closure(cls)
-
-    return cls
+    return closure(cls)
 
 
 class ClassProperty(property):
