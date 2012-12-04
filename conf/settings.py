@@ -17,7 +17,12 @@ ORGANIZER_ROLE = 'organizer'
 
 ROLES = [USER_ROLE, ADMIN_ROLE, ORGANIZER_ROLE]
 
-ACCEPT_LANGUAGES = ['de', 'en', 'ru']
+ACCEPT_LANGUAGES = ['de', 'en']
+LANGUAGES = {
+    'en': u'English',
+    'de': u'Deutsch'
+}
+BABEL_DEFAULT_LOCALE = 'de'
 
 CACHE_TYPE = 'simple'
 
@@ -30,7 +35,7 @@ MONGODB_HOST = "localhost"
 MONGODB_PORT = 27017
 MONGODB_AUTOREF = True
 MONGODB_AUTOINCREMENT = False
-MONGODB_FALLBACK_LANG = 'en'
+MONGODB_FALLBACK_LANG = BABEL_DEFAULT_LOCALE
 # ----------------
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender

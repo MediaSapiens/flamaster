@@ -7,6 +7,7 @@ db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
 indexer = LocalProxy(lambda: current_app.extensions['indexer'])
 babel = LocalProxy(lambda: current_app.extensions['babel'])
 
+import api
 import views
 
 from .countries import COUNTRY_CHOICES
