@@ -5,7 +5,6 @@ app = LocalProxy(lambda: current_app)
 core = Blueprint('core', __name__, url_prefix='', template_folder='templates')
 db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
 indexer = LocalProxy(lambda: current_app.extensions['indexer'])
-babel = LocalProxy(lambda: current_app.extensions['babel'])
 
 import api
 import views

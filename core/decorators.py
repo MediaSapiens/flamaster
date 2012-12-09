@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 from functools import wraps
-from flask import abort
+from flask import abort, current_app
 from flask.ext.babel import get_locale
 from flask.ext.security import current_user
 from flamaster.core.utils import plural_underscored, LazyResource
 
-from . import db, http, babel
+from . import db, http
 
 
 def api_resource(bp, endpoint, pk_def):
@@ -62,8 +62,11 @@ def multilingual(cls):
     from sqlalchemy.ext.hybrid import hybrid_property
     from flamaster.core.models import CRUDMixin
 
-    locale = get_locale() or babel.default_locale
-    lang = unicode(locale.language)
+    locale = get_locale()
+    if locale is None:
+        lang = unicode(current_app.config['BABEL_DEFAULT_LOCALE'])
+    else:
+        lang = unicode(locale.language)
 
     def create_property(cls, localized, columns, field):
 
