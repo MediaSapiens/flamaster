@@ -1,4 +1,6 @@
 # encoding: utf-8
+import base64
+import re
 import trafaret as t
 
 from flamaster.core import http
@@ -27,10 +29,11 @@ def get_access_type(data_dict):
 @api_resource(bp, 'images', {'id': int})
 class ImageResource(ModelResource):
     model = Image
-
+    mime_re = re.compile('data\:(\w+\/\w+)')
     validation = t.Dict({
         'album_id': t.Int,
-        'image': t.Type(FileStorage),
+        'image': t.String,
+        'name': t.String
     }).make_optional('album_id').ignore_extra('*')
 
     method_decorators = {'post': [login_required],
@@ -39,17 +42,34 @@ class ImageResource(ModelResource):
 
     def post(self):
         status = http.CREATED
-        data = request.form.to_dict()
         try:
-            data['image'] = request.files.get('image')
-            data = self.validation.check(data)
-            print data['image']
-            data['author_id'] = current_user.id
-            response = self.model.create(**data).as_dict()
+            if request.json:
+                data = self.validation.check(request.json)
+                response = self.__process_json(data)
+            elif request.files:
+                response = self.__process_form(request.form.to_dict())
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
+
+    def __process_json(self, data):
+        meta, image = data['image'].split(',')
+        mime_type = self.mime_re.match(meta).group(1)
+        image = base64.urlsafe_b64decode(image)
+        imageModel = self.model.create(name=data['name'], author=current_user,
+                                       image=base64.urlsafe_b64decode(image),
+                                       content_type=mime_type)
+        return imageModel.as_dict()
+
+    def __process_form(self, data):
+        # TODO: have to complete
+        data['image'] = request.files.get('image')
+        data = self.validation.check(data)
+        data['author_id'] = current_user.id
+        print data['image']
+
+        return self.model.create(**data).as_dict()
 
     def get(self, id=None):
         # validation = self.validation.append(get_access_type)

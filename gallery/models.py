@@ -1,8 +1,6 @@
 # encoding: utf-8
+import gridfs
 import os
-
-from flask import current_app
-from flask.ext.uploads import UploadSet, configure_uploads, IMAGES
 
 from flamaster.core.models import CRUDMixin, BaseMixin
 
@@ -10,8 +8,8 @@ from sqlalchemy import func
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
-from .utils import create_name, filter_wrapper, dict_obj
-from . import db
+from .utils import filter_wrapper, dict_obj
+from . import db, mongo
 
 __all__ = ['Image', 'Album']
 
@@ -107,15 +105,22 @@ class Image(db.Model, GalleryMixin):
         return os.path.basename(self.fullpath)
 
     @classmethod
-    def create(cls, image, **kwargs):
-        uploaded_images = UploadSet('images', IMAGES)
-        configure_uploads(current_app, uploaded_images)
-        folder = current_app.config['UPLOADS_IMAGES_DIR']
-        filename = uploaded_images.save(image, folder=folder)
-        name = create_name(image.filename)
-        kwargs.update({'fullpath': uploaded_images.path(filename),
-                       'url': uploaded_images.url(filename),
-                       'name': kwargs.get('name', name)})
+    def create(cls, image, content_type, **kwargs):
+        gridfs_session = gridfs.GridFS(mongo.session)
+        file_id = gridfs_session.put(image, content_type=content_type)
+        kwargs.update({
+            'fullpath': unicode(file_id),
+            'url': 'gridfs'
+        })
+        # TODO: completely rewrite uploads
+        # uploaded_images = UploadSet('images', IMAGES)
+        # configure_uploads(current_app, uploaded_images)
+        # folder = current_app.config['UPLOADS_IMAGES_DIR']
+        # filename = uploaded_images.save(image, folder=folder)
+        # name = create_name(image.filename)
+        # kwargs.update({'fullpath': uploaded_images.path(filename),
+        #                'url': uploaded_images.url(filename),
+        #                'name': kwargs.get('name', name)})
         return cls(**kwargs).save()
 
     # TODO:  where does it use???
