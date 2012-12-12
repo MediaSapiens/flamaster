@@ -34,7 +34,6 @@ class DocumentMixin(Model):
 
         fields = api_fields or self.keys()
         fields = set(fields) - set(exclude_by_default)
-
         result = dict(zip(fields, attrgetter(*fields)(self)))
         result['id'] = result.pop('_id')
         return result

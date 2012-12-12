@@ -156,8 +156,8 @@ class ModelResource(Resource):
 
         try:
             data = self.validation.check(data)
-            instance = self.get_object(id)
-            response = self.serialize(instance.update(**data))
+            instance = self.get_object(id).update(with_reload=True, **data)
+            response = self.serialize(instance)
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
@@ -195,17 +195,18 @@ class MongoResource(ModelResource):
     """ Resource for typical views, based on mongo models
     """
 
-    def get_objects(self, **kwargs):
+    def get_objects(self, *args, **kwargs):
         """ Method for extraction object list query
         """
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query.find(**kwargs)
+        return self.model.query.find_or_404(*args, **kwargs)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        return self.get_objects().get_or_404(ObjectId(id))
+        objects = self.get_objects({'_id': ObjectId(id)})
+        return objects.count() and objects[0] or abort(http.NOT_FOUND)
 
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)

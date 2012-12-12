@@ -51,7 +51,11 @@ class CustomEncoder(json.JSONEncoder):
 
 
 def json_dumps(data):
-    return json.dumps(data, indent=2, cls=CustomEncoder)
+    try:
+        return json.dumps(data, indent=2, cls=CustomEncoder)
+    except ValueError as e:
+        current_app.logger.debug("%s: %s", e.message, data)
+        raise e
 
 
 def jsonify_status_code(data=None, status=200):

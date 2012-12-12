@@ -41,8 +41,7 @@ class BasePriceOption(Document):
     @classmethod
     def create(cls, **kwargs):
         """ Kwargs are: name, price, product_variant_id, amount"""
-        instance = cls(**kwargs)
-        instance['_id'] = instance.save()
+        instance = cls(**kwargs).save()
         price_created.send(instance)
         return instance
 
