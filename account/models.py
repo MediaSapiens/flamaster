@@ -246,7 +246,7 @@ class BankAccount(db.Model, CRUDMixin):
     iban = db.Column(db.String(256))
     swift = db.Column(db.String(256))
     updated_at = db.Column(db.DateTime, onupdate=datetime.now)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('accounts',
                            lazy='dynamic'))
 
