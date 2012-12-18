@@ -35,12 +35,11 @@ class DocumentMixin(Model):
         fields = api_fields or self.keys()
         fields = set(fields) - set(exclude_by_default)
         result = dict(zip(fields, attrgetter(*fields)(self)))
-        result['id'] = result.pop('_id')
+
+        if '_id' in result:
+            result['id'] = result.pop('_id')
         return result
 
-    @property
-    def id(self):
-        return self['_id']
 
 
 class IdDocument(DocumentMixin):
@@ -63,6 +62,10 @@ class Document(DocumentMixin):
         """ Helper method for DBRef construction """
         return DBRef(self.__collection__, self.id)
 
+    @property
+    def id(self):
+        return self['_id']
+
 
 class EmbeddedDocument(DocumentMixin):
     """ Base Model to keep an instances inside of other mongodb
@@ -74,9 +77,9 @@ class EmbeddedDocument(DocumentMixin):
     _fallback_lang = current_app.config.get('MONGODB_FALLBACK_LANG')
 
     def __init__(self, initial=None, **kwargs):
-        if '_id' not in kwargs:
-            kwargs['_id'] = ObjectId()
-        kwargs['_ns'] = self.__collection__
+        if 'id' not in kwargs:
+            kwargs['id'] = ObjectId()
+        # kwargs['_ns'] = self.__collection__
         super(EmbeddedDocument, self).__init__(initial, **kwargs)
 
     @classmethod
