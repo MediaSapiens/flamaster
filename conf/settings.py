@@ -23,6 +23,7 @@ LANGUAGES = {
     'de': u'Deutsch'
 }
 BABEL_DEFAULT_LOCALE = 'de'
+LOCALE_KEY = 'locale'
 
 CACHE_TYPE = 'simple'
 
