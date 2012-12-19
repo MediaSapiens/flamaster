@@ -1,7 +1,7 @@
 # encoding: utf-8
 import gridfs
 import os
-
+from bson import ObjectId
 from flamaster.core.models import CRUDMixin, BaseMixin
 
 from sqlalchemy import func
@@ -131,9 +131,9 @@ class Image(db.Model, GalleryMixin):
                           for attr in image_data.viewkeys() - removal)
         return Image(album_id=album_id, **image_data).save()
 
-    def delete(self):
-        if Image.query.filter_by(fullpath=self.fullpath).count() == 1:
-            os.remove(self.fullpath)
+    def remove(self):
+        gridfs_session = gridfs.GridFS(mongo.session)
+        gridfs_session.remove(ObjectId(self.fullpath))
         return super(Image, self).delete()
 
     def access(self, uid):

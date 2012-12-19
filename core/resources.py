@@ -199,7 +199,7 @@ class MongoResource(ModelResource):
         """ Method for extraction object list query
         """
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query.find_or_404(*args, **kwargs)
+        return self.model.query.find(*args, **kwargs)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
