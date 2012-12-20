@@ -24,6 +24,16 @@ class DocumentMixin(Model):
     def __collection__(cls):
         return plural_underscored(cls.__name__)
 
+    @classmethod
+    def _convert_mongo_id(cls, value):
+        if isinstance(value, basestring):
+            return ObjectId(value)
+        elif isinstance(value, ObjectId):
+            return value
+        else:
+            raise TypeError("value should be either subclass of basestring"
+                            " or an instance of bson.ObjectId")
+
     def as_dict(self, api_fields=None, exclude=None):
         """ Returns instance as dict in selected language
         """
@@ -39,7 +49,6 @@ class DocumentMixin(Model):
         if '_id' in result:
             result['id'] = result.pop('_id')
         return result
-
 
 
 class IdDocument(DocumentMixin):
