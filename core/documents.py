@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-
 import trafaret as t
 
 from bson import ObjectId, DBRef
@@ -44,7 +43,14 @@ class DocumentMixin(Model):
 
         fields = api_fields or self.keys()
         fields = set(fields) - set(exclude_by_default)
-        result = dict(zip(fields, attrgetter(*fields)(self)))
+        values = []
+        for field in fields:
+            try:
+                value = attrgetter(field)(self)
+            except AttributeError:
+                value = None
+            values.append(value)
+        result = dict(zip(fields, values))
 
         if '_id' in result:
             result['id'] = result.pop('_id')
@@ -96,14 +102,25 @@ class EmbeddedDocument(DocumentMixin):
         return cls(initial, **kwargs)
 
 
-class MongoId(t.String):
-    """ Trafaret type check & convert class
+class MongoId(t.Trafaret):
+    """ Trafaret type check & convert bson.ObjectId values
     """
-    def __init__(self):
-        super(MongoId, self).__init__()
+    def __init__(self, allow_blank=False):
+        self.allow_blank = allow_blank
 
-    def converter(self, value):
+    def __repr__(self):
+        return "<MongoId(blank)>" if self.allow_blank else "<MongoId>"
+
+    def check_and_return(self, value):
+
+        if isinstance(value, ObjectId):
+            return value
+
+        if len(value) is 0 and self.allow_blank:
+            return value
+
         try:
             return ObjectId(value)
         except InvalidId as e:
             self._failure(e.message)
+
