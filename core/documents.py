@@ -17,8 +17,6 @@ class DocumentMixin(Model):
     """
     __abstract__ = True
 
-    structure = t.Dict().allow_extra('id')
-
     @classproperty
     def __collection__(cls):
         return plural_underscored(cls.__name__)
@@ -90,6 +88,8 @@ class EmbeddedDocument(DocumentMixin):
     __abstract__ = True
 
     _fallback_lang = current_app.config.get('MONGODB_FALLBACK_LANG')
+
+    structure = t.Dict().allow_extra('id')
 
     def __init__(self, initial=None, **kwargs):
         if 'id' not in kwargs:
