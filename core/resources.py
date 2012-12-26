@@ -188,20 +188,20 @@ class MongoResource(ModelResource):
     """ Resource for typical views, based on mongo models
     """
 
-    def get_objects(self, *args, **kwargs):
+    def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
 
-        return self.model.query.find(*args, **kwargs)
+        return self.model.query.find(kwargs)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
         object_id = self.model._convert_mongo_id(id)
-        objects = self.get_objects({'_id': object_id})
+        objects = self.get_objects(_id=object_id)
         return objects.count() and objects[0] or abort(http.NOT_FOUND)
 
     def paginate(self, page, page_size=20, **kwargs):
