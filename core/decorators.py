@@ -71,12 +71,20 @@ def multilingual(cls):
     def create_property(cls, localized, columns, field):
 
         def getter(self):
-            instance = localized.query.filter_by(parent_id=self.id,
+            
+            from flask import current_app as c
+            c.logger.error("localized: %s" % localized)
+            c.logger.error("field: %s" % field)
+            
+            instance = localized.query.filter_by(id=self.id,
                                                  locale=lang).first()
-            return getattr(instance, field) or None
+                                                 
+            c.logger.error("instance: %s" % instance)
+            
+            return instance and getattr(instance, field) or None
 
         def setter(self, value):
-            from_db = localized.query.filter_by(parent_id=self.id,
+            from_db = localized.query.filter_by(id=self.id,
                                                 locale=lang).first()
 
             instance = from_db or localized(parent=self, locale=lang)
@@ -103,8 +111,10 @@ def multilingual(cls):
 
         columns.update({
             'parent_id': db.Column(db.Integer,
-                                   db.ForeignKey(cls.__tablename__ + '.id'),
-                                   nullable=False),
+                                   db.ForeignKey(cls.__tablename__ + '.id', 
+                                                 ondelete="CASCADE", 
+                                                 onupdate="CASCADE"),
+                                   nullable=True),
             'parent': db.relationship(cls, backref='localized_ref'),
             'locale': db.Column(db.Unicode(255), default=lang, index=True)
         })
