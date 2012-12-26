@@ -139,13 +139,24 @@ class TreeNode(CRUDMixin):
     def parent_id(cls):
         table_name = plural_name(underscorize(cls.__name__))
         return db.Column(db.Integer,
-                         db.ForeignKey("{}.id".format(table_name)))
+                         db.ForeignKey("{}.id".format(table_name), 
+                                       ondelete="CASCADE", 
+                                       onupdate="CASCADE")
+                         )
 
     @declared_attr
     def parent(cls):
         # remote side should point to the class attribute
         return db.relationship(cls.__name__, backref='children',
                                remote_side="{}.id".format(cls.__name__))
+
+    def delete(self, commit=True):
+        """
+        Overrided method to delete a whole tree/subtree of the node
+        """
+        instance = self.query.get(self.id)
+        self.__class__.mp.delete_subtree(db.session, instance.id)
+        commit and db.session.commit()
 
     def update(self, **kwargs):
         """ Overrided update method from CRUDMixin
