@@ -73,7 +73,7 @@ def multilingual(cls):
         def getter(self):
             instance = localized.query.filter_by(parent_id=self.id,
                                                  locale=lang).first()
-            return getattr(instance, field) or None
+            return instance and getattr(instance, field) or None
 
         def setter(self, value):
             from_db = localized.query.filter_by(parent_id=self.id,
