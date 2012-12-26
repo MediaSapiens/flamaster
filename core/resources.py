@@ -1,10 +1,9 @@
-# encoding: utf-8
-
+# -*- encoding: utf-8 -*-
 import trafaret as t
 
 from flask import abort, request
 from flask.views import MethodView
-# from flask.ext.security import login_required
+
 
 from . import http
 from .utils import jsonify_status_code
@@ -180,6 +179,7 @@ class ModelResource(Resource):
     @classmethod
     def serialize(cls, instance, include=None):
         """ Method to controls model serialization in derived classes
+        :rtype : dict
         """
         return instance.as_dict(api_fields=include)
 
@@ -191,7 +191,9 @@ class MongoResource(ModelResource):
     def get_objects(self, *args, **kwargs):
         """ Method for extraction object list query
         """
-        self.model is None and abort(http.BAD_REQUEST)
+        if self.model is None:
+            abort(http.BAD_REQUEST)
+
         return self.model.query.find(*args, **kwargs)
 
     def get_object(self, id):

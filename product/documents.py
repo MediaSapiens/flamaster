@@ -46,7 +46,9 @@ class BasePriceOption(Document):
         return instance
 
     def update(self, **kwargs):
-        """"""
+        """
+        :rtype : BasePriceOption
+        """
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
         self.save()
