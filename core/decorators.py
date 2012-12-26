@@ -103,8 +103,10 @@ def multilingual(cls):
 
         columns.update({
             'parent_id': db.Column(db.Integer,
-                                   db.ForeignKey(cls.__tablename__ + '.id'),
-                                   nullable=False),
+                                   db.ForeignKey(cls.__tablename__ + '.id', 
+                                                 ondelete="CASCADE", 
+                                                 onupdate="CASCADE"),
+                                   nullable=True),
             'parent': db.relationship(cls, backref='localized_ref'),
             'locale': db.Column(db.Unicode(255), default=lang, index=True)
         })
