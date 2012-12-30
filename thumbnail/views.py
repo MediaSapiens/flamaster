@@ -16,7 +16,7 @@ def check_thumbnail(uid, img_id, geometry_string, options_string):
     return get_thumbnail(image.fullpath, geometry_string, options_string)
 
 
-@thumbnail.route('/<int:img_id>/<geometry>/<options>', methods=['GET'])
-def thumbnail(img_id, geometry, options):
-    uid = not g.user.is_anonymous() and g.user.id
-    return str(check_thumbnail(uid, img_id, geometry, options))
+@thumbnail.route('/<img_id>/<geometry>/<options>', methods=['GET'])
+def thumbnail(img_id, geometry, options=None):
+    user_id = not g.user.is_anonymous() and g.user.id
+    return str(check_thumbnail(user_id, img_id, geometry, options))

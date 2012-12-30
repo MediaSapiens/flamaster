@@ -223,7 +223,7 @@ def save_thumbnail(thumbnail, thumbnail_name, options):
     format_ = options['format']
     progressive = options['progressive']
     params = {'format': format_, 'quality': options['quality'], 'optimize': 1}
-    if format_ == 'JPEG' and progressive:
+    if format_ == 'jpeg' and progressive:
         params['progressive'] = True
     path = os.path.dirname(thumbnail_name)
     os.path.exists(path) or os.makedirs(path)
@@ -265,7 +265,7 @@ def configure_options(options_string):
     custom_options = parse_options(options_string)
     options = default_options.copy()
     options.update(custom_options)
-    if options['colorspace'] not in ['GRAY', 'RGB']:
+    if options['colorspace'] not in ['gray', 'rgb']:
         options['colorspace'] = default_options['colorspace']
     return options
 

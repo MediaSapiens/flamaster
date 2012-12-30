@@ -11,8 +11,6 @@ from flamaster.core.utils import jsonify_status_code
 from flask import abort, g, request
 from flask.ext.security import login_required, current_user
 
-from werkzeug import FileStorage
-
 from sqlalchemy import or_
 
 from . import bp
@@ -67,7 +65,6 @@ class ImageResource(ModelResource):
         data['image'] = request.files.get('image')
         data = self.validation.check(data)
         data['author_id'] = current_user.id
-        print data['image']
 
         return self.model.create(**data).as_dict()
 
@@ -83,14 +80,6 @@ class ImageResource(ModelResource):
             response = self.get_object(id).as_dict()
 
         return jsonify_status_code(response)
-
-    def _normalize(self, kwargs):
-        boolean = {u'true': True, u'False': False}
-        for k, v in kwargs.iteritems():
-            v in boolean and kwargs.__setitem__(k, boolean[v])
-            v.isdigit() and kwargs.__setitem__(k, int(v))
-
-        return kwargs
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
