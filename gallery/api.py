@@ -8,7 +8,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from flask import abort, g, request
+from flask import abort, g, request, send_file
 from flask.ext.security import login_required, current_user
 
 from sqlalchemy import or_
@@ -24,15 +24,14 @@ def get_access_type(data_dict):
     return data_dict
 
 
-@api_resource(bp, 'images', {'id': int})
+@api_resource(bp, 'images', {'id': None})
 class ImageResource(ModelResource):
     model = Image
     mime_re = re.compile('data\:(\w+\/\w+)')
     validation = t.Dict({
-        'album_id': t.Int,
         'image': t.String,
         'name': t.String
-    }).make_optional('album_id').ignore_extra('*')
+    }).ignore_extra('*')
 
     method_decorators = {'post': [login_required],
                          'put': [login_required],
@@ -55,9 +54,8 @@ class ImageResource(ModelResource):
         meta, image = data['image'].split(',')
         mime_type = self.mime_re.match(meta).group(1)
         image = base64.urlsafe_b64decode(image)
-        imageModel = self.model.create(name=data['name'], author=current_user,
-                                       image=base64.urlsafe_b64decode(image),
-                                       content_type=mime_type)
+        imageModel = self.model.create(image, mime_type, name=data['name'],
+                                       author=current_user,)
         return imageModel.as_dict()
 
     def __process_form(self, data):
@@ -68,18 +66,10 @@ class ImageResource(ModelResource):
 
         return self.model.create(**data).as_dict()
 
-    def get(self, id=None):
+    def get(self, id):
         # validation = self.validation.append(get_access_type)
-
-        kwargs = request.args.to_dict()
-
-        if id is None:
-            kwargs['page'] = int(request.args.get('page', 1))
-            response = self.gen_list_response(**kwargs)
-        else:
-            response = self.get_object(id).as_dict()
-
-        return jsonify_status_code(response)
+        file_object = self.model.get(id) or abort(404)
+        return send_file(file_object)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query

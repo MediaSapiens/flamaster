@@ -1,14 +1,12 @@
 # encoding: utf-8
 import gridfs
-import os
 from bson import ObjectId
-from flamaster.core.models import CRUDMixin, BaseMixin
+from flamaster.core.models import CRUDMixin
 
 from sqlalchemy import func
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
-from .utils import filter_wrapper, dict_obj
 from . import db, mongo
 
 __all__ = ['Image', 'Album']
@@ -92,171 +90,70 @@ class Album(db.Model, GalleryMixin):
         #     kwargs['album_id'] = default_album
 
 
-class Image(db.Model, GalleryMixin):
-    fullpath = db.Column(db.Unicode(512), nullable=False, index=True)
-    url = db.Column(db.Unicode(512), nullable=False, index=True)
-    is_coverage = db.Column(db.Boolean, default=False)
-    album_id = db.Column(db.Integer, db.ForeignKey("albums.id"))
-    album = db.relationship('Album', backref=db.backref('images',
-                            cascade='all, delete-orphan', lazy='dynamic'))
+class Image(object):
+    """ Wrapper around MongoDB gridfs session and file storage/retrieve
+        actions
+    """
+    id = None
+    _file = None
 
-    @property
-    def filename(self):
-        return os.path.basename(self.fullpath)
+    def __init__(self, id, session=None):
+        self.id, self.session = id, session
+
+    @classmethod
+    def store(cls, image, content_type):
+        session = gridfs.GridFS(mongo.session)
+        instance = cls(session.put(image, content_type=content_type), session)
+        return instance
 
     @classmethod
     def create(cls, image, content_type, **kwargs):
-        gridfs_session = gridfs.GridFS(mongo.session)
-        file_id = gridfs_session.put(image, content_type=content_type)
-        kwargs.update({
-            'fullpath': unicode(file_id),
-            'url': 'gridfs'
-        })
-        # TODO: completely rewrite uploads
-        # uploaded_images = UploadSet('images', IMAGES)
-        # configure_uploads(current_app, uploaded_images)
-        # folder = current_app.config['UPLOADS_IMAGES_DIR']
-        # filename = uploaded_images.save(image, folder=folder)
-        # name = create_name(image.filename)
-        # kwargs.update({'fullpath': uploaded_images.path(filename),
-        #                'url': uploaded_images.url(filename),
-        #                'name': kwargs.get('name', name)})
-        return cls(**kwargs).save()
+        return cls.store(image, content_type)
 
-    # TODO:  where does it use???
-    def copy_to(self, album_id):
-        image_data = self.as_dict()
-        removal = set(('id', 'album_id'))
-        image_data = dict((attr, image_data[attr])
-                          for attr in image_data.viewkeys() - removal)
-        return Image(album_id=album_id, **image_data).save()
+    @classmethod
+    def get(cls, id):
+        """ Get mognodb stored file by its unique identifier
+        """
+        if isinstance(id, basestring):
+            file_id = ObjectId(id)
+        elif isinstance(id, ObjectId):
+            file_id = id
+        else:
+            raise TypeError('Can not treat identifier as ObjectId'
+                            ' representation')
+        instance = cls(file_id)
+        if instance.exists:
+            return instance.get_file()
+        else:
+            return None
+
+    def get_file(self):
+        """ Return file-like object bound to this class from the gridfs storage
+        """
+        return self.session.get(self.id)
+
+    @property
+    def exists(self):
+        """ Check if bounded ObjectId corresponds to the stored file (if any)
+        """
+        return self.session.exists(self.id)
+
+    def get_session(self):
+        """ Acquire mongodb gridfs session
+        """
+        return self.__session or gridfs.GridFS(mongo.session)
+
+    def set_session(self, value):
+        """ Recieve and store gridfs session for internal use
+        """
+        self.__session = value
+
+    session = property(get_session, set_session)
 
     def remove(self):
-        gridfs_session = gridfs.GridFS(mongo.session)
-        gridfs_session.remove(ObjectId(self.fullpath))
-        return super(Image, self).delete()
+        self.session.remove(self.id)
 
-    def access(self, uid):
-        return self.is_public or self.author_id == uid or False
-
-
-class GenericOwnerComparator(Comparator):
-    """Comparator for generic foreign key slaves
-    """
-    def __eq__(self, other):
-        return self.expression.has(owner_id=other.id,
-                                   owner_table=other.__tablename__)
-
-    def __ne__(self, other):
-        return db.not_(self.__eq__(other))
-
-
-class SlaveComparator(GenericOwnerComparator):
-    """Comparator for owners witch have relation
-       on slave with generic foreign key
-    """
-    def __init__(self, expr, owner_name):
-        self.owner = owner_name
-        super(SlaveComparator, self).__init__(expr)
-
-    def __eq__(self, other):
-        self.__clause_element__().append_whereclause(
-                "{}_id = {}".format(self.owner, other.id))
-
-        return db.exists(self.__clause_element__())
-
-
-def generic_owner_for(*args):
-    """Creates an association_table and relation attribute,
-       called "association" and adds generic foreign key property,
-       called "owner", for generic owners from args
-    """
-    for cls in args:
-        cls_name = cls.__name__
-        association_name = "{}Association".format(cls_name)
-        column_name = cls_name.lower()
-        association_table = "{}_association".format(column_name)
-        if db.metadata.tables.get(association_table) is not None:
-            return cls
-
-        attrs = {"{}_id".format(column_name): db.Column(db.Integer,
-                        db.ForeignKey("{}.id".format(cls.__tablename__),
-                                      ondelete='CASCADE'),
-                        primary_key=True),
-                 'owner_id': db.Column(db.Integer, primary_key=True),
-                 'owner_table': db.Column(db.String(128))}
-        cls_association = type(association_name, (db.Model, BaseMixin), attrs)
-
-        setattr(cls, 'association', db.relationship(association_name,
-                primaryjoin="{}.id=={}.{}_id".format(cls_name,
-                                                     association_name,
-                                                     column_name),
-                backref="{}".format(column_name), uselist=False,
-                        cascade="all, delete-orphan"))
-
-        def getter(self):
-            owner_table = self.association.owner_table
-            if owner_table is None:
-                return None
-
-            subquery = db.select(["*"],
-                "id = {:d}".format(self.association.owner_id), owner_table)
-
-            return dict_obj(db.engine.execute(subquery).first())
-
-        def setter(self, value):
-            self.association = cls_association(owner_id=value.id,
-                                               owner_table=value.__tablename__)
-
-        def comparator(cls):
-            return GenericOwnerComparator(cls.association)
-
-        owner = hybrid_property(getter, setter)
-        setattr(cls, 'owner', owner.comparator(comparator))
-
-        return cls
-
-
-def owner_wrapper(slave_cls, cls):
-    """Creates relation for a slave that
-       is generic foreign key owner
-    """
-    slave_table = slave_cls.__tablename__
-    slave_cls_name = slave_cls.__name__.lower()
-    table_name = "{}_association".format(slave_cls.__name__.lower())
-    association_table = db.metadata.tables.get(table_name)
-
-    def getter(self):
-        whereclause = "owner_id={} and owner_table='{}'".format(self.id,
-                                                         self.__tablename__)
-        subquery = slave_cls.query.join(slave_cls.association). \
-                        with_transformation(filter_wrapper(whereclause))
-        return subquery
-
-    def setter(self, value):
-        db.engine.execute(association_table.insert(),
-                          {"{}_id".format(slave_cls_name): value.id,
-                           'owner_id': self.id,
-                           'owner_table': self.__tablename__})
-
-    def deleter(self):
-        for owned in getter(self).all():
-            owned.delete()
-
-    def expression(self):
-        subquery = db.select(['1'],
-                             "owner_id = users.id AND owner_table = '{table}'".
-                             format(table=cls.__tablename__),
-                             table_name)
-        return subquery
-
-    def comparator(self):
-        return SlaveComparator(expression(self), slave_cls_name)
-
-    slave = hybrid_property(getter, setter, deleter)
-    setattr(cls, "owned_{}".format(slave_table), slave.comparator(comparator))
-
-    return cls
-
-album_owner = lambda cls: owner_wrapper(Album, cls)
-generic_owner_for(Album)
+    def as_dict(self):
+        return {
+            'id': self.id
+        }
