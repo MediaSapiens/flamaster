@@ -123,4 +123,3 @@ class MongoId(t.Trafaret):
             return ObjectId(value)
         except InvalidId as e:
             self._failure(e.message)
-

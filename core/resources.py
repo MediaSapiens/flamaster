@@ -193,7 +193,6 @@ class MongoResource(ModelResource):
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
-
         return self.model.query.find(kwargs)
 
     def get_object(self, id):

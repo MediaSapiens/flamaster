@@ -1,4 +1,4 @@
-from flask import current_app, render_template
+from flask import current_app, render_template, request
 from werkzeug.utils import import_string
 
 from .. import payment
@@ -15,7 +15,7 @@ class BasePaymentMethod(object):
         self.sandbox = my_method['SANDBOX']
         self.order = order
 
-    def init_payment(self): #, amount, currency, description):
+    def init_payment(self):  # amount, currency, description):
         raise NotImplementedError
 
     def precess_payment_response(self, *args, **kwargs):
@@ -27,6 +27,11 @@ def resolve_payment_method(payment_method):
     class_string = method['module']
     return import_string(class_string)
 
+
+@payment.route('/<payment_method>/verify/', methods=['POST'])
+def verify_payment(payment_method):
+    PaymentMethod = resolve_payment_method(payment_method)
+    return PaymentMethod().verify(request.json)
 
 
 @payment.route('/<payment_method>/process/')
