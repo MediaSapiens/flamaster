@@ -26,6 +26,7 @@ BABEL_DEFAULT_LOCALE = 'de'
 LOCALE_KEY = 'locale'
 
 CACHE_TYPE = 'simple'
+CACHE_DEFAULT_TIMEOUT = 900  # defult timeout is 15 minutes
 
 SQLALCHEMY_DATABASE_URI = "postgresql://user:password@host:port/dbname"
 SQLALCHEMY_ECHO = False
