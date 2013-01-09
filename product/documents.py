@@ -137,33 +137,35 @@ class BaseProduct(Document):
     #         Shelf.create(price_category_id=str(price.id),
     #                      quantity=price.quantity)
 
-    def __get_from_shelf(self, price_option):
-        price_id = str(price_option.id)
+    def __get_from_shelf(self, price_option_id):
+        price_id = str(price_option_id)
         return Shelf.query.with_lockmode('update_nowait') \
                     .filter_by(price_option_id=price_id).first()
 
-    def add_to_cart(self, customer, amount, price_option_id):
-        try:
-            shelf = self.__get_from_shelf(price_option_id)
+    def add_to_cart(self, customer, amount, price_option_id, service):
+        # try:
+        shelf = self.__get_from_shelf(price_option_id)
+        if shelf is not None:
+            shelf.quantity -= amount
 
-            if shelf is None:
-                raise ShelfNotAvailable("We can't find anything on shelf")
-            elif shelf.quantity < amount:
-                raise ShelfNotAvailable('Total amount is {}, not so much as'
-                    ' you need ({}) '.format(shelf.quantity, amount))
-            else:
-                shelf.quantity -= amount
-                price_opt = mongo.db.prices.find_one({'_id': price_option_id})
+        # if shelf is None:
+        #     raise ShelfNotAvailable("We can't find anything on shelf")
+        # elif shelf.quantity < amount:
+        #     raise ShelfNotAvailable('Total amount is {}, not so much as'
+        #         ' you need ({}) '.format(shelf.quantity, amount))
+        # else:
+            # shelf.quantity -= amount
+        price_opt = mongo.db.prices.find_one({'_id': price_option_id})
 
-                product_variant = mongo.db.product_variants.find_one({
-                                    'price_options': price_opt.ref})
-
-                cart = Cart.create(amount, customer, self, product_variant,
-                                   price_opt)
-                return cart
-        except Exception as error:
-            current_app.logger.debug(error.message)
-            db.session.rollback()
+        product_variant = mongo.db.product_variants.find_one({
+                                'price_options': price_opt.db_ref})
+        print "Cart: ", amount, service
+        cart = Cart.create(amount, customer, self, product_variant,
+                           price_opt, service)
+        return cart
+        # except Exception as error:
+        #     current_app.logger.debug(error.message)
+        #     db.session.rollback()
 
 
 @mongo.register

@@ -17,10 +17,11 @@ __all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
 class Cart(db.Model, CRUDMixin):
     """ Cart record for concrete product
     """
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
     product_id = db.Column(db.String, nullable=False)
     product_variant_id = db.Column(db.String, nullable=False)
     price_option_id = db.Column(db.String, nullable=False)
+    service = db.Column(db.String, nullable=True)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
@@ -32,7 +33,7 @@ class Cart(db.Model, CRUDMixin):
 
     @classmethod
     def create(cls, amount, customer, product, product_variant,
-               price_option):
+               price_option, service):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
         :param product_variant: instance of BaseProductVariant subclass
@@ -45,7 +46,9 @@ class Cart(db.Model, CRUDMixin):
             'product_variant_id': str(product_variant.id),
             'price_option_id': str(price_option.id),
             'price': product.get_price(price_option.id, amount),
-            'customer': customer
+            'customer': customer,
+            'amount': amount,
+            'service': service
         }
         return super(Cart, cls).create(**instance_kwargs)
 

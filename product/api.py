@@ -82,10 +82,11 @@ class CartResource(ModelResource):
     validation = t.Dict({
         'product_id': MongoId,
         'concrete_product_id': MongoId,
-        'price_category_id': MongoId,
+        'price_option_id': MongoId,
         'amount': t.Int,
-        'customer_id': t.Int
-    })
+        'customer_id': t.Int,
+        'service': t.String
+    }).make_optional('service').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -98,6 +99,7 @@ class CartResource(ModelResource):
             session['customer_id'] = customer.id
         else:
             session['customer_id'] = current_user.customer.id
+            customer = current_user.customer
 
         data['customer_id'] = session['customer_id']
 
@@ -107,8 +109,10 @@ class CartResource(ModelResource):
             if product is None:
                 raise t.DataError({'product_id': _('Product not fount')})
 
-            cart = product.add_to_cart(customer=g.user, amount=data['amount'],
-                                       price_option_id=data['price_option_id'])
+            cart = product.add_to_cart(customer=customer,
+                                       amount=data['amount'],
+                                       price_option_id=data['price_option_id'],
+                                       service=data.get('service'))
 
             response = cart.as_dict()
         except t.DataError as e:
