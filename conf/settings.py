@@ -92,6 +92,10 @@ PAYMENT_METHODS = {
         'module': 'flamaster.payment.methods.klarna_method.KlarnaPaymentMethod',
         'SANDBOX': True
     },
+    'groupon': {
+        'module': 'flamaster.payment.methods.groupon.GrouponPaymentMethod',
+        'SANDBOX': True
+    },
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'
     },
