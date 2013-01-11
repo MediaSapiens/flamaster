@@ -7,8 +7,8 @@ MAP_API_KEY = "Google Maps API key"
 
 SQLALCHEMY_ECHO = False
 
-SQLALCHEMY_DATABASE_URI = "postgresql://user:passwd@host:port/dbname"
-MONGODB_DATABASE = "dbname"
+SQLALCHEMY_DATABASE_URI = "postgresql://user:passwd@host:port/sample_db_name"
+MONGODB_DATABASE = "sample_db_name"
 
 WIKI_URL = "http://en.wikipedia.org/w/api.php"
 FLICKR_API_KEY = ""

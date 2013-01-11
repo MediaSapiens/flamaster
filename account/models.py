@@ -22,7 +22,7 @@ class Address(db.Model, CRUDMixin):
     }
     city = db.Column(db.Unicode(255), nullable=False)
     street = db.Column(db.Unicode(255), nullable=False)
-    apartment = db.Column(db.Unicode(20), nullable=False)
+    apartment = db.Column(db.Unicode(20))
     zip_code = db.Column(db.String(20))
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id',
                                                       ondelete='CASCADE',
@@ -44,7 +44,6 @@ user_roles = db.Table('user_roles', db.metadata,
 
 
 class Customer(db.Model, CRUDMixin):
-
     first_name = db.Column(db.Unicode(255), default=u'')
     last_name = db.Column(db.Unicode(255), default=u'')
     email = db.Column(db.String(80), index=True)
