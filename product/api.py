@@ -1,6 +1,6 @@
 # encoding: utf-8
 import trafaret as t
-from flask import abort, current_app, request, session, g
+from flask import abort, current_app, request, session
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -100,9 +100,7 @@ class CartResource(ModelResource):
         else:
             session['customer_id'] = current_user.customer.id
             customer = current_user.customer
-
         data['customer_id'] = session['customer_id']
-
         try:
             data = validation.check(data)
             product = mongo.db.products.find_one({'_id': data['product_id']})

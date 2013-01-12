@@ -210,7 +210,8 @@ class AddressResource(ModelResource):
             data = self.validation.check(data)
             address_type = data.pop('type')
             address = self.model.create(**data)
-            if current_user.is_anonymous() and 'customer_id' in session:
+            if current_user.is_anonymous():
+                session.get('customer_id') or abort(http.NOT_FOUND)
                 customer = Customer.query.get_or_404(session['customer_id'])
             else:
                 customer = current_user.customer
@@ -283,6 +284,13 @@ class CustomerResource(ModelResource):
     model = Customer
     method_decorators = {'post': roles_required('admin'),
                          'delete': roles_required('admin')}
+    validation = t.Dict({
+        'first_name': t.String,
+        'last_name': t.String,
+        'email': t.Email,
+        'phone': t.String(allow_blank=True),
+        'notes': t.String
+    }).make_optional('phone', 'notes').ignore_extra('*')
 
     def get_objects(self, **kwargs):
         if current_user.is_anonymous():
