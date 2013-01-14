@@ -169,7 +169,7 @@ class ModelResource(Resource):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        return self.get_objects().filter_by(id=id).first_or_404()
+        return self.get_objects(id=id).first_or_404()
 
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)

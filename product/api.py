@@ -134,8 +134,12 @@ class CartResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def get_objects(self):
-        return self.model.query.filter_by(is_ordered=False)
+    def get_objects(self, **kwargs):
+        if 'product_id' in request.args:
+            kwargs['product_id'] = request.args['product_id']
+        if 'product_variant_id' in request.args:
+            kwargs['product_variant_id'] = request.args['product_variant_id']
+        return self.model.query.filter_by(**kwargs)
 
     def _check_customer(self, data):
         if data['customer_id'] != session['customer_id']:
