@@ -95,8 +95,11 @@ class CartResource(ModelResource):
 
         # condition to ensure that we have a customer when item added to cart
         if current_user.is_anonymous():
-            customer = Customer.create()
-            session['customer_id'] = customer.id
+            if session.get('customer_id'):
+                customer = Customer.query.get_or_404(session['customer_id'])
+            else:
+                customer = Customer.create()
+                session['customer_id'] = customer.id
         else:
             session['customer_id'] = current_user.customer.id
             customer = current_user.customer
