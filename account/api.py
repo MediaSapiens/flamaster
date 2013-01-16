@@ -40,7 +40,7 @@ class SessionResource(Resource):
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
-            register_user(email=data['email'])
+            register_user(email=data['email'], password='')
 
             response, status = self._get_response(), http.CREATED
 
@@ -234,7 +234,7 @@ class AddressResource(ModelResource):
         elif current_user.is_superuser():
             return query
         else:
-            return query.filter_by(customer_id=g.user.customer_id)
+            return query.filter_by(customer_id=current_user.customer.id)
 
 
 @api_resource(bp, 'roles', {'id': int})
