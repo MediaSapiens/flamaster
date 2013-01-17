@@ -34,14 +34,13 @@ class CategoryResource(ModelResource):
         return super(CategoryResource, self).paginate(page, page_size,
                                                       **kwargs)
 
-    def get_objects(self):
-        query = super(CategoryResource, self).get_objects()
+    def get_objects(self, **kwargs):
         if 'parent_id' in request.args:
             try:
-                parent_id = int(request.args['parent_id'])
-                query = query.filter_by(parent_id=parent_id)
+                kwargs['parent_id'] = int(request.args['parent_id'])
             except ValueError as ex:
                 current_app.logger.error("Exception: {0.message}".format(ex))
+        query = super(CategoryResource, self).get_objects(**kwargs)
         return query
 
 
@@ -99,11 +98,10 @@ class CartResource(ModelResource):
                 customer = Customer.query.get_or_404(session['customer_id'])
             else:
                 customer = Customer.create()
-                session['customer_id'] = customer.id
         else:
-            session['customer_id'] = current_user.customer.id
             customer = current_user.customer
-        data['customer_id'] = session['customer_id']
+        session['customer_id'] = customer.id
+        data['customer_id'] = customer.id
         try:
             data = validation.check(data)
             product = mongo.db.products.find_one({'_id': data['product_id']})
