@@ -26,8 +26,8 @@ def put_on_shelf(price_option):
 
 @price_updated.connect
 def update_on_shelf(price_option):
-    Shelf.query.update(quantity=price_option.quantity) \
-                .where(price_option_id=price_option.id)
+    Shelf.query.filter_by(price_option_id=str(price_option.id))\
+        .update({'quantity': price_option.quantity})
     db.session.commit()
 
 
