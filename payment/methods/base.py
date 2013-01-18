@@ -15,6 +15,12 @@ class BasePaymentMethod(object):
         self.sandbox = my_method['SANDBOX']
         self.order = order
 
+    def verify(self, data):
+        raise NotImplementedError
+
+    def process_payment(self):
+        raise NotImplementedError
+
     def init_payment(self):  # amount, currency, description):
         raise NotImplementedError
 
@@ -34,7 +40,7 @@ def verify_payment(payment_method):
     return PaymentMethod().verify(request.json)
 
 
-@payment.route('/<payment_method>/process/')
+@payment.route('/<payment_method>/process/', methods=['GET', 'POST'])
 def process_payment(payment_method):
     PaymentMethod = resolve_payment_method(payment_method)
     return PaymentMethod().process_payment()

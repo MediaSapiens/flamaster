@@ -4,8 +4,6 @@ import requests
 from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
-from flask import current_app
-
 from flamaster.product import Order
 
 from .base import BasePaymentMethod

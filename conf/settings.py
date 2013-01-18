@@ -79,7 +79,7 @@ PAYMENT_METHODS = {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
     },
     'paypal': {
-        'module': 'flamaster.payment.methods.paypal_method.PayPalPaymentMethod',
+        'module': 'flamaster.payment.methods.paypal.PayPalPaymentMethod',
         'SANDBOX': True,
         'settings': {
             'USER': '<paypal user>',
@@ -89,12 +89,18 @@ PAYMENT_METHODS = {
         }
     },
     'klarna': {
-        'module': 'flamaster.payment.methods.klarna_method.KlarnaPaymentMethod',
+        'module': 'flamaster.payment.methods.klarna.KlarnaPaymentMethod',
         'SANDBOX': True
     },
     'groupon': {
         'module': 'flamaster.payment.methods.groupon.GrouponPaymentMethod',
-        'SANDBOX': True
+        'SANDBOX': True,
+        'settings': {
+            'endpoint': 'http://api.groupon.de/api/v1/{path}',
+            'consumer': '<consumer merchantId>',
+            'name': '<consumer login>',
+            'password': '<consumer password>',
+        }
     },
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'

@@ -133,13 +133,11 @@ class Order(db.Model, CRUDMixin):
     @classmethod
     def create(cls, commit=True, **kwargs):
         """ Order creation method. Accepted params are:
-        :param customer_id: int value for Customer id instance
-        :param delivery_id: int value for Delivery id instance
+        :param customer: Customer instance
+        :param delivery: Delivery instance
 
-        :param delivery_address: int value for Address id instance,
-                                witch sets as delivery address
-        :param billing_address: int value for Address id instance,
-                                witch sets as billing address
+        :param delivery_address: Address instance witch sets as delivery
+        :param billing_address: Address instance witch sets as billing
         :param commit: Boolean value to do commit after save or not,
                                 by default it is True
         """
@@ -159,7 +157,10 @@ class Order(db.Model, CRUDMixin):
                        'goods_price': goods_price,
                        'total_price': goods_price})  # + delivery_price})
 
-        return super(Order, cls).create(**kwargs)
+        instance = super(Order, cls).create(**kwargs)
+        # mark items as ordered
+        map(lambda g: g.update(is_ordered=True), goods)
+        return instance
         # Some of fields can be calculated:
         # - get delivery and billing addresses from ids
         # - calculate vat
