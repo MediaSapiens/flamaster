@@ -1,6 +1,6 @@
 # encoding: utf-8
 import trafaret as t
-from flask import abort, current_app, request, session, g
+from flask import abort, current_app, request, session
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -34,14 +34,13 @@ class CategoryResource(ModelResource):
         return super(CategoryResource, self).paginate(page, page_size,
                                                       **kwargs)
 
-    def get_objects(self):
-        query = super(CategoryResource, self).get_objects()
+    def get_objects(self, **kwargs):
         if 'parent_id' in request.args:
             try:
-                parent_id = int(request.args['parent_id'])
-                query = query.filter_by(parent_id=parent_id)
+                kwargs['parent_id'] = int(request.args['parent_id'])
             except ValueError as ex:
                 current_app.logger.error("Exception: {0.message}".format(ex))
+        query = super(CategoryResource, self).get_objects(**kwargs)
         return query
 
 
@@ -95,14 +94,14 @@ class CartResource(ModelResource):
 
         # condition to ensure that we have a customer when item added to cart
         if current_user.is_anonymous():
-            customer = Customer.create()
-            session['customer_id'] = customer.id
+            if session.get('customer_id'):
+                customer = Customer.query.get_or_404(session['customer_id'])
+            else:
+                customer = Customer.create()
         else:
-            session['customer_id'] = current_user.customer.id
             customer = current_user.customer
-
-        data['customer_id'] = session['customer_id']
-
+        session['customer_id'] = customer.id
+        data['customer_id'] = customer.id
         try:
             data = validation.check(data)
             product = mongo.db.products.find_one({'_id': data['product_id']})
@@ -136,8 +135,12 @@ class CartResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def get_objects(self):
-        return self.model.query.filter_by(is_ordered=False)
+    def get_objects(self, **kwargs):
+        if 'product_id' in request.args:
+            kwargs['product_id'] = request.args['product_id']
+        if 'product_variant_id' in request.args:
+            kwargs['product_variant_id'] = request.args['product_variant_id']
+        return self.model.query.filter_by(**kwargs)
 
     def _check_customer(self, data):
         if data['customer_id'] != session['customer_id']:

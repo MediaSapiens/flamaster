@@ -157,7 +157,6 @@ class BaseProduct(Document):
 
         product_variant = mongo.db.product_variants.find_one({
                                 'price_options': price_opt.db_ref})
-        print "Cart: ", amount, service
         cart = Cart.create(amount, customer, self, product_variant,
                            price_opt, service)
         return cart

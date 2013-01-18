@@ -27,7 +27,10 @@ __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
 @api_resource(bp, 'sessions', {'id': None})
 class SessionResource(Resource):
-    validation = t.Dict({'email': t.Email}).allow_extra('*')
+    validation = t.Dict({
+        'email': t.Email,
+        'password': t.String
+    }).make_optional('password').allow_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
@@ -40,7 +43,7 @@ class SessionResource(Resource):
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
-            register_user(email=data['email'])
+            register_user(email=data['email'], password=data.get('password', ''))
 
             response, status = self._get_response(), http.CREATED
 
@@ -200,7 +203,7 @@ class AddressResource(ModelResource):
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)")
-    }).make_optional('zip_code').ignore_extra('*')
+    }).make_optional('zip_code', 'apartment').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -210,10 +213,11 @@ class AddressResource(ModelResource):
             data = self.validation.check(data)
             address_type = data.pop('type')
             address = self.model.create(**data)
-            if g.user.is_anonymous() and 'customer_id' in session:
+            if current_user.is_anonymous():
+                session.get('customer_id') or abort(http.NOT_FOUND)
                 customer = Customer.query.get_or_404(session['customer_id'])
             else:
-                customer = g.user.customer
+                customer = current_user.customer
 
             customer.set_address(address_type, address)
             customer.save()
@@ -228,12 +232,12 @@ class AddressResource(ModelResource):
         """ Method for extraction object list query
         """
         query = super(AddressResource, self).get_objects()
-        if g.user.is_anonymous():
+        if current_user.is_anonymous():
             return query.filter_by(customer_id=session['customer_id'])
-        elif g.user.is_superuser():
+        elif current_user.is_superuser():
             return query
         else:
-            return query.filter_by(customer_id=g.user.customer_id)
+            return query.filter_by(customer_id=current_user.customer.id)
 
 
 @api_resource(bp, 'roles', {'id': int})
@@ -276,3 +280,24 @@ class BankAccountResource(ModelResource):
         if instance.check_owner(current_user) or current_user.is_superuser():
             return instance
         return abort(http.UNAUTHORIZED)
+
+
+@api_resource(bp, 'customers', {'id': int})
+class CustomerResource(ModelResource):
+    model = Customer
+    method_decorators = {'post': roles_required('admin'),
+                         'delete': roles_required('admin')}
+    validation = t.Dict({
+        'first_name': t.String,
+        'last_name': t.String,
+        'email': t.Email,
+        'phone': t.String(allow_blank=True),
+        'notes': t.String
+    }).make_optional('phone', 'notes').ignore_extra('*')
+
+    def get_objects(self, **kwargs):
+        if current_user.is_anonymous():
+            kwargs['id'] = session.get('customer_id') or abort(http.NOT_FOUND)
+        elif not current_user.is_superuser():
+            kwargs['id'] = current_user.customer.id
+        return super(CustomerResource, self).get_objects(**kwargs)
