@@ -27,7 +27,10 @@ __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
 @api_resource(bp, 'sessions', {'id': None})
 class SessionResource(Resource):
-    validation = t.Dict({'email': t.Email}).allow_extra('*')
+    validation = t.Dict({
+        'email': t.Email,
+        'password': t.String
+    }).make_optional('password').allow_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
@@ -40,7 +43,7 @@ class SessionResource(Resource):
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
-            register_user(email=data['email'], password='')
+            register_user(email=data['email'], password=data.get('password', ''))
 
             response, status = self._get_response(), http.CREATED
 

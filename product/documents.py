@@ -49,9 +49,7 @@ class BasePriceOption(Document):
         """
         :rtype : BasePriceOption
         """
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
-        self.save()
+        super(BasePriceOption, self).update(**kwargs)
         price_updated.send(self)
         return self
 
