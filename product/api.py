@@ -13,7 +13,7 @@ from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
 
 from . import mongo, product as bp
-from .models import Cart, Category, Country
+from .models import Cart, Category, Country, Order
 from .helpers import resolve_parent
 
 __all__ = ['CategoryResource']
@@ -42,18 +42,6 @@ class CategoryResource(ModelResource):
                 current_app.logger.error("Exception: {0.message}".format(ex))
         query = super(CategoryResource, self).get_objects(**kwargs)
         return query
-
-
-# @api_resource(bp, 'products', {'id': None})
-class ProductResource(MongoResource):
-    """ Base resource for models based on BaseProduct
-    """
-
-    method_decorators = {
-        'post': [login_required],
-        'put': [login_required],
-        'delete': [login_required]
-    }
 
 
 @api_resource(bp, 'countries', {'id': int})
@@ -142,8 +130,61 @@ class CartResource(ModelResource):
             kwargs['product_variant_id'] = request.args['product_variant_id']
         return self.model.query.filter_by(**kwargs)
 
+    def gen_list_response(self, page, **kwargs):
+        return super(CartResource, self) \
+            .gen_list_response(page, page_size=100000, **kwargs)
+
     def _check_customer(self, data):
         if data['customer_id'] != session['customer_id']:
             raise t.DataError({'customer_id': _('Unknown customer provided')})
         else:
             return data
+
+
+# @api_resource(bp, 'products', {'id': None})
+class ProductResource(MongoResource):
+    """ Base resource for models based on BaseProduct
+    """
+
+    method_decorators = {
+        'post': [login_required],
+        'put': [login_required],
+        'delete': [login_required]
+    }
+
+
+class OrderResource(ModelResource):
+    model = Order
+
+    validation = t.Dict({
+        'customer_id': t.Int,
+        'nextState': t.Int
+    })
+
+    method_decorators = {
+        'delete': [login_required]
+    }
+
+    def post(self):
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.validation.check(data)
+            response = self.serialize(self.model.create(**data))
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
+    def get_objects(self, **kwargs):
+        """ Method for extraction object list query
+        """
+        if current_user.is_anonymous():
+            kwargs['customer_id'] = session['customer_id']
+        elif not current_user.is_superuser():
+            kwargs['customer_id'] = current_user.customer.id
+        # TODO: process product owners
+
+        self.model is None and abort(http.BAD_REQUEST)
+        return self.model.query.filter_by(**kwargs)

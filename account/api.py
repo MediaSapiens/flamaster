@@ -199,7 +199,7 @@ class AddressResource(ModelResource):
     model = Address
     validation = t.Dict({
         'country_id': t.Int,
-        'apartment': t.String,
+        'apartment': t.Or(t.String(allow_blank=True), t.Null),
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)")
@@ -228,16 +228,15 @@ class AddressResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def get_objects(self):
+    def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        query = super(AddressResource, self).get_objects()
         if current_user.is_anonymous():
-            return query.filter_by(customer_id=session['customer_id'])
-        elif current_user.is_superuser():
-            return query
-        else:
-            return query.filter_by(customer_id=current_user.customer.id)
+            kwargs['customer_id'] = session['customer_id']
+        elif not current_user.is_superuser():
+            kwargs['customer_id'] = current_user.customer.id
+
+        return super(AddressResource, self).get_objects(**kwargs)
 
 
 @api_resource(bp, 'roles', {'id': int})
@@ -292,7 +291,7 @@ class CustomerResource(ModelResource):
         'last_name': t.String,
         'email': t.Email,
         'phone': t.String(allow_blank=True),
-        'notes': t.String
+        'notes': t.Or(t.String(allow_blank=True), t.Null)
     }).make_optional('phone', 'notes').ignore_extra('*')
 
     def get_objects(self, **kwargs):

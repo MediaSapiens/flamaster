@@ -2,7 +2,7 @@
 import trafaret as t
 import requests
 
-from flask import request, session
+from flask import request, session, current_app
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
@@ -20,6 +20,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         'deal': t.Int,
         'voucher': t.String,
         'code': t.String,
+        'variant': t.String
     })
 
     validate_path = 'merchant/redemptions/validate'
@@ -36,9 +37,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         login, passwd = self.settings['name'], self.settings['password']
         data = self.data_template.format(**kwargs).encode('utf-8')
         if self.sandbox:
-            response = object()
-            response.status_code = http.OK
-            return response
+            return current_app.make_response('')
         else:
             return requests.post(endpoint, data=data,
                                  auth=HTTPBasicAuth(login, passwd),
@@ -90,9 +89,12 @@ class GrouponPaymentMethod(BasePaymentMethod):
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
 
+            deal = filter(lambda deal: deal['cda'] == data['deal'],
+                          price_option.groupon)
+
             data.update({
                 'message': 'OK',
-                'seats': 4,
+                'seats': deal[0]['number'],
                 'option': price_option,
             })
         except t.DataError as e:
