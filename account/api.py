@@ -2,7 +2,8 @@
 import trafaret as t
 
 from flamaster.core import http
-from flamaster.core.decorators import login_required, api_resource
+from flamaster.core.decorators import (login_required, api_resource,
+                                       method_wrapper)
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -43,7 +44,8 @@ class SessionResource(Resource):
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
-            register_user(email=data['email'], password=data.get('password', ''))
+            register_user(email=data['email'],
+                          password=data.get('password', ''))
 
             response, status = self._get_response(), http.CREATED
 
@@ -263,16 +265,10 @@ class BankAccountResource(ModelResource):
     }).ignore_extra('*')
     decorators = [login_required]
 
-    def post(self):
-        status = http.CREATED
-        try:
-            data = self.validation.check(request.json)
-            data['user_id'] = current_user.id
-            response = self.serialize(self.model.create(**data))
-        except t.DataError as e:
-            response, status = e.as_dict(), http.BAD_REQUEST
-
-        return jsonify_status_code(response, status)
+    @method_wrapper(http.CREATED)
+    def post(self, data):
+        data['user_id'] = current_user.id
+        return self.serialize(self.model.create(**data))
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)

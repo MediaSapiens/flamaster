@@ -8,7 +8,7 @@ from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 
 from werkzeug.utils import import_string
 
-from . import db
+from . import db, OrderStates
 
 
 __all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
@@ -118,7 +118,7 @@ class Order(db.Model, CRUDMixin):
 
     payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
-    is_paid = db.Column(db.Boolean, default=False)
+    state = db.Column(db.Integer, index=True)
     # stored cost for the order delivery
     delivery_method = db.Column(db.String, nullable=False, index=True)
     delivery_price = db.Column(db.Numeric(precision=18, scale=2))
@@ -131,46 +131,36 @@ class Order(db.Model, CRUDMixin):
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
 
     @classmethod
-    def create(cls, commit=True, **kwargs):
+    def create(cls, customer, billing_addr, delivery_addr, **kwargs):
         """ Order creation method. Accepted params are:
-        :param customer: Customer instance
-        :param delivery: Delivery instance
-
         :param delivery_address: Address instance witch sets as delivery
         :param billing_address: Address instance witch sets as billing
-        :param commit: Boolean value to do commit after save or not,
-                                by default it is True
+        :param customer: Customer instance
+        :param delivery: Delivery instance
         """
-        # TODO: Need to decide what kind of addresses is more impotant:
-
-        delivery_address = kwargs.pop('delivery_address')
-        billing_address = kwargs.pop('billing_address')
-        kwargs.update(cls.__set_address(delivery_address, 'delivery'))
-        kwargs.update(cls.__set_address(billing_address, 'billing'))
-
-        goods = Cart.for_customer(kwargs['customer'])
-        goods_price = sum(map(attrgetter('price'), goods))
-#        delivery_price = cls.__resolve_delivery(kwargs['delivery'],
-#                                               delivery_address)
-
-        kwargs.update({'goods': goods,
-                       'goods_price': goods_price,
-                       'total_price': goods_price})  # + delivery_price})
+        goods = Cart.for_customer(customer)
+        # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
+        #                                         delivery_address)
+        goods_price = sum(map(attrgetter('price'), goods)),
+        # TODO: total_price = goods_price + delivery_price
+        kwargs.update({
+            'customer': customer,
+            'goods_price': goods_price,
+            'total_price': goods_price,
+            'state': OrderStates.created
+        })
+        kwargs.update(cls.__set_address('delivery', delivery_addr))
+        kwargs.update(cls.__set_address('billing', billing_addr))
 
         instance = super(Order, cls).create(**kwargs)
         # mark items as ordered
-        map(lambda g: g.update(is_ordered=True), goods)
+        goods.update({'is_ordered': True, 'order': instance})
         return instance
-        # Some of fields can be calculated:
-        # - get delivery and billing addresses from ids
-        # - calculate vat
-        # - get delivery_cost from Delivery.get_cost()
-        # - goods_cost, total_cost
 
     @classmethod
-    def __set_address(cls, address, addr_type):
+    def __set_address(cls, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']
-        address_dict = address.as_dict(exclude=exclude_fields)
+        address_dict = address_instance.as_dict(exclude=exclude_fields)
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
 
@@ -193,7 +183,7 @@ class Order(db.Model, CRUDMixin):
         return cls.query.filter_by(payment_details=payment_details).first()
 
     def mark_paid(self):
-        return self.update(is_paid=True)
+        return self.update(state=OrderStates.paid)
 
 
 class Shelf(db.Model, CRUDMixin):

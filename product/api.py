@@ -7,14 +7,16 @@ from flask.ext.security import login_required, current_user
 from flamaster.account.models import Customer
 
 from flamaster.core import http
-from flamaster.core.decorators import api_resource
+from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.documents import MongoId
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
 
 from . import mongo, product as bp
-from .models import Cart, Category, Country, Order
 from .helpers import resolve_parent
+from .models import Cart, Category, Country, Order
+from .workaround import new_order
+
 
 __all__ = ['CategoryResource']
 
@@ -48,14 +50,17 @@ class CategoryResource(ModelResource):
 class CountriesResource(ModelResource):
     model = Country
 
-    def put(self, id):
-        abort(http.METHOD_NOT_ALLOWED)
+    @method_wrapper(http.METHOD_NOT_ALLOWED)
+    def put(self, id, data):
+        return ''
 
-    def post(self):
-        abort(http.METHOD_NOT_ALLOWED)
+    @method_wrapper(http.METHOD_NOT_ALLOWED)
+    def post(self, data):
+        return ''
 
-    def delete(self, id=None):
-        abort(http.METHOD_NOT_ALLOWED)
+    @method_wrapper(http.METHOD_NOT_ALLOWED)
+    def delete(self, id, data):
+        return ''
 
     def gen_list_response(self, page, **kwargs):
         return super(CountriesResource, self) \
@@ -153,29 +158,25 @@ class ProductResource(MongoResource):
     }
 
 
+@api_resource(bp, 'orders', {'id': int})
 class OrderResource(ModelResource):
     model = Order
 
     validation = t.Dict({
         'customer_id': t.Int,
-        'nextState': t.Int
-    })
+        'next_state': t.Int,
+        'payment_method': t.String
+    }).make_optional('next_state', 'payment_method').ignore_extra('*')
 
     method_decorators = {
         'delete': [login_required]
     }
 
-    def post(self):
-        status = http.CREATED
-        data = request.json or abort(http.BAD_REQUEST)
-
-        try:
-            data = self.validation.check(data)
-            response = self.serialize(self.model.create(**data))
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
+    @method_wrapper(http.CREATED)
+    def post(self, data):
+        data = self.validation.check(data)
+        instance = new_order(**data)
+        return self.serialize(instance)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
