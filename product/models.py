@@ -53,10 +53,11 @@ class Cart(db.Model, CRUDMixin):
         return super(Cart, cls).create(**instance_kwargs)
 
     @classmethod
-    def for_customer(cls, customer):
+    def for_customer(cls, customer, is_ordered=False):
         """ helper method for obtaining cart records for concrete customer
         """
-        return cls.query.filter_by(customer_id=customer.id, is_ordered=False)
+        return cls.query.filter_by(customer_id=customer.id,
+                                   is_ordered=is_ordered)
 
 
 @multilingual
@@ -129,40 +130,6 @@ class Order(db.Model, CRUDMixin):
                                backref=db.backref('orders', **lazy_cascade))
 
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
-
-    @classmethod
-    def create(cls, customer, billing_addr, delivery_addr, **kwargs):
-        """ Order creation method. Accepted params are:
-        :param delivery_address: Address instance witch sets as delivery
-        :param billing_address: Address instance witch sets as billing
-        :param customer: Customer instance
-        :param delivery: Delivery instance
-        """
-        goods = Cart.for_customer(customer)
-        # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
-        #                                         delivery_address)
-        goods_price = sum(map(attrgetter('price'), goods)),
-        # TODO: total_price = goods_price + delivery_price
-        kwargs.update({
-            'customer': customer,
-            'goods_price': goods_price,
-            'total_price': goods_price,
-            'state': OrderStates.created
-        })
-        kwargs.update(cls.__set_address('delivery', delivery_addr))
-        kwargs.update(cls.__set_address('billing', billing_addr))
-
-        instance = super(Order, cls).create(**kwargs)
-        # mark items as ordered
-        goods.update({'is_ordered': True, 'order': instance})
-        return instance
-
-    @classmethod
-    def __set_address(cls, addr_type, address_instance):
-        exclude_fields = ['customer_id', 'created_at', 'id']
-        address_dict = address_instance.as_dict(exclude=exclude_fields)
-        return dict(('{}_{}'.format(addr_type, key), value)
-                    for key, value in address_dict.iteritems())
 
     def resolve_payment(self, method=None):
         payment_method = self.payment_method or method

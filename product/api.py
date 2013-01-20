@@ -15,7 +15,7 @@ from flamaster.core.utils import jsonify_status_code
 from . import mongo, product as bp
 from .helpers import resolve_parent
 from .models import Cart, Category, Country, Order
-from .workaround import new_order
+from .datastore import OrderDatastore
 
 
 __all__ = ['CategoryResource']
@@ -175,7 +175,8 @@ class OrderResource(ModelResource):
     @method_wrapper(http.CREATED)
     def post(self, data):
         data = self.validation.check(data)
-        instance = new_order(**data)
+        datastore = OrderDatastore(self.model, Cart, Customer)
+        instance = datastore.create_from_api(**data)
         return self.serialize(instance)
 
     def get_objects(self, **kwargs):

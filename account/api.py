@@ -204,7 +204,8 @@ class AddressResource(ModelResource):
         'apartment': t.Or(t.String(allow_blank=True), t.Null),
         'city': t.String,
         'street': t.String,
-        'type': t.String(regex="(billing|delivery)")
+        'type': t.String(regex="(billing|delivery)"),
+        'zip_code': t.Or(t.String(allow_blank=True), t.Null),
     }).make_optional('zip_code', 'apartment').ignore_extra('*')
 
     def post(self):
