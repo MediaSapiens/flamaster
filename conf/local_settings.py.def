@@ -24,5 +24,9 @@ SOCIAL_FACEBOOK = {
     'consumer_secret': ''
 }
 
+THUMBNAIL_UPSCALE = False
+THUMBNAIL_FORMAT = 'PNG'
+
+WHITE_LABEL_TARGET = 'http://groupon.findevent.de/#!/'
 
 # SOCIAL_GOOGLE = {}

@@ -66,11 +66,11 @@ SOCIAL_URL_PREFIX = "/social"
 SOCIAL_CONNECT_ALLOW_VIEW = "/account/"
 SOCIAL_CONNECT_DENY_VIEW = "/account/"
 
-pictures_path = '/'.join(map(lambda x: str(getattr(datetime.utcnow(), x)),
-                                 ['year', 'month', 'day']))
-UPLOADS_IMAGES_DIR = '{}/'.format(pictures_path)
-UPLOADS_DEFAULT_DEST = os.path.abspath("static/uploads")
-UPLOADS_DEFAULT_URL = "/static/uploads"
+# pictures_path = '/'.join(map(lambda x: str(getattr(datetime.utcnow(), x)),
+#                                  ['year', 'month', 'day']))
+# UPLOADS_IMAGES_DIR = '{}/'.format(pictures_path)
+# UPLOADS_DEFAULT_DEST = os.path.abspath("static/uploads")
+# UPLOADS_DEFAULT_URL = "/static/uploads"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
