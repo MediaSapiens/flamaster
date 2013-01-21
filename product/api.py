@@ -165,8 +165,11 @@ class OrderResource(ModelResource):
     validation = t.Dict({
         'customer_id': t.Int,
         'next_state': t.Int,
-        'payment_method': t.String
-    }).make_optional('next_state', 'payment_method').ignore_extra('*')
+        'payment_method': t.String,
+        'payment_details': t.String
+    }).make_optional('next_state',
+                     'payment_method',
+                     'payment_details').ignore_extra('*')
 
     method_decorators = {
         'delete': [login_required]

@@ -17,7 +17,7 @@ class OrderDatastore(object):
     def find_orders(self, **kwargs):
         return self.order_model.query.filter_by(**kwargs)
 
-    def create_from_api(self, customer_id, payment_method):
+    def create_from_api(self, customer_id, **kwargs):
         """ Create order instance from data came from the API
         """
         customer = self.customer_model.query.get_or_404(customer_id)
@@ -29,14 +29,13 @@ class OrderDatastore(object):
         #                                         delivery_address)
         goods_price = sum(map(attrgetter('price'), goods)),
         # TODO: total_price = goods_price + delivery_price
-        kwargs = {
-            'payment_method': payment_method,
+        kwargs.update({
             'delivery_method': 'eticket',
             'customer': customer,
             'goods_price': goods_price,
             'total_price': goods_price,
             'state': OrderStates.created
-        }
+        })
 
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))
