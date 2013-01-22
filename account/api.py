@@ -12,7 +12,7 @@ from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
                                 roles_required)
-from flask.ext.security.utils import verify_password
+from flask.ext.security.utils import verify_password, encrypt_password
 from flask.ext.security.confirmable import (confirm_email_token_status,
                                             confirm_user)
 from flask.ext.security.registerable import register_user
@@ -138,7 +138,7 @@ class ProfileResource(ModelResource):
         elif value['password'] != value['confirmation']:
             return {'confirmation': t.DataError(_("Passwords doesn't match"))}
 
-        return {'password': value['password']}
+        return {'password': encrypt_password(value['password'])}
 
     def _change_role(self, id):
         """ helper method for changing user role if specified and current_user
