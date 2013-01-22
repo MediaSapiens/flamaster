@@ -157,7 +157,7 @@ class ModelResource(Resource):
 
     def delete(self, id):
         self.get_object(id).delete()
-        return jsonify_status_code({}, http.NO_CONTENT)
+        return jsonify_status_code({}, http.OK)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
