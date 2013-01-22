@@ -1,6 +1,11 @@
+from flask import current_app
+from flask.signals import Namespace
 from operator import attrgetter
 
 from . import db, OrderStates
+
+signals = Namespace()
+order_created = signals.signal('order-created')
 
 
 class OrderDatastore(object):
@@ -45,6 +50,7 @@ class OrderDatastore(object):
         goods.update({'is_ordered': True, 'order_id': order.id})
         # Commit manipulation on goods
         db.session.commit()
+        order_created.send(current_app._get_current_object(), order=order)
         return order
 
     def __prepare_address(self, addr_type, address_instance):

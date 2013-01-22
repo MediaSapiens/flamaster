@@ -5,7 +5,7 @@ import uuid
 from bson import ObjectId
 from datetime import datetime
 
-from flask import current_app, abort
+from flask import current_app, abort, render_template
 from flask.ext.mail import Message
 from flask.helpers import json
 
@@ -134,13 +134,31 @@ def underscorize(name):
     return all_cap_re.sub(r'\1_\2', s1).lower()
 
 
-def send_email(to, subject, body):
-    """ Helper that wraps email sending atoms in
-        Flask-Mail calls
+def send_email(subject, recipient, template, callback=None, **context):
+    """Send an email via the Flask-Mail extension.
+
+    :param subject: Email subject
+    :param recipient: Email recipient
+    :param template: The name of the email template
+    :param context: The context to render the template with
     """
-    recipients = isinstance(to, basestring) and [to] or to
-    msg = Message(subject=subject, body=body, recipients=recipients)
-    current_app.mail.send(msg)
+
+    # context.setdefault('security', _security)
+    # context.update(_security._run_ctx_processor('mail'))
+    recipients = isinstance(recipient, basestring) and [recipient] or recipient
+    msg = Message(subject, recipients=recipients)
+
+    ctx = ('email', template)
+    msg.body = render_template('%s/%s.txt' % ctx, **context)
+    msg.html = render_template('%s/%s.html' % ctx, **context)
+    if hasattr(callback, '__call__'):
+        msg = callback(msg)
+    # if _security._send_mail_task:
+    #     _security._send_mail_task(msg)
+    #     return
+
+    mail = current_app.extensions['mail']
+    mail.send(msg)
 
 
 class Permissions(object):
