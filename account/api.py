@@ -152,11 +152,10 @@ class ProfileResource(ModelResource):
                     return value
                 elif current_user.has_role(current_app.config['ADMIN_ROLE']):
                     user.roles.append(role)
-                    user.save()
                     return value
                 else:
                     abort(403, _('Role change not allowed'))
-
+            return value
         return wrapper
 
     def get_object(self, id):
