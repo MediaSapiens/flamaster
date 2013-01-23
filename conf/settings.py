@@ -40,11 +40,15 @@ MONGODB_AUTOREF = True
 MONGODB_AUTOINCREMENT = False
 MONGODB_FALLBACK_LANG = BABEL_DEFAULT_LOCALE
 # ----------------
+
+MIGRATIONS_REPOSITORY = 'migrations'
+
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender
 DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
 
 MAIL_FAIL_SILENTLY = True
+SHOP_ID = '1'
 # TODO: for flask-mail:
 DEFAULT_MAIL_SENDER = "<no-reply@findevent.de>"
 # Flask-Security settings for default email sender
