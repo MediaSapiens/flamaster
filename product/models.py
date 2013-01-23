@@ -5,7 +5,6 @@ from operator import attrgetter
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.decorators import multilingual
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
-from flamaster.conf import settings
 
 from werkzeug.utils import import_string
 
@@ -100,7 +99,7 @@ class Favorite(db.Model, CRUDMixin):
 class Order(db.Model, CRUDMixin):
     """ Model to keep ordered goods
     """
-    shop_id = db.Column(db.String(128), default=settings.SHOP_ID)
+    shop_id = db.Column(db.String(128), default=current_app.conf['SHOP_ID'])
     billing_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                     use_alter=True, name='fk_billing_country'))
     billing_city = db.Column(db.Unicode(255), nullable=False)
