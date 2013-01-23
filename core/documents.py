@@ -75,9 +75,17 @@ class Document(DocumentMixin):
         """ Helper method for DBRef construction """
         return DBRef(self.__collection__, self.id)
 
-    @property
-    def id(self):
-        return self['_id']
+    def id():
+        """The id property."""
+
+        def fget(self):
+            return self['_id']
+
+        def fset(self, value):
+            current_app.logger.debug('Setting attr: %s', value)
+
+        return locals()
+    id = property(**id())
 
 
 class EmbeddedDocument(DocumentMixin):
