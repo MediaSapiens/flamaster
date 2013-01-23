@@ -9,7 +9,8 @@ USE_X_SENDFILE = True
 CSRF_ENABLED = True
 # SESSION_COOKIE_SECURE = True
 
-ADMINS = ('admin@example.com', )
+ADMINS = ('admin@example.com', 'sfelde@mediasapiens.co',
+          'yehor@mediasapiens.co')
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
