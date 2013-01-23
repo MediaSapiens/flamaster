@@ -274,7 +274,6 @@ def get_thumbnail(img_name, fp, geometry_string, options_string):
     """
     options = configure_options(options_string)
     thumbnail_name = get_thumbnail_name(img_name, geometry_string, options)
-    print thumbnail_name
     thumbnail = os.path.isfile(thumbnail_name) and thumbnail_name
     if not thumbnail:
         image = Image.open(fp)
