@@ -83,7 +83,6 @@ class Document(DocumentMixin):
 
         def fset(self, value):
             self['_id'] = value
-            current_app.logger.debug('Setting attr: %s', value)
 
         return locals()
     id = property(**id())
