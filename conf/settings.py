@@ -45,7 +45,7 @@ DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
 
 MAIL_FAIL_SILENTLY = True
 # TODO: for flask-mail:
-DEFAULT_MAIL_SENDER = "<fevent@mediasapiens.co>"
+DEFAULT_MAIL_SENDER = "<no-reply@findevent.de>"
 # Flask-Security settings for default email sender
 SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
 # either user should confirm email after registration or no
