@@ -9,7 +9,8 @@ USE_X_SENDFILE = True
 CSRF_ENABLED = True
 # SESSION_COOKIE_SECURE = True
 
-ADMINS = ('admin@example.com', )
+ADMINS = ('admin@example.com', 'sfelde@mediasapiens.co',
+          'yehor@mediasapiens.co')
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
@@ -49,7 +50,7 @@ DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
 MAIL_FAIL_SILENTLY = True
 SHOP_ID = '1'
 # TODO: for flask-mail:
-DEFAULT_MAIL_SENDER = "<fevent@mediasapiens.co>"
+DEFAULT_MAIL_SENDER = "<no-reply@findevent.de>"
 # Flask-Security settings for default email sender
 SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
 # either user should confirm email after registration or no
