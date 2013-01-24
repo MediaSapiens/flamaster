@@ -99,7 +99,7 @@ class Favorite(db.Model, CRUDMixin):
 class Order(db.Model, CRUDMixin):
     """ Model to keep ordered goods
     """
-    shop_id = db.Column(db.String(128), default=current_app.conf['SHOP_ID'])
+    shop_id = db.Column(db.String(128), default=current_app.config['SHOP_ID'])
     billing_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                     use_alter=True, name='fk_billing_country'))
     billing_city = db.Column(db.Unicode(255), nullable=False)
