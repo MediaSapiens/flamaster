@@ -276,6 +276,18 @@ class BankAccountResource(ModelResource):
             return instance
         return abort(http.UNAUTHORIZED)
 
+    def get_objects(self, **kwargs):
+        """ Method for extraction object list query
+        """
+        self.model is None and abort(http.BAD_REQUEST)
+        if 'user_id' in request.args:
+            kwargs['user_id'] = request.args['user_id']
+
+        if not current_user.is_superuser():
+            kwargs['user_id'] = current_user
+
+        return self.model.query.filter_by(**kwargs)
+
 
 @api_resource(bp, 'customers', {'id': int})
 class CustomerResource(ModelResource):
