@@ -284,7 +284,7 @@ class BankAccountResource(ModelResource):
             kwargs['user_id'] = request.args['user_id']
 
         if not current_user.is_superuser():
-            kwargs['user_id'] = current_user
+            kwargs['user_id'] = current_user.id
 
         return self.model.query.filter_by(**kwargs)
 
