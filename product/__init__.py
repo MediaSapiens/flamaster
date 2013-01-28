@@ -18,8 +18,8 @@ class OrderStates(object):
     merchant_canceled = 7
 
 
-from .models import *
-from .documents import *
+# from .models import *
+# from .documents import *
 from .exceptions import ShelfNotAvailable
 
 import api, signals, views

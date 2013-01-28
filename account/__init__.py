@@ -7,4 +7,4 @@ _security = LocalProxy(lambda: current_app.extensions['security'])
 _social = LocalProxy(lambda: current_app.extensions['social'])
 db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
 
-import models, signals, api
+import signals, api
