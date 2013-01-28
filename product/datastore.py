@@ -16,10 +16,10 @@ class OrderDatastore(object):
         self.cart_model = cart_model
         self.customer_model = customer_model
 
-    def find_order(self, **kwargs):
-        return self.order_model.query.filter_by(**kwargs).first()
+    def find_one(self, **kwargs):
+        return self.find_many(**kwargs).first()
 
-    def find_orders(self, **kwargs):
+    def find_many(self, **kwargs):
         return self.order_model.query.filter_by(**kwargs)
 
     def create_from_api(self, customer_id, **kwargs):
@@ -50,6 +50,7 @@ class OrderDatastore(object):
         goods.update({'is_ordered': True, 'order_id': order.id})
         # Commit manipulation on goods
         db.session.commit()
+        # Send signal on order creation
         order_created.send(current_app._get_current_object(), order=order)
         return order
 

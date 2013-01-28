@@ -5,9 +5,8 @@ import trafaret as t
 from blinker import Namespace
 from bson import DBRef
 from datetime import datetime
-from flask import current_app
 
-from flamaster.core.documents import Document, MongoId
+from flamaster.core.documents import Document
 
 from . import db, mongo
 from .exceptions import ShelfNotAvailable
@@ -32,11 +31,10 @@ class BasePriceOption(Document):
     structure = t.Dict({
         'name': t.String,
         'price': t.Float,
-        'product_variant_id': MongoId,
         'quantity': t.Int,
     })
 
-    required_fields = ['price', 'product_variant_id']
+    required_fields = ['price']
 
     @classmethod
     def create(cls, **kwargs):
@@ -130,10 +128,10 @@ class BaseProduct(Document):
         # which should be completely encapsulated from the module product.
         raise NotImplemented('Method is not implemented')
 
-    # def add_to_shelf(self, prices):
-    #     for price in prices:
-    #         Shelf.create(price_category_id=str(price.id),
-    #                      quantity=price.quantity)
+    def add_to_shelf(self, prices):
+        for price in prices:
+            Shelf.create(price_category_id=str(price.id),
+                         quantity=price.quantity)
 
     def __get_from_shelf(self, price_option_id):
         price_id = str(price_option_id)
