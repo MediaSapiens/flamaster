@@ -28,7 +28,8 @@ class CategoryResource(ModelResource):
         'description': t.String,
         'category_type': t.String,
         'parent_id': t.Int | t.Null,
-    }).append(resolve_parent).make_optional('parent_id', "order").ignore_extra('*')
+        'order': t.Int,
+    }).append(resolve_parent).make_optional('parent_id', 'order').ignore_extra('*')
 
     model = Category
 
