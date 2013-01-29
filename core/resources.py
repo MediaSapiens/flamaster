@@ -108,10 +108,11 @@ class Resource(MethodView):
                       'pages': amount pages},
              'objects': objects list}
         """
-        items, total, pages = self.paginate(page, **kwargs)
+        items, total, pages, quantity = self.paginate(page, **kwargs)
         response = {'meta': {
                         'total': total,
-                        'pages': pages},
+                        'pages': pages,
+                        'quantity': quantity},
                     'objects': [self.serialize(item) for item in items]}
         return response
 
@@ -174,7 +175,7 @@ class ModelResource(Resource):
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)
         items = paging['objects'].limit(page_size).offset(paging['offset'])
-        return items, paging['count'], paging['last_page']
+        return items, paging['count'], paging['last_page'], page_size
 
     @classmethod
     def serialize(cls, instance, include=None):
@@ -206,4 +207,4 @@ class MongoResource(ModelResource):
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)
         items = paging['objects'].limit(page_size).skip(paging['offset'])
-        return items, paging['count'], paging['last_page']
+        return items, paging['count'], paging['last_page'], page_size

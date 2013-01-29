@@ -1,6 +1,5 @@
 # -*- encoding: utf-8 -*-
 from flask import current_app
-from operator import attrgetter
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.decorators import multilingual
@@ -164,6 +163,8 @@ class Shelf(db.Model, CRUDMixin):
     def get_by_price_option(cls, price_option_id):
         """ Filter shelf items by price options
         """
+        if not isinstance(price_option_id, basestring):
+            price_option_id = str(price_option_id)
         return cls.query.filter_by(price_option_id=price_option_id)
 
 

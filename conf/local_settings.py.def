@@ -10,9 +10,6 @@ SQLALCHEMY_ECHO = False
 SQLALCHEMY_DATABASE_URI = "postgresql://user:passwd@host:port/sample_db_name"
 MONGODB_DATABASE = "sample_db_name"
 
-WIKI_URL = "http://en.wikipedia.org/w/api.php"
-FLICKR_API_KEY = ""
-
 ADMINS = ('test@example.com', )
 
 SOCIAL_TWITTER = {
@@ -26,9 +23,5 @@ SOCIAL_FACEBOOK = {
 
 THUMBNAIL_UPSCALE = False
 THUMBNAIL_FORMAT = 'PNG'
-
-WHITE_LABEL_TARGET = 'http://groupon.findevent.de/#!/'
-
-# SOCIAL_GOOGLE = {}
 
 SHOP_ID = '1'

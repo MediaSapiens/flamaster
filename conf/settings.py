@@ -1,7 +1,5 @@
-from datetime import datetime
 import importlib
 import sys
-import os
 
 DEBUG = True
 SECRET_KEY = "<your secret key>"
@@ -46,39 +44,11 @@ MIGRATIONS_REPOSITORY = 'migrations'
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender
 DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
-
-MAIL_FAIL_SILENTLY = True
-SHOP_ID = '1'
 # TODO: for flask-mail:
 DEFAULT_MAIL_SENDER = "<no-reply@findevent.de>"
-# Flask-Security settings for default email sender
-SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
-# either user should confirm email after registration or no
-SECURITY_CONFIRMABLE = True
-SECURITY_RECOVERABLE = True
-SECURITY_TRACKABLE = True
 
-SECURITY_CONFIRM_URL = "/account/activate"
-SECURITY_LOGOUT_URL = "/account/signout"
-SECURITY_POST_LOGIN_VIEW = "/account/"
-SECURITY_POST_CONFIRM_VIEW = "/account/"
+MAIL_FAIL_SILENTLY = True
 
-SECURITY_PASSWORD_HASH = 'sha512_crypt'
-SECURITY_PASSWORD_SALT = ')(*ENB%WOI3j3kf'
-
-SOCIAL_URL_PREFIX = "/social"
-
-SOCIAL_CONNECT_ALLOW_VIEW = "/account/"
-SOCIAL_CONNECT_DENY_VIEW = "/account/"
-
-# pictures_path = '/'.join(map(lambda x: str(getattr(datetime.utcnow(), x)),
-#                                  ['year', 'month', 'day']))
-# UPLOADS_IMAGES_DIR = '{}/'.format(pictures_path)
-# UPLOADS_DEFAULT_DEST = os.path.abspath("static/uploads")
-# UPLOADS_DEFAULT_URL = "/static/uploads"
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 PAYMENT_METHODS = {
     'skrill': {
         'module': 'flamaster.payment.methods.SkrillPaymentMethod'
@@ -114,6 +84,33 @@ PAYMENT_METHODS = {
         'module': 'flamaster.payment.methods.BankPaymentMethod'
     }
 }
+
+SHOP_ID = '1'
+# Flask-Security settings for default email sender
+SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
+# either user should confirm email after registration or no
+SECURITY_CONFIRMABLE = True
+SECURITY_RECOVERABLE = True
+SECURITY_TRACKABLE = True
+
+SECURITY_CONFIRM_URL = "/account/activate"
+SECURITY_LOGOUT_URL = "/account/signout"
+SECURITY_POST_LOGIN_VIEW = "/account/"
+SECURITY_POST_CONFIRM_VIEW = "/account/"
+
+SECURITY_PASSWORD_HASH = 'sha512_crypt'
+SECURITY_PASSWORD_SALT = ')(*ENB%WOI3j3kf'
+
+SOCIAL_URL_PREFIX = "/social"
+
+SOCIAL_CONNECT_ALLOW_VIEW = "/account/"
+SOCIAL_CONNECT_DENY_VIEW = "/account/"
+
+THUMBNAIL_UPSCALE = False
+THUMBNAIL_FORMAT = 'PNG'
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 DELIVERY_OPTIONS = {
     'standard': {
