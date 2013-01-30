@@ -43,7 +43,7 @@ class CategoryResource(ModelResource):
                 kwargs['parent_id'] = int(request.args['parent_id'])
             except ValueError as ex:
                 current_app.logger.error("Exception: {0.message}".format(ex))
-        query = super(CategoryResource, self).get_objects(**kwargs)
+        query = super(CategoryResource, self).get_objects(**kwargs).order_by(self.model.order)
         return query
 
 
