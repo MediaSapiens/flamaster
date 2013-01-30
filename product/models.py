@@ -58,6 +58,14 @@ class Cart(db.Model, CRUDMixin):
         return cls.query.filter_by(customer_id=customer.id,
                                    is_ordered=is_ordered)
 
+    @classmethod
+    def expired(cls, timedelta):
+        """ Return all cart items unoredered within expected time period
+            :param timedelta: datetime.datetime type for expirity marker
+        """
+        return cls.query.filter(cls.created_at < timedelta,
+                                cls.is_ordered == False)
+
 
 @multilingual
 class Category(db.Model, TreeNode):
