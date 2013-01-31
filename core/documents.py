@@ -108,26 +108,3 @@ class EmbeddedDocument(DocumentMixin):
     @classmethod
     def create(cls, initial=None, **kwargs):
         return cls(initial, **kwargs)
-
-
-class MongoId(t.Trafaret):
-    """ Trafaret type check & convert bson.ObjectId values
-    """
-    def __init__(self, allow_blank=False):
-        self.allow_blank = allow_blank
-
-    def __repr__(self):
-        return "<MongoId(blank)>" if self.allow_blank else "<MongoId>"
-
-    def check_and_return(self, value):
-
-        if isinstance(value, ObjectId):
-            return value
-
-        if len(value) is 0 and self.allow_blank:
-            return value
-
-        try:
-            return ObjectId(value)
-        except InvalidId as e:
-            self._failure(e.message)

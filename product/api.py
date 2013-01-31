@@ -8,7 +8,6 @@ from flamaster.account.models import Customer
 
 from flamaster.core import http
 from flamaster.core.decorators import api_resource, method_wrapper
-from flamaster.core.documents import MongoId
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -18,7 +17,8 @@ from .models import Cart, Category, Country, Order
 from .datastore import OrderDatastore
 
 
-__all__ = ['CategoryResource']
+__all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
+           'OrderResource']
 
 
 @api_resource(bp, 'categories', {'id': int})
@@ -29,7 +29,8 @@ class CategoryResource(ModelResource):
         'category_type': t.String,
         'parent_id': t.Int | t.Null,
         'order': t.Int,
-    }).append(resolve_parent).make_optional('parent_id', 'order').ignore_extra('*')
+    }).append(resolve_parent).make_optional('parent_id', 'order') \
+        .ignore_extra('*')
 
     model = Category
 
@@ -73,9 +74,9 @@ class CartResource(ModelResource):
     model = Cart
 
     validation = t.Dict({
-        'product_id': MongoId,
-        'concrete_product_id': MongoId,
-        'price_option_id': MongoId,
+        'product_id': t.MongoId,
+        'concrete_product_id': t.MongoId,
+        'price_option_id': t.MongoId,
         'amount': t.Int,
         'customer_id': t.Int,
         'service': t.String
