@@ -265,10 +265,18 @@ class BankAccountResource(ModelResource):
     }).ignore_extra('*')
     decorators = [login_required]
 
-    @method_wrapper(http.CREATED)
-    def post(self, data):
-        data['user_id'] = current_user.id
-        return self.serialize(self.model.create(**data))
+    def post(self):
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.validation.check(data)
+            data['user_id'] = current_user.id
+            response = self.serialize(self.model.create(**data))
+        except t.DataError as err:
+            response, status = err.as_dict(), http.BAD_REQUEST
+
+        return jsonify_status_code(response, status)
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
