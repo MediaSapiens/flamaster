@@ -2,11 +2,10 @@
 import trafaret as t
 import requests
 
-from flask import request, session, current_app
+from flask import current_app, json
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
-from flamaster.account.models import Customer
 
 from requests.auth import HTTPBasicAuth
 
@@ -36,10 +35,10 @@ class GrouponPaymentMethod(BasePaymentMethod):
     def __do_request(self, endpoint, **kwargs):
         login, passwd = self.settings['name'], self.settings['password']
         data = self.data_template.format(**kwargs).encode('utf-8')
-        # if self.sandbox:
-        #     return current_app.make_response('')
-        # else:
-        return requests.post(endpoint, data=data,
+        if self.sandbox:
+            return current_app.make_response('')
+        else:
+            return requests.post(endpoint, data=data,
                                  auth=HTTPBasicAuth(login, passwd),
                                  headers=self.headers)
 
@@ -50,14 +49,13 @@ class GrouponPaymentMethod(BasePaymentMethod):
 
     def __redeem(self, **kwargs):
         endpoint_tpl = self.settings['endpoint']
-        endpoint = endpoint_tpl.format(path=self.validate_path)
+        endpoint = endpoint_tpl.format(path=self.redeem_path)
         return self.__do_request(endpoint, **kwargs)
 
     def process_payment(self):
         status = http.OK
         try:
-            data = self.validation.check(request.json)
-            customer = Customer.query.get_or_404(session['customer_id'])
+            data = json.loads(self.order.payment_details)
             redemption = self.__redeem(voucher=data['voucher'],
                                        security=data['code'],
                                        deal=data['deal'])
@@ -86,6 +84,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
             validation = self.__validate(voucher=data['voucher'],
                                          security=data['code'],
                                          deal=data['deal'])
+
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
 
