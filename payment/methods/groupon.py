@@ -36,10 +36,10 @@ class GrouponPaymentMethod(BasePaymentMethod):
     def __do_request(self, endpoint, **kwargs):
         login, passwd = self.settings['name'], self.settings['password']
         data = self.data_template.format(**kwargs).encode('utf-8')
-        if self.sandbox:
-            return current_app.make_response('')
-        else:
-            return requests.post(endpoint, data=data,
+        # if self.sandbox:
+        #     return current_app.make_response('')
+        # else:
+        return requests.post(endpoint, data=data,
                                  auth=HTTPBasicAuth(login, passwd),
                                  headers=self.headers)
 
