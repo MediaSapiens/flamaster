@@ -2,8 +2,7 @@
 import trafaret as t
 
 from flamaster.core import http
-from flamaster.core.decorators import (login_required, api_resource,
-                                       method_wrapper)
+from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
