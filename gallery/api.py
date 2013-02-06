@@ -66,9 +66,11 @@ class ImageResource(ModelResource):
 
         return self.model.create(**data).as_dict()
 
-    def get(self, id):
+    def get(self, id=None):
+        if id is None:
+            abort(http.NOT_FOUND)
         # validation = self.validation.append(get_access_type)
-        file_object = self.model.get(id) or abort(404)
+        file_object = self.model.get(id) or abort(http.NOT_FOUND)
         return send_file(file_object)
 
     def get_objects(self, **kwargs):
