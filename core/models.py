@@ -71,8 +71,17 @@ class CRUDMixin(BaseMixin):
         exportable_fields = api_fields or getattr(self, 'api_fields', column_properties)
         # convert undescored fields:
         fields = [field.strip('_') for field in exportable_fields]
-        return dict([(field, getattr(self, field)) for field in fields
-                     if field not in exclude])
+        results = []
+        for field in fields:
+            if field in exclude:
+                continue
+            else:
+                value = getattr(self, field)
+                if hasattr(value, '__call__'):
+                    value = value()
+                results.append([field, value])
+
+        return dict(results)
 
     def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
@@ -139,8 +148,8 @@ class TreeNode(CRUDMixin):
     def parent_id(cls):
         table_name = plural_name(underscorize(cls.__name__))
         return db.Column(db.Integer,
-                         db.ForeignKey("{}.id".format(table_name), 
-                                       ondelete="CASCADE", 
+                         db.ForeignKey("{}.id".format(table_name),
+                                       ondelete="CASCADE",
                                        onupdate="CASCADE")
                          )
 

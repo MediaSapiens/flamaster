@@ -185,6 +185,10 @@ class ProfileResource(ModelResource):
 
     def serialize(self, instance, include=None):
         exclude = ['password']
+        include = ["first_name", "last_name", "created_at", "phone",
+                   "current_login_at", "active", "billing_address",
+                   "logged_at", 'is_superuser']
+        # include = ['is_superuser']
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
 
