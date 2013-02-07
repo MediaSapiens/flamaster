@@ -116,12 +116,23 @@ class Resource(MethodView):
                     'objects': [self.serialize(item) for item in items]}
         return response
 
+    def clean(self, data):
+        """
+        Clean and normalize passed data
+        :param data:
+        :return: cleaned and normalized data
+        """
+        raise NotImplemented('Method is not implemented')
+
 
 class ModelResource(Resource):
     """ Resource for typical views, based on sqlalchemy models
     """
     model = None
     validation = t.Dict().allow_extra('*')
+
+    def clean(self, data):
+        return self.validation.check(data)
 
     def get(self, id=None):
         if id is None:
@@ -136,7 +147,7 @@ class ModelResource(Resource):
         data = request.json or abort(http.BAD_REQUEST)
 
         try:
-            data = self.validation.check(data)
+            data = self.clean(data)
             response = self.serialize(self.model.create(**data))
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
@@ -148,7 +159,7 @@ class ModelResource(Resource):
         data = request.json or abort(http.BAD_REQUEST)
 
         try:
-            data = self.validation.check(data)
+            data = self.clean(data)
             instance = self.get_object(id).update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
