@@ -138,6 +138,7 @@ class Order(db.Model, CRUDMixin):
                                backref=db.backref('orders', **lazy_cascade))
 
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
+    notes = db.Column(db.UnicodeText, nullable=True, default=u'')
 
     def resolve_payment(self, method=None):
         payment_method = self.payment_method or method
