@@ -2,8 +2,7 @@
 import trafaret as t
 
 from flamaster.core import http
-from flamaster.core.decorators import (login_required, api_resource,
-                                       method_wrapper)
+from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -186,6 +185,10 @@ class ProfileResource(ModelResource):
 
     def serialize(self, instance, include=None):
         exclude = ['password']
+        include = ["first_name", "last_name", "created_at", "phone",
+                   "current_login_at", "active", "billing_address",
+                   "logged_at", 'is_superuser']
+        # include = ['is_superuser']
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
 
@@ -204,8 +207,8 @@ class AddressResource(ModelResource):
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)"),
-        'zip_code': t.Or(t.String(allow_blank=True), t.Null),
-    }).make_optional('zip_code', 'apartment').ignore_extra('*')
+        'zip_code': t.String,
+    }).make_optional('apartment').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -265,10 +268,18 @@ class BankAccountResource(ModelResource):
     }).ignore_extra('*')
     decorators = [login_required]
 
-    @method_wrapper(http.CREATED)
-    def post(self, data):
-        data['user_id'] = current_user.id
-        return self.serialize(self.model.create(**data))
+    def post(self):
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.validation.check(data)
+            data['user_id'] = current_user.id
+            response = self.serialize(self.model.create(**data))
+        except t.DataError as err:
+            response, status = err.as_dict(), http.BAD_REQUEST
+
+        return jsonify_status_code(response, status)
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)

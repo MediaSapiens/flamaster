@@ -14,4 +14,5 @@ class FlatPageResource(ModelResource):
                          'content': t.String}).ignore_extra('*')
     model = FlatPage
     method_decorators = {'post': roles_required('admin'),
-                         'put': roles_required('admin')}
+                         'put': roles_required('admin'),
+                         'delete': roles_required('admin')}

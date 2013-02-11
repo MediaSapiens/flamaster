@@ -1,5 +1,6 @@
 from flask import current_app
 from flask.signals import Namespace
+
 from operator import attrgetter
 
 from . import db, OrderStates
@@ -32,7 +33,8 @@ class OrderDatastore(object):
         goods = self.cart_model.for_customer(customer)
         # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
         #                                         delivery_address)
-        goods_price = sum(map(attrgetter('price'), goods)),
+        goods_price = sum(map(attrgetter('price'), goods))
+
         # TODO: total_price = goods_price + delivery_price
         kwargs.update({
             'delivery_method': 'eticket',
@@ -50,6 +52,9 @@ class OrderDatastore(object):
         goods.update({'is_ordered': True, 'order_id': order.id})
         # Commit manipulation on goods
         db.session.commit()
+
+        method = order.resolve_payment()
+        method.process_payment()
         # Send signal on order creation
         order_created.send(current_app._get_current_object(), order=order)
         return order
