@@ -5,7 +5,7 @@ from migrate import *
 def upgrade(migrate_engine):
     meta = MetaData(bind=migrate_engine)
     orders = Table('orders', meta, autoload=True)
-    notes = Column('notes', UnicodeText(), nullable=True, default=u'')
+    notes = Column('notes', UnicodeText(), default=u'')
     notes.create(orders)
 
 
