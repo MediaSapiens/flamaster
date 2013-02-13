@@ -16,15 +16,14 @@ __all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
 class Cart(db.Model, CRUDMixin):
     """ Cart record for concrete product
     """
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
     product_id = db.Column(db.String, nullable=False)
     product_variant_id = db.Column(db.String, nullable=False)
     price_option_id = db.Column(db.String, nullable=False)
-    service = db.Column(db.String, nullable=True)
+    service = db.Column(db.String)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
-
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
                             nullable=False)
     customer = db.relationship('Customer',
@@ -138,6 +137,7 @@ class Order(db.Model, CRUDMixin):
                                backref=db.backref('orders', **lazy_cascade))
 
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
+    notes = db.Column(db.UnicodeText, default=u'')
 
     def resolve_payment(self, method=None):
         payment_method = self.payment_method or method
