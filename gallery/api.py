@@ -44,7 +44,7 @@ class ImageResource(ModelResource):
                 data = self.validation.check(request.json)
                 response = self.__process_json(data)
             elif request.files:
-                response = self.__process_form(request.form.to_dict())
+                response = self.__process_form()
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
@@ -58,13 +58,18 @@ class ImageResource(ModelResource):
                                        author=current_user,)
         return imageModel.as_dict()
 
-    def __process_form(self, data):
+    def __process_form(self):
         # TODO: have to complete
-        data['image'] = request.files.get('image')
+        fileObj = request.files.get('image')
+        data = {
+            'name': fileObj.filename,
+            'image': fileObj.stream.getvalue()
+        }
         data = self.validation.check(data)
-        data['author_id'] = current_user.id
+        imageModel = self.model.create(data['image'], fileObj.mimetype, name=data['name'],
+                                       author=current_user,)
 
-        return self.model.create(**data).as_dict()
+        return imageModel.as_dict()
 
     def get(self, id=None):
         if id is None:
