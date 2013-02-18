@@ -77,6 +77,8 @@ class Category(db.Model, TreeNode):
     description = db.Column(db.UnicodeText)
     category_type = db.Column(db.String, nullable=False, default='catalog')
     order = db.Column(db.Integer, default=0)
+    is_deleted = db.Column(db.Boolean, default=False)
+    is_visible = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,
