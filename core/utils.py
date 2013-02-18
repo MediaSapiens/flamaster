@@ -149,8 +149,8 @@ def send_email(subject, recipient, template, callback=None, **context):
     msg = Message(subject, recipients=recipients)
 
     ctx = ('email', template)
-    msg.body = render_template('%s/%s.txt' % ctx, **context)
-    msg.html = render_template('%s/%s.html' % ctx, **context)
+    msg.body = render_template('{0}/{1}.txt'.format(*ctx), **context)
+    msg.html = render_template('{0}/{1}.html'.format(*ctx), **context)
     if hasattr(callback, '__call__'):
         msg = callback(msg)
     # if _security._send_mail_task:
