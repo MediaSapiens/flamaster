@@ -40,7 +40,7 @@ class CategoryResource(ModelResource):
     }).make_optional('parent_id').ignore_extra('*')
 
     def gen_list_response(self, **kwargs):
-        return super(CountriesResource, self) \
+        return super(CategoryResource, self) \
             .gen_list_response(page_size=10000, **kwargs)
 
 
