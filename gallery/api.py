@@ -66,8 +66,8 @@ class ImageResource(ModelResource):
             'image': fileObj.stream.getvalue()
         }
         data = self.validation.check(data)
-        imageModel = self.model.create(data['image'], fileObj.mimetype, name=data['name'],
-                                       author=current_user,)
+        imageModel = self.model.create(data['image'], fileObj.mimetype,
+                                       name=data['name'], author=current_user)
 
         return imageModel.as_dict()
 

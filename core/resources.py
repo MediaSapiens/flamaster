@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import trafaret as t
 
-from flask import abort, request
+from flask import abort, request, current_app
 from flask.views import MethodView
 
 
@@ -12,6 +12,7 @@ from .utils import jsonify_status_code
 class Resource(MethodView):
 
     method_decorators = None
+    filters_map = t.Dict().make_optional('*').ignore_extra('*')
 
     def dispatch_request(self, *args, **kwargs):
         """ Overriding MethodView dispatch call to decorate every
@@ -101,13 +102,22 @@ class Resource(MethodView):
         #     items = objects.limit(page_size).offset(offset)
         # return items, count, pages
 
-    def gen_list_response(self, page, **kwargs):
+    def gen_list_response(self, **kwargs):
         """if response contains objects list, this method generates
         structure of response, with pagination, like:
             {'meta': {'total': total objects,
                       'pages': amount pages},
              'objects': objects list}
         """
+        # Processing fiters passed through the request.args
+        try:
+            filter_args = self.clean_args(request.args)
+            kwargs.update(filter_args)
+        except t.DataError as err:
+            current_app.logger.error("Error in filters: %s", err.as_dict())
+
+        page = kwargs.pop('page', 1)
+
         items, total, pages, quantity = self.paginate(page, **kwargs)
         response = {'meta': {
                         'total': total,
@@ -124,6 +134,14 @@ class Resource(MethodView):
         """
         raise NotImplemented('Method is not implemented')
 
+    def clean_args(self, request_args):
+        # pagination support
+        page = t.Key('page', default=1)
+        page.set_trafaret(t.Int(gt=0))
+        # filter set processing
+        self.filters_map.keys.append(page)
+        return self.filters_map.check(request_args.copy())
+
 
 class ModelResource(Resource):
     """ Resource for typical views, based on sqlalchemy models
@@ -136,8 +154,7 @@ class ModelResource(Resource):
 
     def get(self, id=None):
         if id is None:
-            page = int(request.args.get('page', 1))
-            response = self.gen_list_response(page=page)
+            response = self.gen_list_response()
         else:
             response = self.serialize(self.get_object(id))
         return jsonify_status_code(response)
