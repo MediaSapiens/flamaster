@@ -2,15 +2,13 @@
 from datetime import datetime
 
 from flask import current_app
-from flask.ext.security import (UserMixin, RoleMixin, Security,
-                                SQLAlchemyUserDatastore)
-from flask.ext.social import Social, SQLAlchemyConnectionDatastore
+from flask.ext.security import UserMixin, RoleMixin
 
 from flamaster.core.models import CRUDMixin
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from . import db
+from . import db, _security
 
 
 class Address(db.Model, CRUDMixin):
@@ -230,11 +228,8 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     def is_superuser(self):
         """ Flag signalized that user is superuse """
-        return self.has_role(current_app.config['ADMIN_ROLE'])
-
-    def has_role(self, role_name):
-        role = Role.query.filter_by(name=role_name).first()
-        return super(User, self).has_role(role)
+        superuser = _security.datastore.find_role(current_app.config['ADMIN_ROLE'])
+        return self.has_role(superuser)
 
     @property
     def full_name(self):
@@ -268,8 +263,3 @@ class SocialConnection(db.Model, CRUDMixin):
     profile_url = db.Column(db.String(512))
     image_url = db.Column(db.String(512))
     rank = db.Column(db.Integer)
-
-
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-Security(current_app, user_datastore)
-Social(current_app, SQLAlchemyConnectionDatastore(db, SocialConnection))

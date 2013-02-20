@@ -58,6 +58,7 @@ class SessionResource(Resource):
             cleaned_data = self.clean(request.json)
             self._authenticate(cleaned_data)
             response = self._get_response()
+
         except t.DataError as e:
             response, status = e.as_dict(), http.NOT_FOUND
 
@@ -71,6 +72,9 @@ class SessionResource(Resource):
                               identity=AnonymousIdentity())
         logout_user()
         return jsonify_status_code(self._get_response(), http.NO_CONTENT)
+
+    def clean(self, data_dict):
+        return self.validation.check(data_dict)
 
     def _authenticate(self, data_dict):
         user = _security.datastore.find_user(email=data_dict['email'])
@@ -142,10 +146,10 @@ class ProfileResource(ModelResource):
         def wrapper(value):
             user = self.get_object(id)
             if 'role_id' in value:
-                role = Role.query.get(value['role_id'])
+                role = Role.query.get_or_404(value['role_id'])
                 if user.has_role(role):
                     return value
-                elif current_user.has_role(current_app.config['ADMIN_ROLE']):
+                elif current_user.is_superuser():
                     user.roles.append(role)
                     return value
                 else:
@@ -162,7 +166,7 @@ class ProfileResource(ModelResource):
             confirm_user(instance)
             instance.save()
             login_user(instance, True)
-        elif current_user.has_role('admin'):
+        elif current_user.is_superuser():
             instance = User.query.get_or_404(id)
         else:
             instance = g.user

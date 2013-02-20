@@ -114,7 +114,7 @@ class Resource(MethodView):
             filter_args = self.clean_args(request.args)
             kwargs.update(filter_args)
         except t.DataError as err:
-            current_app.logger.error("Error in filters: %s", err.as_dict())
+            current_app.logger.info("Error in filters: %s", err.as_dict())
 
         page = kwargs.pop('page', 1)
 

@@ -8,3 +8,6 @@ _social = LocalProxy(lambda: current_app.extensions['social'])
 db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
 
 import signals, api
+
+
+
