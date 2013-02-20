@@ -29,22 +29,21 @@ __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 class SessionResource(Resource):
     validation = t.Dict({
         'email': t.Email,
-        'password': t.String
-    }).make_optional('password').allow_extra('*')
+        'password': t.Or(t.String(allow_blank=True), t.Null)
+    }).make_optional('password').ignore_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
 
     def post(self):
-        data = request.json or abort(http.BAD_REQUEST)
         try:
-            data = self.validation.check(data)
+            data = self.validation.check(request.json)
 
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
 
             register_user(email=data['email'],
-                          password=data.get('password', ''))
+                          password=data.get('password', '*'))
 
             response, status = self._get_response(), http.CREATED
 
@@ -53,14 +52,11 @@ class SessionResource(Resource):
         return jsonify_status_code(response, status)
 
     def put(self, id):
-        data, status = request.json or abort(http.BAD_REQUEST), http.ACCEPTED
-        validation = t.Dict({
-            'email': t.Email,
-            'password': t.String
-        }).append(self._authenticate).ignore_extra('*')
+        status = http.ACCEPTED
 
         try:
-            validation.check(data)
+            cleaned_data = self.clean(request.json)
+            self._authenticate(cleaned_data)
             response = self._get_response()
         except t.DataError as e:
             response, status = e.as_dict(), http.NOT_FOUND
@@ -79,7 +75,7 @@ class SessionResource(Resource):
     def _authenticate(self, data_dict):
         user = _security.datastore.find_user(email=data_dict['email'])
 
-        if verify_password(data_dict['password'], user.password):
+        if verify_password(data_dict.get('password'), user.password):
             login_user(user)
         else:
             raise t.DataError({

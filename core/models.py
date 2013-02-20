@@ -68,7 +68,7 @@ class CRUDMixin(BaseMixin):
         """
         column_properties = [p.key for p in self.__mapper__.iterate_properties
                                 if isinstance(p, orm.ColumnProperty)]
-        exportable_fields = api_fields or getattr(self, 'api_fields', column_properties)
+        exportable_fields = api_fields or getattr(self, 'api_fields',column_properties)
         # convert undescored fields:
         fields = [field.strip('_') for field in exportable_fields]
         results = []
