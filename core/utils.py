@@ -58,11 +58,11 @@ def json_dumps(data):
         raise e
 
 
-def jsonify_status_code(data=None, status=200):
+def jsonify_status_code(data=None, status=200, mimetype='application/json'):
     data = data or {}
 
     return current_app.response_class(json_dumps(data),
-        status=status, mimetype='application/json')
+        status=status, mimetype=mimetype)
 
 
 def slugify(text, separator='-', prefix=True):
