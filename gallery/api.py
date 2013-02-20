@@ -39,16 +39,18 @@ class ImageResource(ModelResource):
 
     def post(self):
         status = http.CREATED
+        mimetype = 'application/json'
         try:
             if request.json:
                 data = self.validation.check(request.json)
                 response = self.__process_json(data)
-            elif request.files:
+            elif request.files.get('image'):
                 response = self.__process_form()
+                mimetype = 'text/html'
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
-        return jsonify_status_code(response, status)
+        return jsonify_status_code(response, status, mimetype)
 
     def __process_json(self, data):
         meta, image = data['image'].split(',')
@@ -60,14 +62,9 @@ class ImageResource(ModelResource):
 
     def __process_form(self):
         # TODO: have to complete
-        fileObj = request.files.get('image')
-        data = {
-            'name': fileObj.filename,
-            'image': fileObj.stream.getvalue()
-        }
-        data = self.validation.check(data)
-        imageModel = self.model.create(data['image'], fileObj.mimetype,
-                                       name=data['name'], author=current_user)
+        fileObj = request.files['image']
+        imageModel = self.model.create(fileObj.stream, fileObj.mimetype, name=fileObj.filename,
+                                       author=current_user,)
 
         return imageModel.as_dict()
 
