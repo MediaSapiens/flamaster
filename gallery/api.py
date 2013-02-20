@@ -73,7 +73,7 @@ class ImageResource(ModelResource):
             abort(http.NOT_FOUND)
         # validation = self.validation.append(get_access_type)
         file_object = self.model.get(id) or abort(http.NOT_FOUND)
-        return send_file(file_object)
+        return send_file(file_object, mimetype=file_object.content_type)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
