@@ -136,10 +136,11 @@ class Resource(MethodView):
 
     def clean_args(self, request_args):
         # pagination support
-        page = t.Key('page', default=1)
-        page.set_trafaret(t.Int(gt=0))
-        # filter set processing
-        self.filters_map.keys.append(page)
+        if not filter(lambda k: k.name == 'page', self.filters_map.keys):
+            page = t.Key('page', default=1)
+            page.set_trafaret(t.Int(gt=0))
+            # filter set processing
+            self.filters_map.keys.append(page)
         return self.filters_map.check(request_args.copy())
 
 
