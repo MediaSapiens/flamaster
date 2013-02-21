@@ -3,7 +3,7 @@ from flask import redirect
 from flask.ext.social import login_failed as social_login_failed
 from flask.ext.security import login_user
 
-from . import _security, _social
+from flamaster.core import _security, _social
 
 
 @social_login_failed.connect

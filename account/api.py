@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import trafaret as t
+from trafaret import extras as te
 
-from flamaster.core import http
+from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
@@ -17,9 +19,8 @@ from flask.ext.security.confirmable import (confirm_email_token_status,
 from flask.ext.security.registerable import register_user
 
 from sqlalchemy import or_
-from trafaret import extras as te
 
-from . import bp, _security
+from . import bp
 from .models import User, Role, BankAccount, Address, Customer
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
@@ -37,7 +38,7 @@ class SessionResource(Resource):
 
     def post(self):
         try:
-            data = self.validation.check(request.json)
+            data = self.clean(request.json)
 
             if not User.is_unique(data['email']):
                 raise t.DataError({'email': _("This email is already taken")})
@@ -215,7 +216,7 @@ class AddressResource(ModelResource):
         data = request.json or abort(http.BAD_REQUEST)
 
         try:
-            data = self.validation.check(data)
+            data = self.clean(data)
             address_type = data.pop('type')
             address = self.model.create(**data)
             if current_user.is_anonymous():
@@ -273,7 +274,7 @@ class BankAccountResource(ModelResource):
         data = request.json or abort(http.BAD_REQUEST)
 
         try:
-            data = self.validation.check(data)
+            data = self.clean(data)
             data['user_id'] = current_user.id
             response = self.serialize(self.model.create(**data))
         except t.DataError as err:

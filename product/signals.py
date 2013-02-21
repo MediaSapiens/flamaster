@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import logging
+from blinker import Namespace
 
-from flask.ext.mail import Message
-from operator import attrgetter
-from sqlalchemy import event
 # from flamaster.account.models import User
-from . import mail, db
-from .documents import price_created, price_updated, price_deleted
-from .models import Order, Shelf
+from flamaster.core import db
+from .models import Shelf
 
 
 logger = logging.getLogger(__name__)
+signals = Namespace()
+
+price_created = signals.signal('price_created')
+price_updated = signals.signal('price_updated')
+price_deleted = signals.signal('price_deleted')
+
+order_created = signals.signal('order-created')
 # @user_registered.connect
 # def create_customer_for_newcommer(sender, app):
 #     sender['user'].customer = Customer()

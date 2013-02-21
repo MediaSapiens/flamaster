@@ -1,6 +1,7 @@
+from __future__ import absolute_import
+from flask import current_app
 from flask.helpers import json
 
-from . import app
 from .utils import CustomEncoder, check_permission
 
 
@@ -8,7 +9,7 @@ from .utils import CustomEncoder, check_permission
 """
 
 
-@app.template_filter()
+@current_app.template_filter()
 def rstrip(value, string):
     """ filter that brings standart string.rstrip method functionality into
         template context
@@ -16,9 +17,9 @@ def rstrip(value, string):
     return value.rstrip(string)
 
 
-@app.template_filter()
+@current_app.template_filter()
 def to_custom_json(value):
     return json.dumps(value, indent=2, cls=CustomEncoder)
 
 
-app.jinja_env.globals['check_permission'] = check_permission
+current_app.jinja_env.globals['check_permission'] = check_permission

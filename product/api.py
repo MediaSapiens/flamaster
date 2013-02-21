@@ -1,17 +1,18 @@
-# encoding: utf-8
+# -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import trafaret as t
-from flask import abort, current_app, request, session
+from flask import abort, request, session
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
 from flamaster.account.models import Customer
 
-from flamaster.core import http
+from flamaster.core import http, mongo
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
 
-from . import mongo, product as bp
+from . import product as bp
 from .helpers import resolve_parent
 from .models import Cart, Category, Country, Order
 from .datastore import OrderDatastore

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from flask import current_app, render_template, request
 from werkzeug.utils import import_string
 

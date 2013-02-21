@@ -1,25 +1,20 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import operator
 import trafaret as t
 
-from blinker import Namespace
 from bson import DBRef
 from datetime import datetime
 
+from flamaster.core import mongo
 from flamaster.core.documents import Document
 
-from . import db, mongo
 from .exceptions import ShelfNotAvailable
 from .models import Cart, Shelf
+from .signals import price_created, price_updated, price_deleted
 
 
-__all__ = ['price_created', 'price_updated', 'price_deleted',
-           'BasePriceOption', 'BaseProductVariant', 'BaseProduct']
-
-signals = Namespace()
-price_created = signals.signal('price_created')
-price_updated = signals.signal('price_updated')
-price_deleted = signals.signal('price_deleted')
+__all__ = ['BasePriceOption', 'BaseProductVariant', 'BaseProduct']
 
 
 class BasePriceOption(Document):

@@ -5,16 +5,17 @@ import uuid
 from bson import ObjectId
 from datetime import datetime
 
-from flask import current_app, abort, render_template
+from flask import current_app, render_template
 from flask.ext.mail import Message
 from flask.helpers import json
 
-from functools import wraps
 from importlib import import_module
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
+
+from . import mail
 
 
 class LazyResource(object):
@@ -134,8 +135,11 @@ def underscorize(name):
     return all_cap_re.sub(r'\1_\2', s1).lower()
 
 
+plural_underscored = lambda s: plural_name(underscorize(s))
+
+
 def send_email(subject, recipient, template, callback=None, **context):
-    """Send an email via the Flask-Mail extension.
+    """ Send an email via the Flask-Mail extension.
 
     :param subject: Email subject
     :param recipient: Email recipient
@@ -156,53 +160,5 @@ def send_email(subject, recipient, template, callback=None, **context):
     # if _security._send_mail_task:
     #     _security._send_mail_task(msg)
     #     return
-
-    mail = current_app.extensions['mail']
     mail.send(msg)
 
-
-class Permissions(object):
-    """Multiton. Stores permissions names.
-    Call the permission instance by name.
-    Permission is a function contains any user actions decorated in permissions
-    register decorator.
-    """
-    _instances = {}
-
-    def register(self, permission):
-        """Register permissions
-        """
-        if permission.__name__ not in self._instances:
-            self._instances[permission.__name__] = permission
-        return permission
-
-    def check_permission(self, perm_name, *perm_args, **perm_kwargs):
-        """Check permission decorator
-        """
-        allowed = self._instances[perm_name]
-
-        def wrap(f=None):
-
-            if getattr(f, '__call__', False):
-
-                @wraps(f)
-                def closure(*args, **kwargs):
-                    # extending permission method with the decorated method
-                    # argumants and  keyword arguments
-                    new_args = perm_args + args
-                    perm_kwargs.update(kwargs)
-
-                    check_result = allowed(*new_args, **perm_kwargs)
-
-                    return check_result and f(*args, **kwargs) or abort(403)
-
-                return closure
-
-            return allowed(*perm_args, **perm_kwargs)
-
-        return wrap
-
-
-permissions = Permissions()
-check_permission = permissions.check_permission
-plural_underscored = lambda noun: plural_name(underscorize(noun))

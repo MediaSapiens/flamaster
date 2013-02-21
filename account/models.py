@@ -4,11 +4,11 @@ from datetime import datetime
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
 
+from flamaster.core import db, _security
 from flamaster.core.models import CRUDMixin
+
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
-
-from . import db, _security
 
 
 class Address(db.Model, CRUDMixin):

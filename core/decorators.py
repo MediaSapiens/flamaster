@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import trafaret as t
 from functools import wraps
 from flask import abort, current_app, request
 from flask.ext.babel import get_locale
 from flask.ext.security import current_user
-from flamaster.core.utils import plural_underscored, LazyResource
 
 from . import db, http
-from .utils import jsonify_status_code
+from .utils import jsonify_status_code, plural_underscored, LazyResource
 
 
 def api_resource(bp, endpoint, pk_def):

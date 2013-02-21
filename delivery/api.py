@@ -1,4 +1,6 @@
+from __future__ import absolute_import
 from flask import current_app
+
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import Resource
 from flamaster.core.utils import jsonify_status_code

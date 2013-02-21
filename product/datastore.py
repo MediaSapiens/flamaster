@@ -1,12 +1,11 @@
+from __future__ import absolute_import
 from flask import current_app
-from flask.signals import Namespace
+from flamaster.core import db
 
 from operator import attrgetter
 
-from . import db, OrderStates
-
-signals = Namespace()
-order_created = signals.signal('order-created')
+from . import OrderStates
+from .signals import order_created
 
 
 class OrderDatastore(object):

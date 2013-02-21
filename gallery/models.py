@@ -1,13 +1,12 @@
 # encoding: utf-8
 import gridfs
 from bson import ObjectId
+from flamaster.core import db, mongo
 from flamaster.core.models import CRUDMixin
 
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
-
-from . import db, mongo
 
 __all__ = ['Image', 'Album']
 

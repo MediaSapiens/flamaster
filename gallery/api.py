@@ -1,4 +1,5 @@
-# encoding: utf-8
+# -*- encoding: utf-8 -*-
+from __future__  import absolute_import
 import base64
 import re
 import trafaret as t
@@ -63,8 +64,8 @@ class ImageResource(ModelResource):
     def __process_form(self):
         # TODO: have to complete
         fileObj = request.files['image']
-        imageModel = self.model.create(fileObj.stream, fileObj.mimetype, name=fileObj.filename,
-                                       author=current_user,)
+        imageModel = self.model.create(fileObj.stream, fileObj.mimetype,
+                        name=fileObj.filename, author=current_user)
 
         return imageModel.as_dict()
 

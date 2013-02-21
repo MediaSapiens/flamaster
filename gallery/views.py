@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 from flask import abort, send_file
 
 from flamaster.core import http

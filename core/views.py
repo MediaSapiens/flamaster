@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from jinja2.exceptions import TemplateNotFound
 from flask import abort, render_template, current_app
 

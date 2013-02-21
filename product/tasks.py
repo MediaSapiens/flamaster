@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
+from flamaster.core import db
 from flamaster.product.models import Cart, Shelf
-
-from . import db
 
 
 def drop_unordered_cart_items():

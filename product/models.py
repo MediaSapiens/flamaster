@@ -1,13 +1,14 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 from flask import current_app
 
-from flamaster.core import COUNTRY_CHOICES, lazy_cascade
+from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
 from flamaster.core.decorators import multilingual
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
 
 from werkzeug.utils import import_string
 
-from . import db, OrderStates
+from . import OrderStates
 
 
 __all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']

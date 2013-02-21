@@ -1,13 +1,5 @@
-from flask import Blueprint, current_app
-from werkzeug.local import LocalProxy
+from flask import Blueprint
 
 bp = Blueprint('account', __name__, url_prefix='/account')
 
-_security = LocalProxy(lambda: current_app.extensions['security'])
-_social = LocalProxy(lambda: current_app.extensions['social'])
-db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
-
 import signals, api
-
-
-

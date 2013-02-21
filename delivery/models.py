@@ -1,7 +1,7 @@
+from flamaster.core import db
 from flamaster.core.models import CRUDMixin
 
 from operator import attrgetter
-from . import db
 
 
 class ProductDelivery(db.Model, CRUDMixin):

@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import trafaret as t
 
 from flask import abort, request, current_app

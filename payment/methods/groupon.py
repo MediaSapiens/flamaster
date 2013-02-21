@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
+from __future__ import absolute_import
 import trafaret as t
 import requests
 
 from flask import current_app, json
 
-from flamaster.core import http
+from flamaster.core import http, mongo
 from flamaster.core.utils import jsonify_status_code
 
 from requests.auth import HTTPBasicAuth
 
 from .base import BasePaymentMethod
-from .. import mongo
 
 
 class GrouponPaymentMethod(BasePaymentMethod):

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import trafaret as t
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource

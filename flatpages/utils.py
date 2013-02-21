@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+from __future__ import absolute_import
 from flask import render_template, request, current_app
 from flask.ext.security import login_required
 

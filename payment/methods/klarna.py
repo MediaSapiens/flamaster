@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from klarna import Klarna, Config
 
 from .base import BasePaymentMethod
@@ -6,8 +7,10 @@ from .base import BasePaymentMethod
 country = 'SE'
 currency = 'SEK'
 
+
 class KlarnaPaymentMethod(BasePaymentMethod):
     method_name = 'klarna'
+
     def __init__(self, *args, **kwargs):
         super(KlarnaPaymentMethod, self).__init__(*args, **kwargs)
 
@@ -20,7 +23,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
         return self.klarna.add_transaction(gender=1, pno='860728-1234',
                     goodList=good_list)
 
-    def __get_articles(self, art_list): #qty, artno, price, vat):
+    def __get_articles(self, art_list):  # qty, artno, price, vat):
         for art in art_list:
             yield self.klarna.add_article(qty=art['qty'], artno=art['artno'],
                     price=art['price'], vat=art['vat'])
