@@ -8,7 +8,7 @@ from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from flask import abort, request, session, g, current_app
+from flask import abort, request, session, g, current_app, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
@@ -209,21 +209,19 @@ class AddressResource(ModelResource):
         'street': t.String,
         'type': t.String(regex="(billing|delivery)"),
         'zip_code': t.String,
-    }).make_optional('apartment').ignore_extra('*')
+        'customer_id': t.Or(t.Int, t.Null)
+    }).make_optional('apartment', 'customer_id').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
-        data = request.json or abort(http.BAD_REQUEST)
+        # Hack for IE XDomainRequest support:
 
         try:
-            data = self.clean(data)
+            data = self._request_data
+
             address_type = data.pop('type')
             address = self.model.create(**data)
-            if current_user.is_anonymous():
-                session.get('customer_id') or abort(http.NOT_FOUND)
-                customer = Customer.query.get_or_404(session['customer_id'])
-            else:
-                customer = current_user.customer
+            customer = self._customer(data)
 
             customer.set_address(address_type, address)
             customer.save()
@@ -237,12 +235,33 @@ class AddressResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        if current_user.is_anonymous():
-            kwargs['customer_id'] = session['customer_id']
-        elif not current_user.is_superuser():
-            kwargs['customer_id'] = current_user.customer.id
+        customer = self._customer(self._request_data)
+        kwargs['customer_id'] = customer.id
 
         return super(AddressResource, self).get_objects(**kwargs)
+
+    def _customer(self, data):
+        key = 'customer_id'
+        if current_user.is_anonymous():
+            customer_id = session.get(key) or data.get(key)
+            if customer_id is None:
+                abort(http.BAD_REQUEST)
+            else:
+                customer = Customer.query.get_or_404(customer_id)
+        else:
+            customer = current_user.customer
+
+        return customer
+
+    @property
+    def _request_data(self):
+        try:
+            data = request.json or json.loads(request.data)
+            return self.clean(data)
+        except t.DataError as err:
+            raise err
+        except:
+            abort(http.BAD_REQUEST)
 
 
 @api_resource(bp, 'roles', {'id': int})
@@ -311,12 +330,47 @@ class CustomerResource(ModelResource):
         'last_name': t.String,
         'email': t.Email,
         'phone': t.String(allow_blank=True),
-        'notes': t.Or(t.String(allow_blank=True), t.Null)
-    }).make_optional('phone', 'notes').ignore_extra('*')
+        'notes': t.Or(t.String(allow_blank=True), t.Null),
+        'customer_id': t.Or(t.Int, t.Null),
+    }).make_optional('phone', 'notes', 'customer_id').ignore_extra('*')
+
+    def put(self, id):
+        status = http.ACCEPTED
+        try:
+            data = self._request_data
+            instance = self.get_object(id).update(with_reload=True, **data)
+            response = self.serialize(instance)
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
-        if current_user.is_anonymous():
-            kwargs['id'] = session.get('customer_id') or abort(http.NOT_FOUND)
-        elif not current_user.is_superuser():
-            kwargs['id'] = current_user.customer.id
+        if current_user.is_anonymous() or not current_user.is_superuser():
+            kwargs['id'] = self._customer(self._request_data).id
+        print "kwargs:", kwargs
         return super(CustomerResource, self).get_objects(**kwargs)
+
+    @property
+    def _request_data(self):
+        try:
+            data = request.json or json.loads(request.data)
+            return self.clean(data)
+        except t.DataError as err:
+            raise err
+        except:
+            abort(http.BAD_REQUEST)
+
+    def _customer(self, data):
+        print "Data:", data
+        key = 'customer_id'
+        if current_user.is_anonymous():
+            customer_id = session.get(key) or data.get(key)
+            if customer_id is None:
+                abort(http.BAD_REQUEST)
+            else:
+                customer = Customer.query.get_or_404(customer_id)
+        else:
+            customer = current_user.customer
+
+        return customer

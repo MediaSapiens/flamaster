@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 import trafaret as t
-from flask import abort, request, session
+from flask import abort, request, session, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -79,15 +79,26 @@ class CartResource(ModelResource):
         'service': t.String
     }).make_optional('service').ignore_extra('*')
 
+    filters_map = t.Dict({
+        'product_id': t.MongoId,
+        'product_variant_id': t.MongoId
+    }).make_optional('*').ignore_extra('*')
+
     def post(self):
         status = http.CREATED
-        data = request.json or abort(http.BAD_REQUEST)
+        # Hack for IE XDomainRequest support:
+        try:
+            data = request.json or json.loads(request.data)
+        except:
+            abort(http.BAD_REQUEST)
+
         validation = self.validation.make_optional('concrete_product_id')
 
         # condition to ensure that we have a customer when item added to cart
         if current_user.is_anonymous():
-            if session.get('customer_id'):
-                customer = Customer.query.get_or_404(session['customer_id'])
+            customer_id = session.get('customer_id') or data.get('customer_id')
+            if customer_id is not None:
+                customer = Customer.query.get_or_404(customer_id)
             else:
                 customer = Customer.create()
         else:
@@ -126,13 +137,6 @@ class CartResource(ModelResource):
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
-
-    def get_objects(self, **kwargs):
-        if 'product_id' in request.args:
-            kwargs['product_id'] = request.args['product_id']
-        if 'product_variant_id' in request.args:
-            kwargs['product_variant_id'] = request.args['product_variant_id']
-        return self.model.query.filter_by(**kwargs)
 
     def gen_list_response(self, **kwargs):
         return super(CartResource, self) \
