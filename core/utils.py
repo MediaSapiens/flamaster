@@ -18,19 +18,46 @@ from werkzeug import import_string, cached_property
 from . import mail
 
 
-class LazyResource(object):
+class LazyView(object):
 
-    def __init__(self, import_name, endpoint):
+    def __init__(self, import_name, endpoint=None):
         self.__module__, self.__name__ = import_name.rsplit('.', 1)
         self.import_name = import_name
         self.endpoint = endpoint
+
+    def __call__(self, *args, **kwargs):
+        return self.view(*args, **kwargs)
+
+    @cached_property
+    def view(self):
+        return import_string(self.import_name)
+
+
+class LazyResource(LazyView):
 
     @cached_property
     def view(self):
         return import_string(self.import_name).as_view(self.endpoint)
 
-    def __call__(self, *args, **kwargs):
-        return self.view(*args, **kwargs)
+
+def add_api_rule(bp, endpoint, pk_def, import_name):
+    resource = LazyResource(import_name, endpoint)
+    collection_url = "/{}/".format(endpoint)
+    # collection endpoint
+
+    pk = pk_def.keys()[0]
+    pk_type = pk_def[pk] and pk_def[pk].__name__ or None
+
+    if pk_type is None:
+        item_url = "%s<%s>" % (collection_url, pk)
+    else:
+        item_url = "%s<%s:%s>" % (collection_url, pk_type, pk)
+
+    bp.add_url_rule(collection_url, view_func=resource,
+                    methods=['GET', 'POST'])
+    bp.add_url_rule(item_url, view_func=resource,
+                    methods=['GET', 'PUT', 'DELETE'])
+
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')

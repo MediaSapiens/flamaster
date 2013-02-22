@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from flask import current_app, render_template, request
+from flask import current_app, render_template, request, json
 from werkzeug.utils import import_string
 
 from .. import payment
@@ -38,7 +38,9 @@ def resolve_payment_method(payment_method):
 @payment.route('/<payment_method>/verify/', methods=['POST'])
 def verify_payment(payment_method):
     PaymentMethod = resolve_payment_method(payment_method)
-    return PaymentMethod().verify(request.json)
+    print request.json, request.form, request.data
+    data = request.json or request.form or json.loads(request.data)
+    return PaymentMethod().verify(data)
 
 
 @payment.route('/<payment_method>/process/', methods=['GET', 'POST'])

@@ -7,7 +7,7 @@ from flask.ext.babel import get_locale
 from flask.ext.security import current_user
 
 from . import db, http
-from .utils import jsonify_status_code, plural_underscored, LazyResource
+from .utils import jsonify_status_code, plural_underscored
 
 
 def api_resource(bp, endpoint, pk_def):
@@ -15,39 +15,21 @@ def api_resource(bp, endpoint, pk_def):
     pk_type = pk_def[pk] and pk_def[pk].__name__ or None
     # building url from the endpoint
     url = "/{}/".format(endpoint)
+    collection_methods = ['GET', 'POST']
+    item_methods = ['GET', 'PUT', 'DELETE']
 
     def wrapper(resource_class):
         resource = resource_class().as_view(endpoint)
-        bp.add_url_rule(url, view_func=resource, methods=['GET', 'POST'])
+        bp.add_url_rule(url, view_func=resource, methods=collection_methods)
         if pk_type is None:
-            url_rule = "%s<%s>" % (url, pk)
+            url_rule = "{}<{}>".format(url, pk)
         else:
-            url_rule = "%s<%s:%s>" % (url, pk_type, pk)
-        bp.add_url_rule(url_rule,
-                        view_func=resource,
-                        methods=['GET', 'PUT', 'DELETE'])
+            url_rule = "{}<{}:{}>".format(url, pk_type, pk)
+
+        bp.add_url_rule(url_rule, view_func=resource, methods=item_methods)
         return resource_class
 
     return wrapper
-
-
-def add_api_rule(bp, endpoint, pk_def, import_name):
-    resource = LazyResource(import_name, endpoint)
-    collection_url = "/{}/".format(endpoint)
-    # collection endpoint
-
-    pk = pk_def.keys()[0]
-    pk_type = pk_def[pk] and pk_def[pk].__name__ or None
-
-    if pk_type is None:
-        item_url = "%s<%s>" % (collection_url, pk)
-    else:
-        item_url = "%s<%s:%s>" % (collection_url, pk_type, pk)
-
-    bp.add_url_rule(collection_url, view_func=resource,
-                    methods=['GET', 'POST'])
-    bp.add_url_rule(item_url, view_func=resource,
-                    methods=['GET', 'PUT', 'DELETE'])
 
 
 def login_required(fn):
