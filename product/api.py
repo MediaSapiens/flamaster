@@ -178,12 +178,17 @@ class OrderResource(ModelResource):
         'delete': [login_required]
     }
 
-    @method_wrapper(http.CREATED)
-    def post(self, data):
-        data = self.validation.check(data)
-        datastore = OrderDatastore(self.model, Cart, Customer)
-        instance = datastore.create_from_api(**data)
-        return self.serialize(instance)
+    def post(self):
+        status = http.ACCEPTED
+
+        try:
+            datastore = OrderDatastore(self.model, Cart, Customer)
+            instance = datastore.create_from_api(**self._request_data)
+            response = self.serialize(instance)
+        except t.DataError as err:
+            status, response = http.BAD_REQUEST, err.as_dict()
+
+        return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
@@ -196,3 +201,13 @@ class OrderResource(ModelResource):
 
         self.model is None and abort(http.BAD_REQUEST)
         return self.model.query.filter_by(**kwargs)
+
+    @property
+    def _request_data(self):
+        try:
+            data = request.json or json.loads(request.data)
+            return self.clean(data)
+        except t.DataError as err:
+            raise err
+        except:
+            abort(http.BAD_REQUEST)

@@ -323,8 +323,7 @@ class BankAccountResource(ModelResource):
 @api_resource(bp, 'customers', {'id': int})
 class CustomerResource(ModelResource):
     model = Customer
-    method_decorators = {'post': roles_required('admin'),
-                         'delete': roles_required('admin')}
+    method_decorators = {'delete': roles_required('admin')}
     validation = t.Dict({
         'first_name': t.String,
         'last_name': t.String,
@@ -333,6 +332,21 @@ class CustomerResource(ModelResource):
         'notes': t.Or(t.String(allow_blank=True), t.Null),
         'customer_id': t.Or(t.Int, t.Null),
     }).make_optional('phone', 'notes', 'customer_id').ignore_extra('*')
+
+    # IE CORS Hack
+    def post(self):
+        status = http.CREATED
+
+        try:
+            data = self._request_data
+            customer = self._customer(data)
+            data.pop('customer_id', None)
+            customer.update(**data)
+            response = self.serialize(customer)
+        except t.DataError as err:
+            status, response = http.BAD_REQUEST, err.as_dict()
+
+        return jsonify_status_code(response, status)
 
     def put(self, id):
         status = http.ACCEPTED
@@ -348,7 +362,6 @@ class CustomerResource(ModelResource):
     def get_objects(self, **kwargs):
         if current_user.is_anonymous() or not current_user.is_superuser():
             kwargs['id'] = self._customer(self._request_data).id
-        print "kwargs:", kwargs
         return super(CustomerResource, self).get_objects(**kwargs)
 
     @property
@@ -362,7 +375,6 @@ class CustomerResource(ModelResource):
             abort(http.BAD_REQUEST)
 
     def _customer(self, data):
-        print "Data:", data
         key = 'customer_id'
         if current_user.is_anonymous():
             customer_id = session.get(key) or data.get(key)
