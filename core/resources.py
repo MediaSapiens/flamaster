@@ -142,6 +142,11 @@ class Resource(MethodView):
             page.set_trafaret(t.Int(gt=0))
             # filter set processing
             self.filters_map.keys.append(page)
+        if not filter(lambda k: k.name == 'page_size', self.filters_map.keys):
+            page_size = t.Key('page_size', default=20)
+            page_size.set_trafaret(t.Int(gt=0))
+            # filter set processing
+            self.filters_map.keys.append(page_size)
         return self.filters_map.check(request_args.copy())
 
 
