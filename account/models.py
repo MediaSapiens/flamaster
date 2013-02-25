@@ -4,8 +4,8 @@ from datetime import datetime
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
 
-from flamaster.core import db, _security
 from flamaster.core.models import CRUDMixin
+from flamaster.extensions import db, security
 
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -228,7 +228,8 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     def is_superuser(self):
         """ Flag signalized that user is superuse """
-        superuser = _security.datastore.find_role(current_app.config['ADMIN_ROLE'])
+        # Todo — rewrite on Principal approach
+        superuser = security.datastore.find_role(current_app.config['ADMIN_ROLE'])
         return self.has_role(superuser)
 
     @property

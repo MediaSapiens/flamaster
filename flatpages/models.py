@@ -1,8 +1,10 @@
 # encoding: utf-8
-from flamaster.core import db
 from flamaster.core.models import SlugMixin
 from flamaster.core.utils import slugify
+
 from sqlalchemy.ext.hybrid import hybrid_property
+
+from flamaster.extensions import db
 
 
 class FlatPage(db.Model, SlugMixin):

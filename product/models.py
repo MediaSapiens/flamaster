@@ -2,9 +2,11 @@
 from __future__ import absolute_import
 from flask import current_app
 
-from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
+from flamaster.core import COUNTRY_CHOICES, lazy_cascade
 from flamaster.core.decorators import multilingual
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
+
+from flamaster.extensions import db
 
 from werkzeug.utils import import_string
 

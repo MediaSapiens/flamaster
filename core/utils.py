@@ -5,9 +5,8 @@ import uuid
 from bson import ObjectId
 from datetime import datetime
 
-from flask import current_app, render_template
+from flask import current_app, render_template, json
 from flask.ext.mail import Message
-from flask.helpers import json
 
 from importlib import import_module
 from os.path import abspath, dirname, join
@@ -15,7 +14,7 @@ from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
 
-from . import mail
+from flamaster.extensions import mail
 
 
 class LazyView(object):

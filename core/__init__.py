@@ -1,15 +1,6 @@
-from flask import Blueprint, current_app
-from werkzeug.local import LocalProxy
+from flask import Blueprint
 
 core = Blueprint('core', __name__, url_prefix='', template_folder='templates')
-
-cache = LocalProxy(lambda: current_app.extensions['cache'].cache)
-db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
-mail = LocalProxy(lambda: current_app.extensions['mail'])
-mongo = LocalProxy(lambda: current_app.extensions['mongoset'])
-
-_security = LocalProxy(lambda: current_app.extensions['security'])
-_social = LocalProxy(lambda: current_app.extensions['social'])
 
 
 import api

@@ -4,7 +4,7 @@ import logging
 from blinker import Namespace
 
 # from flamaster.account.models import User
-from flamaster.core import db
+from flamaster.extensions import db
 from .models import Shelf
 
 

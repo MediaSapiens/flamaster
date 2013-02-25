@@ -3,16 +3,16 @@ from flask import redirect
 from flask.ext.social import login_failed as social_login_failed
 from flask.ext.security import login_user
 
-from flamaster.core import _security, _social
+from flamaster.extensions import security, social
 
 
 @social_login_failed.connect
 def another_try(app, provider_id, oauth_response):
-    connect_handler = _social.providers[provider_id].connect_handler
+    connect_handler = social.providers[provider_id].connect_handler
     connection_values = connect_handler.get_connection_values(oauth_response)
 
-    security_ds = _security.datastore
-    social_ds = _social.datastore
+    security_ds = security.datastore
+    social_ds = social.datastore
 
     user_kwargs = {
         'first_name': connection_values['display_name'],

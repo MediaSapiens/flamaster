@@ -6,11 +6,11 @@ from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
 from flamaster.account.models import Customer
-
-from flamaster.core import http, mongo
+from flamaster.core import http
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
+from flamaster.extensions import mongo
 
 from . import product as bp
 from .helpers import resolve_parent

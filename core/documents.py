@@ -7,6 +7,7 @@ from bson import ObjectId, DBRef
 
 from flask import current_app
 from flask.ext.mongoset import Model
+
 from operator import attrgetter
 
 from .decorators import classproperty

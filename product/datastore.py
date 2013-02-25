@@ -1,9 +1,10 @@
 from __future__ import absolute_import
+from operator import attrgetter
 from flask import current_app
-from flamaster.core import db
+
 from flamaster.core.datastore import AbstractDatastore
 
-from operator import attrgetter
+from flamaster.extensions import db
 
 from . import OrderStates
 from .signals import order_created

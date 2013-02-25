@@ -2,11 +2,14 @@
 from __future__ import absolute_import
 import trafaret as t
 from functools import wraps
+
 from flask import abort, current_app, request
 from flask.ext.babel import get_locale
 from flask.ext.security import current_user
 
-from . import db, http
+from flamaster.extensions import db
+
+from . import http
 from .utils import jsonify_status_code, plural_underscored
 
 

@@ -6,8 +6,9 @@ import trafaret as t
 from bson import DBRef
 from datetime import datetime
 
-from flamaster.core import mongo
 from flamaster.core.documents import Document
+
+from flamaster.extensions import mongo
 
 from .exceptions import ShelfNotAvailable
 from .models import Cart, Shelf

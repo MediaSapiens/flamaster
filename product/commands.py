@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 from flask.ext.script import Command
+from flamaster.product.models import Shelf, Cart
+from findevent.event.models import PriceOption
 
 
 class ShelfCommand(Command):
@@ -9,8 +11,6 @@ class ShelfCommand(Command):
         self.enshure_on_shelf()
 
     def enshure_on_shelf(self):
-        from flamaster.product.models import Shelf, Cart
-        from findevent.event.models import PriceOption
 
         for price_option in PriceOption.query.find():
             str_id = str(price_option.id)

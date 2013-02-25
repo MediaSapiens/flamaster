@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
 #  import class_mapper, object_mapper
-from . import db
+from flamaster.extensions import db
 from .utils import slugify, plural_name, underscorize
 
 

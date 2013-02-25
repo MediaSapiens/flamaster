@@ -3,11 +3,6 @@ from __future__ import absolute_import
 import trafaret as t
 from trafaret import extras as te
 
-from flamaster.core import http, _security
-from flamaster.core.decorators import login_required, api_resource
-from flamaster.core.resources import Resource, ModelResource
-from flamaster.core.utils import jsonify_status_code
-
 from flask import abort, request, session, g, current_app, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
@@ -19,6 +14,12 @@ from flask.ext.security.confirmable import (confirm_email_token_status,
 from flask.ext.security.registerable import register_user
 
 from sqlalchemy import or_
+
+from flamaster.core import http
+from flamaster.core.decorators import login_required, api_resource
+from flamaster.core.resources import Resource, ModelResource
+from flamaster.core.utils import jsonify_status_code
+from flamaster.extensions import security
 
 from . import bp
 from .models import User, Role, BankAccount, Address, Customer
@@ -78,7 +79,7 @@ class SessionResource(Resource):
         return self.validation.check(data_dict)
 
     def _authenticate(self, data_dict):
-        user = _security.datastore.find_user(email=data_dict['email'])
+        user = security.datastore.find_user(email=data_dict['email'])
 
         if verify_password(data_dict.get('password'), user.password):
             login_user(user)

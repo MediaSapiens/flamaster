@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flamaster.core import db
+from flamaster.extensions import db
 from flamaster.product.models import Cart, Shelf
 
 

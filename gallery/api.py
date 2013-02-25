@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from __future__  import absolute_import
+from __future__ import absolute_import
 import base64
 import re
 import trafaret as t

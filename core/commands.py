@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from flask.ext.script import Command
-from . import db
+from flamaster.extensions import db
 
 __all__ = ['CreateAll', 'DropAll']
 

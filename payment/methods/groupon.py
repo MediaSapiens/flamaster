@@ -5,8 +5,9 @@ import requests
 
 from flask import current_app, json
 
-from flamaster.core import http, mongo
+from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
+from flamaster.extensions import mongo
 
 from requests.auth import HTTPBasicAuth
 

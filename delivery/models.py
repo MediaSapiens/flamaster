@@ -1,7 +1,7 @@
-from flamaster.core import db
-from flamaster.core.models import CRUDMixin
-
+from __future__ import absolute_import
 from operator import attrgetter
+from flamaster.core.models import CRUDMixin
+from flamaster.extensions import db
 
 
 class ProductDelivery(db.Model, CRUDMixin):

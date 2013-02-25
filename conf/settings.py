@@ -3,9 +3,31 @@ import sys
 
 DEBUG = True
 SECRET_KEY = "<your secret key>"
-USE_X_SENDFILE = True
+USE_X_SENDFILE = False
 CSRF_ENABLED = True
 # SESSION_COOKIE_SECURE = True
+
+# Flask extensions to register with application
+EXTENSIONS = [
+    'flamaster.extensions.babel',
+    'flamaster.extensions.cache',
+    'flamaster.extensions.db',
+    'flamaster.extensions.mail',
+    'flamaster.extensions.mongo',
+    'flamaster.extensions.security',
+    'flamaster.extensions.social',
+]
+
+# Blueprint instances to register
+BLUEPRINTS = [
+    'flamaster.account.bp',
+    'flamaster.core.core',
+    'flamaster.delivery.bp',
+    'flamaster.flatpages.bp',
+    'flamaster.gallery.bp',
+    'flamaster.payment.payment',
+    'flamaster.product.product',
+]
 
 ADMINS = ('admin@example.com', 'sfelde@mediasapiens.co',
           'yehor@mediasapiens.co')
