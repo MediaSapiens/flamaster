@@ -63,7 +63,7 @@ class CRUDMixin(BaseMixin):
     def update(self, commit=True, **kwargs):
         return self._setattrs(**kwargs).save(commit)
 
-    def as_dict(self, api_fields=None, exclude=['password']):
+    def as_dict(self, include=None, exclude=['password']):
         """ method for building dictionary for model value-properties filled
             with data from mapped storage backend
         """

@@ -1,13 +1,17 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 import trafaret as t
+import settings
+
 from functools import wraps
 
 from flask import abort, current_app, request
 from flask.ext.babel import get_locale
-from flask.ext.security import current_user
 
 from flamaster.extensions import db
+from flamaster.core.models import CRUDMixin
+
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from . import http
 from .utils import jsonify_status_code, plural_underscored
@@ -35,23 +39,11 @@ def api_resource(bp, endpoint, pk_def):
     return wrapper
 
 
-def login_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated():
-            abort(http.UNAUTHORIZED)
-        return fn(*args, **kwargs)
-
-    return wrapper
-
-
 def multilingual(cls):
-    from sqlalchemy.ext.hybrid import hybrid_property
-    from flamaster.core.models import CRUDMixin
 
     locale = get_locale()
     if locale is None:
-        lang = unicode(current_app.config['BABEL_DEFAULT_LOCALE'])
+        lang = unicode(settings.BABEL_DEFAULT_LOCALE)
     else:
         lang = unicode(locale.language)
 

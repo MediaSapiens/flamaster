@@ -43,20 +43,21 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     resource = LazyResource(import_name, endpoint)
     collection_url = "/{}/".format(endpoint)
     # collection endpoint
+    collection_methods = ['GET', 'POST']
+    item_methods = ['GET', 'PUT', 'DELETE']
 
     pk = pk_def.keys()[0]
     pk_type = pk_def[pk] and pk_def[pk].__name__ or None
 
     if pk_type is None:
-        item_url = "%s<%s>" % (collection_url, pk)
+        item_url = "{}<{}>".format(collection_url, pk)
     else:
-        item_url = "%s<%s:%s>" % (collection_url, pk_type, pk)
+        item_url = "{}<{}:{}>".format(collection_url, pk_type, pk)
 
     bp.add_url_rule(collection_url, view_func=resource,
-                    methods=['GET', 'POST'])
+                    methods=collection_methods)
     bp.add_url_rule(item_url, view_func=resource,
-                    methods=['GET', 'PUT', 'DELETE'])
-
+                    methods=item_methods)
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')
