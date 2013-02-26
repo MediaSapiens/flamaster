@@ -13,7 +13,7 @@ EXTENSIONS = [
     'flamaster.extensions.cache',
     'flamaster.extensions.db',
     'flamaster.extensions.mail',
-    'flamaster.extensions.mongo',
+    'flamaster.extensions.mongoengine',
     'flamaster.extensions.security',
     'flamaster.extensions.social',
 ]

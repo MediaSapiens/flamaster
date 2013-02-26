@@ -1,21 +1,11 @@
+from __future__ import absolute_import
 from flask.ext.babel import Babel, gettext, ngettext
 from flask.ext.cache import Cache
 from flask.ext.mail import Mail
-from flask.ext.mongoset import MongoSet
+from flask.ext.mongoengine import MongoEngine
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.security import Security, SQLAlchemyUserDatastore
-from flask.ext.social import Social, SQLAlchemyConnectionDatastore
-
-babel = Babel()
-cache = Cache()
-db = SQLAlchemy()
-mail = Mail()
-mongo = MongoSet()
-
-from flamaster.account.models import User, Role, SocialConnection
-
-security = Security(datastore=SQLAlchemyUserDatastore(db, User, Role))
-social = Social(datastore=SQLAlchemyConnectionDatastore(db, SocialConnection))
+from flask.ext.security import Security
+from flask.ext.social import Social
 
 
 def register_jinja_helpers(app):
@@ -23,3 +13,15 @@ def register_jinja_helpers(app):
         '_': gettext,
         '__': ngettext
     })
+
+
+babel = Babel()
+cache = Cache()
+db = SQLAlchemy()
+mail = Mail()
+mongoengine = MongoEngine()
+
+from flamaster.account import user_ds, connection_ds
+
+security = Security(datastore=user_ds)
+social = Social(datastore=connection_ds)
