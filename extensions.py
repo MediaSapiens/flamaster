@@ -19,7 +19,7 @@ babel = Babel()
 cache = Cache()
 db = SQLAlchemy()
 mail = Mail()
-mongoengine = MongoEngine()
+mongo = MongoEngine()
 
 from flamaster.account import user_ds, connection_ds
 

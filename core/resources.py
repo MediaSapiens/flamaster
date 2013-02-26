@@ -224,22 +224,32 @@ class MongoResource(ModelResource):
     """ Resource for typical views, based on mongo models
     """
 
+    def post(self):
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.clean(data)
+            response = self.serialize(self.model.objects.create(**data))
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
-        return self.model.query.find(kwargs)
+        return self.model.objects(**kwargs)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        object_id = self.model._convert_mongo_id(id)
-        objects = self.get_objects(_id=object_id)
-        return objects.count() and objects[0] or abort(http.NOT_FOUND)
+        return self.get_objects().get_or_404(id)
 
     def paginate(self, page, page_size=20, **kwargs):
         paging = self._prepare_pagination(page, page_size, **kwargs)
-        items = paging['objects'].limit(page_size).skip(paging['offset'])
+        items = paging['objects'].paginate(page, page_size)
         return items, paging['count'], paging['last_page'], page_size

@@ -4,10 +4,10 @@ import operator
 
 from datetime import datetime
 from decimal import Decimal
-from flask.ext.mongoengine import (StringField, DecimalField, IntField,
-                                   ListField, ReferenceField, DateTimeField,
-                                   MapField)
+from flask.ext.mongoengine import Document
 from mongoengine import PULL
+from mongoengine.fields import (StringField, DecimalField, IntField, ListField,
+                                ReferenceField, DateTimeField, MapField)
 from werkzeug.utils import import_string
 
 from flamaster.core.documents import DocumentMixin
@@ -21,7 +21,7 @@ __all__ = ['BasePriceOption', 'BaseProductVariant', 'BaseProduct',
            'ProductType']
 
 
-class BasePriceOption(DocumentMixin):
+class BasePriceOption(Document, DocumentMixin):
     """ A part of Products, keeps zone for hall of specified Event
     """
     meta = {
@@ -34,7 +34,7 @@ class BasePriceOption(DocumentMixin):
     quantity = IntField(min_value=0, default=0)
 
 
-class BaseProductVariant(DocumentMixin):
+class BaseProductVariant(Document, DocumentMixin):
     """ Keeps event variants for different venues
     """
     meta = {
@@ -42,7 +42,7 @@ class BaseProductVariant(DocumentMixin):
         'collection': 'prices'
     }
 
-    price_options = ListField(ReferenceField(BasePriceOption, db_ref=True,
+    price_options = ListField(ReferenceField(BasePriceOption, dbref=True,
                               reverse_delete_rule=PULL))
 
     def __get_prices(self):
@@ -64,7 +64,7 @@ class BaseProductVariant(DocumentMixin):
         return sum(map(operator.attrgetter('quantity'), self.price_options))
 
 
-class BaseProduct(DocumentMixin):
+class BaseProduct(Document, DocumentMixin):
     meta = {
         'allow_inheritance': True,
         'collection': 'prices',
@@ -83,7 +83,7 @@ class BaseProduct(DocumentMixin):
     created_at = DateTimeField(default=datetime.utcnow)
     created_by = IntField(required=True)
     product_variants = ListField(ReferenceField(BaseProductVariant,
-                                 db_ref=True, reverse_delete_rule=PULL))
+                                 dbref=True, reverse_delete_rule=PULL))
     accessories = ListField()
 
     product_variant_class = 'flamaster.product.documents.BaseProductVariant'
@@ -147,7 +147,7 @@ class BaseProduct(DocumentMixin):
         #     db.session.rollback()
 
 
-class ProductType(DocumentMixin):
+class ProductType(Document, DocumentMixin):
     meta = {
         'allow_inheritance': True,
         'collection': 'prices',
