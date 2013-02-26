@@ -1,69 +1,52 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 import operator
-import trafaret as t
 
-from bson import DBRef
 from datetime import datetime
+from decimal import Decimal
+from flask.ext.mongoengine import (StringField, DecimalField, IntField,
+                                   ListField, ReferenceField, DateTimeField,
+                                   MapField)
+from mongoengine import PULL
+from werkzeug.utils import import_string
 
-from flamaster.core.documents import Document
-
-from flamaster.extensions import mongo
+from flamaster.core.documents import DocumentMixin
 
 from .exceptions import ShelfNotAvailable
 from .models import Cart, Shelf
-from .signals import price_created, price_updated, price_deleted
+# from .signals import price_created, price_updated, price_deleted
 
 
-__all__ = ['BasePriceOption', 'BaseProductVariant', 'BaseProduct']
+__all__ = ['BasePriceOption', 'BaseProductVariant', 'BaseProduct',
+           'ProductType']
 
 
-class BasePriceOption(Document):
+class BasePriceOption(DocumentMixin):
     """ A part of Products, keeps zone for hall of specified Event
     """
-    __abstract__ = True
-    __collection__ = 'prices'
+    meta = {
+        'allow_inheritance': True,
+        'collection': 'prices'
+    }
 
-    structure = t.Dict({
-        'name': t.String,
-        'price': t.Float,
-        'quantity': t.Int,
-    })
-
-    required_fields = ['price']
-
-    @classmethod
-    def create(cls, **kwargs):
-        """ Kwargs are: name, price, product_variant_id, amount"""
-        instance = cls(**kwargs).save()
-        price_created.send(instance)
-        return instance
-
-    def update(self, **kwargs):
-        """
-        :rtype : BasePriceOption
-        """
-        super(BasePriceOption, self).update(**kwargs)
-        price_updated.send(self)
-        return self
-
-    def delete(self):
-        price_deleted.send(self)
-        return super(BasePriceOption, self).delete()
+    name = StringField(required=True)
+    price = DecimalField(min_value=0, default=Decimal(0))
+    quantity = IntField(min_value=0, default=0)
 
 
-class BaseProductVariant(Document):
+class BaseProductVariant(DocumentMixin):
     """ Keeps event variants for different venues
     """
-    __abstract__ = True
-    __collection__ = 'product_variants'
+    meta = {
+        'allow_inheritance': True,
+        'collection': 'prices'
+    }
 
-    structure = t.Dict({
-        'price_options': t.List[t.Type(DBRef)],
-    })
+    price_options = ListField(ReferenceField(BasePriceOption, db_ref=True,
+                              reverse_delete_rule=PULL))
 
     def __get_prices(self):
-        prices = [0]
+        prices = [Decimal(0)]
         if self.price_options:
             prices = map(operator.attrgetter('price'), self.price_options)
         return prices
@@ -81,40 +64,41 @@ class BaseProductVariant(Document):
         return sum(map(operator.attrgetter('quantity'), self.price_options))
 
 
-class BaseProduct(Document):
-    __abstract__ = True
-    __collection__ = 'products'
+class BaseProduct(DocumentMixin):
+    meta = {
+        'allow_inheritance': True,
+        'collection': 'prices',
+        'indexes': [
+            'categories', 'updated_at', 'created_at', 'created_by', 'type'
+        ]
+    }
 
-    structure = t.Dict({
-        'sku': t.String,
-        'name': t.String,
-        'type': t.String,
-        'teaser': t.String,
-        'description': t.String,
-        # 'producer': t.Int,
-        'categories': t.List[t.Int],
-        'updated_at': t.Any,
-        'created_by': t.Int,
-        'product_variants': t.List[t.Type(DBRef)],
-        'accessories': t.List[t.Type(Document) | t.Type(DBRef)],
-        t.Key('created_at', default=datetime.utcnow): t.Any
-    })
+    sku = StringField(unique=True)
+    name = StringField(required=True)
+    type = StringField(required=True)
+    teaser = StringField()
+    description = StringField()
+    categories = ListField(IntField(), default=list, required=True)
+    updated_at = DateTimeField(default=datetime.utcnow)
+    created_at = DateTimeField(default=datetime.utcnow)
+    created_by = IntField(required=True)
+    product_variants = ListField(ReferenceField(BaseProductVariant,
+                                 db_ref=True, reverse_delete_rule=PULL))
+    accessories = ListField()
 
-    required_fields = ['name', 'type', 'categories', 'created_by']
-    i18n = ['name', 'teaser', 'description']
-    indexes = ['id', 'categories', ('updated_at', -1), ('created_at', -1),
-               'created_by', 'type']
+    product_variant_class = 'flamaster.product.documents.BaseProductVariant'
+    proce_option_class = 'flamaster.product.documents.BasePriceOption'
+    # i18n = ['name', 'teaser', 'description']
 
     def add_variant(self, **kwargs):
         """ Create and add product variant
             :param kwargs: Contains neccesray parameters required by the new
                            product variant
         """
-        option = BaseProductVariant.create(**kwargs)
-        self.update({
-            '$push': {'product_variants': option.db_ref},
-        })
-        return option
+        variant_class = import_string(self.product_variant_class)
+        variant = variant_class.objects.create(**kwargs)
+        self.product_variants.append(variant)
+        return variant
 
     def get_price(self, *args, **kwargs):
         # WARNING!
@@ -147,26 +131,31 @@ class BaseProduct(Document):
         #         ' you need ({}) '.format(shelf.quantity, amount))
         # else:
             # shelf.quantity -= amount
-        price_opt = mongo.db.prices.find_one({'_id': price_option_id})
+        price_option_class = import_string(self.price_option_class)
+        product_variant_class = import_string(self.product_variant_class)
 
-        product_variant = mongo.db.product_variants.find_one({
-                                'price_options': price_opt.db_ref})
+        price_option = price_option_class.objects.get(price_option_id)
+
+        product_variant = product_variant_class.objects(
+                            price_options__in=price_option).first()
+
         cart = Cart.create(amount, customer, self, product_variant,
-                           price_opt, service)
+                           price_option, service)
         return cart
         # except Exception as error:
         #     current_app.logger.debug(error.message)
         #     db.session.rollback()
 
 
-@mongo.register
-class ProductType(Document):
+class ProductType(DocumentMixin):
+    meta = {
+        'allow_inheritance': True,
+        'collection': 'prices',
+        'indexes': ['name']
+    }
 
-    structure = t.Dict({
-        'name': t.String,
-        'attrs': t.Mapping(t.String, t.String),
-        t.Key('created_at', default=datetime.utcnow): t.Any
-    })
+    name = StringField(required=True)
+    attrs = MapField(StringField())
+    created_at = DateTimeField(default=datetime.utcnow)
 
-    i18n = ['attrs']
-    indexes = ['name']
+    # i18n = ['attrs']
