@@ -30,7 +30,6 @@ __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 security = LocalProxy(lambda: current_app.extensions['security'])
 
 
-@api_resource(bp, 'sessions', {'id': None})
 class SessionResource(Resource):
     validation = t.Dict({
         'email': t.Email,
@@ -103,7 +102,6 @@ class SessionResource(Resource):
         return response
 
 
-@api_resource(bp, 'profiles', {'id': int})
 class ProfileResource(ModelResource):
 
     validation = t.Dict({'first_name': t.String,
@@ -203,7 +201,6 @@ class ProfileResource(ModelResource):
         return instance.as_dict(include, exclude)
 
 
-@api_resource(bp, 'addresses', {'id': int})
 class AddressResource(ModelResource):
     model = Address
     validation = t.Dict({
@@ -268,7 +265,6 @@ class AddressResource(ModelResource):
             abort(http.BAD_REQUEST)
 
 
-@api_resource(bp, 'roles', {'id': int})
 class RoleResource(ModelResource):
 
     model = Role
@@ -282,7 +278,6 @@ class RoleResource(ModelResource):
         abort(http.METHOD_NOT_ALLOWED)
 
 
-@api_resource(bp, 'bank_accounts', {'id': int})
 class BankAccountResource(ModelResource):
     model = BankAccount
     validation = t.Dict({
@@ -324,7 +319,6 @@ class BankAccountResource(ModelResource):
         return self.model.query.filter_by(**kwargs)
 
 
-@api_resource(bp, 'customers', {'id': int})
 class CustomerResource(ModelResource):
     model = Customer
     method_decorators = {'delete': roles_required('admin')}
