@@ -5,7 +5,6 @@ import re
 import trafaret as t
 
 from flamaster.core import http
-from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -14,7 +13,6 @@ from flask.ext.security import login_required, current_user
 
 from sqlalchemy import or_
 
-from . import bp
 from .models import Image, Album
 
 
@@ -25,7 +23,6 @@ def get_access_type(data_dict):
     return data_dict
 
 
-@api_resource(bp, 'images', {'id': None})
 class ImageResource(ModelResource):
     model = Image
     mime_re = re.compile('data\:(\w+\/\w+)')
@@ -90,7 +87,7 @@ class ImageResource(ModelResource):
 
 
 # TODO: Establish why GET params does not pass to request.args
-@api_resource(bp, 'albums', {'id': int})
+# @api_resource(bp, 'albums', {'id': int})
 class AlbumResource(ImageResource):
     model = Album
 
