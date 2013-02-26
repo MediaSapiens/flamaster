@@ -8,6 +8,8 @@ from flask.ext.mongoengine import Document
 from mongoengine import PULL
 from mongoengine.fields import (StringField, DecimalField, IntField, ListField,
                                 ReferenceField, DateTimeField, MapField)
+from multilingual_field.fields import MultilingualStringField as MLStringField
+
 from werkzeug.utils import import_string
 
 from flamaster.core.documents import DocumentMixin
@@ -29,7 +31,7 @@ class BasePriceOption(Document, DocumentMixin):
         'collection': 'prices'
     }
 
-    name = StringField(required=True)
+    name = MLStringField(required=True)
     price = DecimalField(min_value=0, default=Decimal(0))
     quantity = IntField(min_value=0, default=0)
 
@@ -74,10 +76,10 @@ class BaseProduct(Document, DocumentMixin):
     }
 
     sku = StringField(unique=True)
-    name = StringField(required=True)
+    name = MLStringField(required=True)
     type = StringField(required=True)
-    teaser = StringField()
-    description = StringField()
+    teaser = MLStringField()
+    description = MLStringField()
     categories = ListField(IntField(), default=list, required=True)
     updated_at = DateTimeField(default=datetime.utcnow)
     created_at = DateTimeField(default=datetime.utcnow)
@@ -154,7 +156,7 @@ class ProductType(Document, DocumentMixin):
         'indexes': ['name']
     }
 
-    name = StringField(required=True)
+    name = MLStringField(required=True)
     attrs = MapField(StringField())
     created_at = DateTimeField(default=datetime.utcnow)
 
