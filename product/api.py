@@ -8,7 +8,7 @@ from flask.ext.security import login_required, current_user
 from flamaster.account.models import Customer
 from flamaster.core import http
 from flamaster.core.decorators import api_resource, method_wrapper
-from flamaster.core.resources import ModelResource, MongoResource
+from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 from flamaster.extensions import mongo
 
@@ -92,7 +92,7 @@ class CartResource(ModelResource):
         except:
             abort(http.BAD_REQUEST)
 
-        validation = self.validation.make_optional('concrete_product_id')
+        self.validation.make_optional('concrete_product_id')
 
         # condition to ensure that we have a customer when item added to cart
         if current_user.is_anonymous():
@@ -106,7 +106,8 @@ class CartResource(ModelResource):
         session['customer_id'] = customer.id
         data['customer_id'] = customer.id
         try:
-            data = validation.check(data)
+            data = self.clean(data)
+            # TODO: resolve add to cart method
             product = mongo.db.products.find_one({'_id': data['product_id']})
             if product is None:
                 raise t.DataError({'product_id': _('Product not fount')})
@@ -150,15 +151,15 @@ class CartResource(ModelResource):
 
 
 # @api_resource(bp, 'products', {'id': None})
-class ProductResource(MongoResource):
-    """ Base resource for models based on BaseProduct
-    """
+# class ProductResource(MongoResource):
+#     """ Base resource for models based on BaseProduct
+#     """
 
-    method_decorators = {
-        'post': [login_required],
-        'put': [login_required],
-        'delete': [login_required]
-    }
+#     method_decorators = {
+#         'post': [login_required],
+#         'put': [login_required],
+#         'delete': [login_required]
+#     }
 
 
 @api_resource(bp, 'orders', {'id': int})
