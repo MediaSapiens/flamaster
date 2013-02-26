@@ -7,24 +7,27 @@ from flask import abort, request, session, g, current_app, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
-                                roles_required)
+                                roles_required, login_required)
 from flask.ext.security.utils import verify_password, encrypt_password
 from flask.ext.security.confirmable import (confirm_email_token_status,
                                             confirm_user)
 from flask.ext.security.registerable import register_user
 
+from werkzeug.local import LocalProxy
+
 from sqlalchemy import or_
 
 from flamaster.core import http
-from flamaster.core.decorators import login_required, api_resource
+from flamaster.core.decorators import api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
-from flamaster.extensions import security
 
 from . import bp
 from .models import User, Role, BankAccount, Address, Customer
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
+
+security = LocalProxy(lambda: current_app.extensions['security'])
 
 
 @api_resource(bp, 'sessions', {'id': None})

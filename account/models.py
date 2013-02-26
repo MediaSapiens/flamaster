@@ -5,7 +5,7 @@ from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
 
 from flamaster.core.models import CRUDMixin
-from flamaster.extensions import db, security
+from flamaster.extensions import db
 
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -122,8 +122,12 @@ class Role(db.Model, CRUDMixin, RoleMixin):
         return "<Role: %r>" % self.name
 
     @classmethod
-    def get_or_create(cls, name=current_app.config['USER_ROLE']):
-        return cls.query.filter_by(name=name).first() or cls.create(name=name)
+    def get_or_create(cls, name=None):
+        role_name = name or current_app.config['USER_ROLE']
+        instance = cls.query.filter_by(name=role_name).first() or \
+                        cls.create(name=role_name)
+
+        return instance
 
 
 class User(db.Model, CRUDMixin, UserMixin):
@@ -229,8 +233,7 @@ class User(db.Model, CRUDMixin, UserMixin):
     def is_superuser(self):
         """ Flag signalized that user is superuse """
         # Todo — rewrite on Principal approach
-        superuser = security.datastore.find_role(current_app.config['ADMIN_ROLE'])
-        return self.has_role(superuser)
+        return self.has_role(current_app.config['ADMIN_ROLE'])
 
     @property
     def full_name(self):
