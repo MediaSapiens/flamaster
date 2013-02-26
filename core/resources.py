@@ -5,7 +5,6 @@ import trafaret as t
 from flask import abort, request, current_app
 from flask.views import MethodView
 
-
 from . import http
 from .utils import jsonify_status_code
 

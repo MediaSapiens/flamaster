@@ -1,11 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-import trafaret as t
-
-from bson import ObjectId, DBRef
 # from bson.errors import InvalidId
-
-from operator import attrgetter
 
 from .decorators import classproperty
 from .utils import plural_underscored

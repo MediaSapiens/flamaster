@@ -188,4 +188,3 @@ def send_email(subject, recipient, template, callback=None, **context):
     #     _security._send_mail_task(msg)
     #     return
     mail.send(msg)
-

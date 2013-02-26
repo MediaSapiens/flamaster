@@ -5,7 +5,7 @@ import settings
 
 from functools import wraps
 
-from flask import abort, current_app, request
+from flask import abort, request
 from flask.ext.babel import get_locale
 
 from flamaster.extensions import db
