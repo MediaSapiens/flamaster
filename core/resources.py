@@ -53,8 +53,17 @@ class Resource(MethodView):
         """
         raise NotImplemented('Method is not implemented')
 
-    def _prepare_pagination(self, page=1, page_size=20, **kwargs):
-        page, objects = int(page), self.get_objects(**kwargs)
+    def _prepare_pagination(self, page=None, page_size=None, **kwargs):
+        try:
+            filter_args = self.clean_args(request.args)
+            kwargs.update(filter_args)
+        except t.DataError as err:
+            current_app.logger.info("Error in filters: %s", err.as_dict())
+
+        page = page or kwargs.pop('page')
+        page_size = page_size or kwargs.pop('page_size')
+
+        objects = self.get_objects(**kwargs)
         count = objects.count()
         last_page = int(count / page_size) + (count % page_size and 1)
 
@@ -110,15 +119,8 @@ class Resource(MethodView):
              'objects': objects list}
         """
         # Processing fiters passed through the request.args
-        try:
-            filter_args = self.clean_args(request.args)
-            kwargs.update(filter_args)
-        except t.DataError as err:
-            current_app.logger.info("Error in filters: %s", err.as_dict())
 
-        page = kwargs.pop('page', 1)
-
-        items, total, pages, quantity = self.paginate(page, **kwargs)
+        items, total, pages, quantity = self.paginate(**kwargs)
         response = {'meta': {
                         'total': total,
                         'pages': pages,
