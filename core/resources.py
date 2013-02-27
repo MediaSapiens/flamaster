@@ -258,9 +258,10 @@ class MongoResource(ModelResource):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        return self.get_objects().get_or_404(id)
+        return self.get_objects(pk=id).get_or_404()
 
     def paginate(self, **kwargs):
         paging = self._prepare_pagination(**kwargs)
         pager = paging['objects'].paginate(paging['page'], paging['page_size'])
-        return pager.items, paging['count'], paging['last_page'], paging['page_size']
+        return (pager.items, paging['count'], paging['last_page'],
+                paging['page_size'])

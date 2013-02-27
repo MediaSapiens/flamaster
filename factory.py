@@ -4,7 +4,7 @@ import time
 import uuid
 
 from datetime import datetime
-from flask import Flask, g, request, session, render_template
+from flask import Flask, abort, g, request, session, render_template
 
 import logging
 from logging.handlers import SMTPHandler
@@ -96,7 +96,10 @@ class AppFactory(object):
 
         @app.errorhandler(http.NOT_FOUND)
         def page_not_found(error):
-            return render_template('base.html'), http.NOT_FOUND
+            try:
+                return render_template('base.html'), http.NOT_FOUND
+            except:
+                return abort(http.NOT_FOUND)
 
         @app.errorhandler(http.INTERNAL_ERR)
         def internal_error(error):
