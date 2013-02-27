@@ -1,18 +1,19 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 import operator
-
+from bson import ObjectId
 from datetime import datetime
 from decimal import Decimal
 from flask.ext.mongoengine import Document
-from mongoengine import PULL
+from mongoengine import PULL, EmbeddedDocument
 from mongoengine.fields import (StringField, DecimalField, IntField, ListField,
-                                ReferenceField, DateTimeField, MapField)
+                                ReferenceField, DateTimeField, MapField,
+                                EmbeddedDocumentField, ObjectIdField)
 from multilingual_field.fields import MultilingualStringField as MLStringField
 
 from werkzeug.utils import import_string
 
-from flamaster.core.documents import DocumentMixin
+from flamaster.core.documents import DocumentMixin, BaseMixin
 
 from .exceptions import ShelfNotAvailable
 from .models import Cart, Shelf
@@ -23,14 +24,10 @@ __all__ = ['BasePriceOption', 'BaseProductVariant', 'BaseProduct',
            'ProductType']
 
 
-class BasePriceOption(Document, DocumentMixin):
+class BasePriceOption(EmbeddedDocument, BaseMixin):
     """ A part of Products, keeps zone for hall of specified Event
     """
-    meta = {
-        'allow_inheritance': True,
-        'collection': 'prices'
-    }
-
+    id = ObjectIdField(default=ObjectId)
     name = MLStringField(required=True)
     price = DecimalField(min_value=0, default=Decimal(0))
     quantity = IntField(min_value=0, default=0)
@@ -44,8 +41,7 @@ class BaseProductVariant(Document, DocumentMixin):
         'collection': 'product_variants'
     }
 
-    price_options = ListField(ReferenceField(BasePriceOption, dbref=True,
-                              reverse_delete_rule=PULL))
+    price_options = ListField(EmbeddedDocumentField(BasePriceOption))
 
     def __get_prices(self):
         prices = [Decimal(0)]
@@ -89,7 +85,7 @@ class BaseProduct(Document, DocumentMixin):
     accessories = ListField()
 
     product_variant_class = 'flamaster.product.documents.BaseProductVariant'
-    proce_option_class = 'flamaster.product.documents.BasePriceOption'
+    price_option_class = 'flamaster.product.documents.BasePriceOption'
 
     def add_variant(self, **kwargs):
         """ Create and add product variant
@@ -131,13 +127,12 @@ class BaseProduct(Document, DocumentMixin):
         #         ' you need ({}) '.format(shelf.quantity, amount))
         # else:
             # shelf.quantity -= amount
-        price_option_class = import_string(self.price_option_class)
         product_variant_class = import_string(self.product_variant_class)
 
-        price_option = price_option_class.objects.get(price_option_id)
-
         product_variant = product_variant_class.objects(
-                            price_options__in=price_option).first()
+                            price_options__id=price_option_id).get()
+        price_option = filter(lambda opt: opt.id == ObjectId(price_option_id),
+                              product_variant.price_options)[0]
 
         cart = Cart.create(amount, customer, self, product_variant,
                            price_option, service)
