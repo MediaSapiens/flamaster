@@ -15,6 +15,7 @@ class Resource(MethodView):
 
     method_decorators = None
     filters_map = t.Dict().make_optional('*').ignore_extra('*')
+    page_size = None
 
     def dispatch_request(self, *args, **kwargs):
         """ Overriding MethodView dispatch call to decorate every
@@ -55,15 +56,15 @@ class Resource(MethodView):
         """
         raise NotImplemented('Method is not implemented')
 
-    def _prepare_pagination(self, page=None, page_size=None, **kwargs):
+    def _prepare_pagination(self, **kwargs):
         try:
             filter_args = self.clean_args(request.args)
             kwargs.update(filter_args)
         except t.DataError as err:
             current_app.logger.info("Error in filters: %s", err.as_dict())
 
-        page = page or kwargs.pop('page')
-        page_size = page_size or kwargs.pop('page_size')
+        page = kwargs.pop('page')
+        page_size = self.page_size or kwargs.pop('page_size')
 
         objects = self.get_objects(**kwargs)
         count = objects.count()
@@ -74,11 +75,15 @@ class Resource(MethodView):
 
         offset = (page - 1) * page_size
         bound = min(page_size * page, count)
-        return {'objects': objects,
-                'count': count,
-                'last_page': last_page,
-                'offset': offset,
-                'bound': bound}
+        return {
+            'bound': bound,
+            'count': count,
+            'last_page': last_page,
+            'objects': objects,
+            'offset': offset,
+            'page': page,
+            'page_size': page_size
+        }
 
     def paginate(self, page, **kwargs):
         raise NotImplemented()
@@ -210,10 +215,11 @@ class ModelResource(Resource):
         """
         return self.get_objects(id=id).first_or_404()
 
-    def paginate(self, page, page_size=20, **kwargs):
-        paging = self._prepare_pagination(page, page_size, **kwargs)
-        items = paging['objects'].limit(page_size).offset(paging['offset'])
-        return items, paging['count'], paging['last_page'], page_size
+    def paginate(self, **kwargs):
+        paging = self._prepare_pagination(**kwargs)
+        items = paging['objects'].limit(paging['page_size']) \
+                    .offset(paging['offset'])
+        return items, paging['count'], paging['last_page'], paging['page_size']
 
     @classmethod
     def serialize(cls, instance, include=None):
@@ -254,7 +260,7 @@ class MongoResource(ModelResource):
         """
         return self.get_objects().get_or_404(id)
 
-    def paginate(self, page, page_size=20, **kwargs):
-        paging = self._prepare_pagination(page, page_size, **kwargs)
-        items = paging['objects'].paginate(page, page_size)
-        return items, paging['count'], paging['last_page'], page_size
+    def paginate(self, **kwargs):
+        paging = self._prepare_pagination(**kwargs)
+        pager = paging['objects'].paginate(paging['page'], paging['page_size'])
+        return pager.items, paging['count'], paging['last_page'], paging['page_size']
