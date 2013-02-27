@@ -29,4 +29,4 @@ add_resource('profiles', {'id': int}, 'ProfileResource')
 add_resource('roles', {'id': int}, 'RoleResource')
 add_resource('sessions', {'id': None}, 'SessionResource')
 
-# import signals, api
+from flamaster.account import signals

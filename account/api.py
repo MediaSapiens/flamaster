@@ -18,11 +18,9 @@ from werkzeug.local import LocalProxy
 from sqlalchemy import or_
 
 from flamaster.core import http
-from flamaster.core.decorators import api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from . import bp
 from .models import User, Role, BankAccount, Address, Customer
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']

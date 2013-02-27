@@ -39,6 +39,16 @@ class DocumentMixin(object):
 
         return result
 
+    def update(self, **kwargs):
+        return self.__setattrs(**kwargs).save()
+
+    def __setattrs(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            if k.startswith('_'):
+                raise ValueError('Underscored values are not allowed')
+            setattr(self, k, v)
+        return self
+
 
 # class EmbeddedDocument(DocumentMixin):
 #     """ Base Model to keep an instances inside of other mongodb

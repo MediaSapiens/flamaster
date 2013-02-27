@@ -192,7 +192,7 @@ class ModelResource(Resource):
 
         try:
             data = self.clean(data)
-            instance = self.get_object(id).update(with_reload=True, **data)
+            instance = self.get_object(id).update(**data)
             response = self.serialize(instance)
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
