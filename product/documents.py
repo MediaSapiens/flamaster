@@ -90,7 +90,6 @@ class BaseProduct(Document, DocumentMixin):
 
     product_variant_class = 'flamaster.product.documents.BaseProductVariant'
     proce_option_class = 'flamaster.product.documents.BasePriceOption'
-    # i18n = ['name', 'teaser', 'description']
 
     def add_variant(self, **kwargs):
         """ Create and add product variant
@@ -117,14 +116,13 @@ class BaseProduct(Document, DocumentMixin):
 
     def __get_from_shelf(self, price_option_id):
         price_id = str(price_option_id)
-        return Shelf.query.with_lockmode('update_nowait') \
-                    .filter_by(price_option_id=price_id).first()
+        return Shelf.query.filter(Shelf.price_option_id == price_id,
+                           Shelf.quantity > 0) \
+                            .update({'quantity': Shelf.quantity - 1})
 
     def add_to_cart(self, customer, amount, price_option_id, service):
         # try:
-        shelf = self.__get_from_shelf(price_option_id)
-        if shelf is not None:
-            shelf.quantity -= amount
+        self.__get_from_shelf(price_option_id)
 
         # if shelf is None:
         #     raise ShelfNotAvailable("We can't find anything on shelf")
@@ -157,7 +155,5 @@ class ProductType(Document, DocumentMixin):
     }
 
     name = MLStringField(required=True)
-    attrs = MapField(StringField())
+    attrs = MapField(MLStringField())
     created_at = DateTimeField(default=datetime.utcnow)
-
-    # i18n = ['attrs']
