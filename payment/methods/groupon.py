@@ -7,6 +7,7 @@ from flask import current_app, json
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product.documents import BasePriceOption
 from flamaster.extensions import mongo
 
 from requests.auth import HTTPBasicAuth
@@ -76,9 +77,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
         status = http.OK
         try:
             data = self.validation.check(data)
-            price_option = mongo.db.prices.find_one({
-                'groupon.cda': data['deal']
-            })
+            price_option = BasePriceOption \
+                    .objects(__raw__={'groupon.cda': data['deal']}).first()
             if price_option is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
