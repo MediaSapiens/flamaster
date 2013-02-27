@@ -77,7 +77,8 @@ def multilingual(cls):
             return cls
 
         cls_columns = cls.__table__.get_children()
-        columns = dict([(c.name, c.copy()) for c in cls_columns if isinstance(c.type, (db.Unicode, db.UnicodeText))])
+        columns = dict([(c.name, c.copy()) for c in cls_columns
+                        if isinstance(c.type, (db.Unicode, db.UnicodeText))])
         localized_names = columns.keys()
 
         columns.update({

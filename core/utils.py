@@ -2,7 +2,7 @@
 import re
 import types
 import uuid
-from bson import ObjectId
+from bson import ObjectId, DBRef
 from datetime import datetime
 
 from flask import current_app, render_template, json
@@ -14,7 +14,7 @@ from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
 
-from flamaster.extensions import mail
+from flamaster.extensions import mail, mongo
 
 
 class LazyView(object):

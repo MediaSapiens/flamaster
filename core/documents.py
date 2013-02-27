@@ -1,20 +1,13 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 # from bson.errors import InvalidId
+from collections import Mapping
 
 from .decorators import classproperty
 from .utils import plural_underscored
 
 
-class DocumentMixin(object):
-    """ Base mixin for all mongodb models
-    """
-    @classproperty
-    def __meta__(cls):
-        return {
-            'collection': plural_underscored(cls.__name__),
-            'allow_inheritance': True,
-        }
+class BaseMixin(object):
 
     def as_dict(self, include=None, exclude=['password']):
         """ method for building dictionary for model value-properties filled
@@ -48,6 +41,36 @@ class DocumentMixin(object):
                 raise ValueError('Underscored values are not allowed')
             setattr(self, k, v)
         return self
+
+    @classmethod
+    def convert(cls, data):
+        """ Create GrouponDeal instance from dict or return unchanged if
+            already
+            params:
+            :data_dict: `dict` or `GrouponDeal`:class: instance
+
+            returns:
+            `GrouponDeal`:instance:
+        """
+        if isinstance(data, cls):
+            return data
+        elif isinstance(data, Mapping):
+            return cls(**data)
+        else:
+            return None
+
+
+class DocumentMixin(BaseMixin):
+    """ Base mixin for all mongodb models
+    """
+    @classproperty
+    def __meta__(cls):
+        return {
+            'collection': plural_underscored(cls.__name__),
+            'allow_inheritance': True,
+        }
+
+
 
 
 # class EmbeddedDocument(DocumentMixin):
