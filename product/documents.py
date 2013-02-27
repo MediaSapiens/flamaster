@@ -41,7 +41,7 @@ class BaseProductVariant(Document, DocumentMixin):
     """
     meta = {
         'allow_inheritance': True,
-        'collection': 'prices'
+        'collection': 'product_variants'
     }
 
     price_options = ListField(ReferenceField(BasePriceOption, dbref=True,
@@ -69,7 +69,7 @@ class BaseProductVariant(Document, DocumentMixin):
 class BaseProduct(Document, DocumentMixin):
     meta = {
         'allow_inheritance': True,
-        'collection': 'prices',
+        'collection': 'products',
         'indexes': [
             'categories', 'updated_at', 'created_at', 'created_by', 'type'
         ]
@@ -150,7 +150,7 @@ class BaseProduct(Document, DocumentMixin):
 class ProductType(Document, DocumentMixin):
     meta = {
         'allow_inheritance': True,
-        'collection': 'prices',
+        'collection': 'product_types',
         'indexes': ['name']
     }
 

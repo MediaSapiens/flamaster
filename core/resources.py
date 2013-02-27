@@ -5,6 +5,8 @@ import trafaret as t
 from flask import abort, request, current_app
 from flask.views import MethodView
 
+from mongoengine.base import ValidationError
+
 from . import http
 from .utils import jsonify_status_code
 
@@ -218,7 +220,7 @@ class ModelResource(Resource):
         """ Method to controls model serialization in derived classes
         :rtype : dict
         """
-        return instance.as_dict(api_fields=include)
+        return instance.as_dict(include=include)
 
 
 class MongoResource(ModelResource):
@@ -234,6 +236,8 @@ class MongoResource(ModelResource):
             response = self.serialize(self.model.objects.create(**data))
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
+        except ValidationError as e:
+            status, response = http.BAD_REQUEST, e.to_dict()
 
         return jsonify_status_code(response, status)
 
