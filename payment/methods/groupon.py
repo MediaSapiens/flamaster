@@ -72,6 +72,13 @@ class GrouponPaymentMethod(BasePaymentMethod):
 
         return jsonify_status_code(data, status)
 
+    def __filter_option(self, variant, cda):
+        for option in variant.price_options:
+            for deal in option.groupon:
+                if deal.cda == cda:
+                    return option, deal
+        return None, None
+
     def verify(self, data):
         status = http.OK
         try:
@@ -82,9 +89,9 @@ class GrouponPaymentMethod(BasePaymentMethod):
             if variant is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
-            options = filter(lambda opt: opt.cda == data['deal'], variant)
+            option, deal = self.__filter_option(variant, data['deal'])
 
-            if len(options) == 0:
+            if option is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
             validation = self.__validate(voucher=data['voucher'],
@@ -94,13 +101,10 @@ class GrouponPaymentMethod(BasePaymentMethod):
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
 
-            deal = filter(lambda deal: deal['cda'] == data['deal'],
-                          options[0].groupon)
-
             data.update({
                 'message': 'OK',
-                'seats': deal[0]['number'],
-                'option': options[0],
+                'seats': deal['number'],
+                'option': option,
             })
         except t.DataError as e:
             data.update({
