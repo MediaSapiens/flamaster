@@ -58,8 +58,8 @@ class Resource(MethodView):
 
     def _prepare_pagination(self, **kwargs):
         try:
-            filter_args = self.clean_args(request.args)
-            kwargs.update(filter_args)
+            self.filter_args = self.clean_args(request.args)
+            kwargs.update(self.filter_args)
         except t.DataError as err:
             current_app.logger.info("Error in filters: %s", err.as_dict())
 

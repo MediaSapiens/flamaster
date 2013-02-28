@@ -170,7 +170,7 @@ class ProfileResource(ModelResource):
         elif current_user.is_superuser():
             instance = User.query.get_or_404(id)
         else:
-            instance = g.user
+            instance = current_user
 
         instance is None and abort(http.NOT_FOUND)
         return instance
@@ -190,10 +190,10 @@ class ProfileResource(ModelResource):
                    "current_login_at", "active", "billing_address",
                    "logged_at", 'is_superuser']
         # include = ['is_superuser']
-        if g.user.is_anonymous() or instance.is_anonymous():
+        if current_user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
 
-        if g.user.id != instance.id or g.user.is_superuser() is False:
+        if current_user.id != instance.id or not current_user.is_superuser():
             exclude.append('email')
 
         return instance.as_dict(include, exclude)

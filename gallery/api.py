@@ -56,15 +56,15 @@ class ImageResource(ModelResource):
         image = base64.urlsafe_b64decode(image)
         imageModel = self.model.create(image, mime_type, name=data['name'],
                                        author=current_user,)
-        return imageModel.as_dict()
+        return self.serialize(imageModel)
 
     def __process_form(self):
         # TODO: have to complete
         fileObj = request.files['image']
-        imageModel = self.model.create(fileObj.stream, fileObj.mimetype,
+        imageModel = self.model.create(fileObj, fileObj.mimetype,
                         name=fileObj.filename, author=current_user)
 
-        return imageModel.as_dict()
+        return self.serialize(imageModel)
 
     def get(self, id=None):
         if id is None:
@@ -85,9 +85,14 @@ class ImageResource(ModelResource):
             return query.filter(or_(self.model.author_id == current_user.id,
                                        self.model.is_public is True))
 
+    @classmethod
+    def serialize(cls, instance, include=None):
+        """ Method to controls model serialization in derived classes
+        :rtype : dict
+        """
+        return instance.as_dict(exclude=['image'])
 
-# TODO: Establish why GET params does not pass to request.args
-# @api_resource(bp, 'albums', {'id': int})
+
 class AlbumResource(ImageResource):
     model = Album
 

@@ -2,11 +2,14 @@
 import gridfs
 from bson import ObjectId
 
+from mongoengine.fields import FileField
+
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
 from flamaster.core.models import CRUDMixin
+from flamaster.core.documents import DocumentMixin
 from flamaster.extensions import db, mongo
 
 __all__ = ['Image', 'Album']
@@ -90,20 +93,17 @@ class Album(db.Model, GalleryMixin):
         #     kwargs['album_id'] = default_album
 
 
-class Image(object):
+class Image(mongo.Document, DocumentMixin):
     """ Wrapper around MongoDB gridfs session and file storage/retrieve
         actions
     """
-    id = None
-    _file = None
-
-    def __init__(self, id, session=None):
-        self.id, self.session = id, session
+    image = FileField(required=True)
 
     @classmethod
     def store(cls, image, content_type):
-        session = gridfs.GridFS(mongo.session)
-        instance = cls(session.put(image, content_type=content_type), session)
+        instance = cls()
+        instance.image.put(image, content_type=content_type)
+        instance.save()
         return instance
 
     @classmethod
@@ -114,46 +114,10 @@ class Image(object):
     def get(cls, id):
         """ Get mognodb stored file by its unique identifier
         """
-        if isinstance(id, basestring):
-            file_id = ObjectId(id)
-        elif isinstance(id, ObjectId):
-            file_id = id
-        else:
-            raise TypeError('Can not treat identifier as ObjectId'
-                            ' representation')
-        instance = cls(file_id)
-        if instance.exists:
-            return instance.get_file()
-        else:
-            return None
+        instance = cls.objects(pk=id).get_or_404()
+        return instance.image
 
     def get_file(self):
         """ Return file-like object bound to this class from the gridfs storage
         """
-        return self.session.get(self.id)
-
-    @property
-    def exists(self):
-        """ Check if bounded ObjectId corresponds to the stored file (if any)
-        """
-        return self.session.exists(self.id)
-
-    def get_session(self):
-        """ Acquire mongodb gridfs session
-        """
-        return self.__session or gridfs.GridFS(mongo.session)
-
-    def set_session(self, value):
-        """ Recieve and store gridfs session for internal use
-        """
-        self.__session = value
-
-    session = property(get_session, set_session)
-
-    def remove(self):
-        self.session.remove(self.id)
-
-    def as_dict(self):
-        return {
-            'id': self.id
-        }
+        return self.image

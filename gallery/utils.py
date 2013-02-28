@@ -10,7 +10,7 @@ from PIL import Image
 from . import settings
 
 
-EXTENSIONS = current_app.config.get('EXTENSIONS', settings.EXTENSIONS)
+EXTENSIONS = settings.EXTENSIONS
 DESTINATION = current_app.config.get('THUMBNAIL_DEST', settings.THUMBNAIL_DEST)
 
 

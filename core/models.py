@@ -69,20 +69,20 @@ class CRUDMixin(BaseMixin):
         """
         column_properties = [p.key for p in self.__mapper__.iterate_properties
                                 if isinstance(p, orm.ColumnProperty)]
-        exportable_fields = api_fields or getattr(self, 'api_fields',column_properties)
-        # convert undescored fields:
-        fields = [field.strip('_') for field in exportable_fields]
-        results = []
-        for field in fields:
-            if field in exclude:
-                continue
-            else:
-                value = getattr(self, field)
-                if hasattr(value, '__call__'):
-                    value = value()
-                results.append([field, value])
+        fields = [field.strip('_') for field in column_properties]
 
-        return dict(results)
+        exportable_fields = (include or []) + fields
+        exportable_fields = set(exportable_fields) - set(exclude)
+        # convert undescored fields:
+
+        result = dict()
+        for field in exportable_fields:
+            value = getattr(self, field)
+            if hasattr(value, '__call__'):
+                value = value()
+            result[field] = value
+
+        return result
 
     def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
