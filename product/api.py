@@ -65,6 +65,13 @@ class CountriesResource(ModelResource):
         return super(CountriesResource, self) \
             .gen_list_response(page_size=10000, **kwargs)
 
+    @classmethod
+    def serialize(cls, instance):
+        """ Method to controls model serialization in derived classes
+        :rtype : dict
+        """
+        return instance.as_dict(include=['id', 'short', 'name'])
+
 
 @api_resource(bp, 'carts', {'id': int})
 class CartResource(ModelResource):

@@ -91,7 +91,6 @@ class Category(db.Model, TreeNode):
 
 class Country(db.Model, CRUDMixin):
     """ Model holding countries list """
-    api_fields = ['id', 'short', 'name']
 
     short = db.Column(db.Unicode(3), nullable=False, index=True)
 
