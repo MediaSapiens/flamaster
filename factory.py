@@ -5,7 +5,7 @@ import uuid
 
 from datetime import datetime
 from flask import Flask, abort, g, request, session, render_template
-from flask.ext.babel import get_locale
+from flask.ext.babel import get_locale as babel_locale
 
 import logging
 from logging.handlers import SMTPHandler
@@ -93,7 +93,7 @@ class AppFactory(object):
         @app.before_request
         def setup_session():
             g.now = time.mktime(datetime.utcnow().timetuple())
-            g.locale = get_locale().language
+            g.locale = babel_locale().language
             session['id'] = session.get('id', uuid.uuid4().hex)
 
         @app.errorhandler(http.NOT_FOUND)

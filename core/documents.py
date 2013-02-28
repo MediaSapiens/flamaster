@@ -66,8 +66,7 @@ class DocumentMixin(BaseMixin):
     @classproperty
     def __meta__(cls):
         return {
-            'collection': plural_underscored(cls.__name__),
-            'allow_inheritance': True,
+            'collection': plural_underscored(cls.__name__)
         }
 
 

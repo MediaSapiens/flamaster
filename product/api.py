@@ -10,10 +10,10 @@ from flamaster.core import http
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
-from flamaster.extensions import mongo
 
 from . import product as bp
 from .helpers import resolve_parent
+from .documents import BaseProduct
 from .models import Cart, Category, Country, Order
 from .datastore import OrderDatastore
 
@@ -108,7 +108,7 @@ class CartResource(ModelResource):
         try:
             data = self.clean(data)
             # TODO: resolve add to cart method
-            product = mongo.db.products.find_one({'_id': data['product_id']})
+            product = BaseProduct.objects(pk=data['product_id']).first()
             if product is None:
                 raise t.DataError({'product_id': _('Product not fount')})
 

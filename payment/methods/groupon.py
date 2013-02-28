@@ -8,6 +8,7 @@ from flask import current_app, json
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product.documents import BaseProductVariant
+from flamaster.extensions import mongo
 
 from requests.auth import HTTPBasicAuth
 
@@ -20,8 +21,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
         'deal': t.Int,
         'voucher': t.String,
         'code': t.String,
-        'variant': t.MongoId
-    })
+        'variant': t.Or(t.MongoId, t.Null)
+    }).make_optional('variant')
 
     validate_path = 'merchant/redemptions/validate'
     redeem_path = 'merchant/redemptions'
@@ -84,8 +85,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         try:
             data = self.validation.check(data)
             variant = BaseProductVariant.objects(
-                        pk=data['variant'],
-                        price_options__groupon__cda=data['deal']).first()
+                            price_options__groupon__cda=data['deal']).first()
             if variant is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
