@@ -14,7 +14,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
 
 from flamaster.core import http
-from flamaster.extensions import register_jinja_helpers
+from flamaster.extensions import register_jinja_helpers, babel
 
 
 class ExtensionLoadError(Exception):
@@ -58,17 +58,7 @@ class AppFactory(object):
             module, ext_name = self._import(ext_path)
 
             try:
-
                 ext = getattr(module, ext_name)
-                if ext_name == 'babel':
-                    register_jinja_helpers(app)
-
-                    @ext.localeselector
-                    def get_locale():
-                        languages = app.config['ACCEPT_LANGUAGES']
-                        matched = request.accept_languages.best_match(languages)
-                        return session.get(app.config['LOCALE_KEY'], matched)
-
             except AttributeError:
                 ExtensionLoadError("Extension '{}'' not found".format(ext))
 
@@ -76,6 +66,15 @@ class AppFactory(object):
                 ext.init_app(app)
             except AttributeError:
                 ext(app)
+
+            if ext_name == 'babel':
+                @ext.localeselector
+                def get_locale():
+                    languages = app.config['ACCEPT_LANGUAGES']
+                    matched = request.accept_languages.best_match(languages)
+                    return session.get(app.config['LOCALE_KEY'], matched)
+
+            print ext_name
 
     def _register_blueprints(self, app):
         """ Register all blueprint modules listed under the settings
@@ -90,9 +89,12 @@ class AppFactory(object):
 
     def _register_hooks(self, app):
 
+        register_jinja_helpers(app)
+
         @app.before_request
         def setup_session():
             g.now = time.mktime(datetime.utcnow().timetuple())
+            print babel_locale()
             g.locale = babel_locale().language
             session['id'] = session.get('id', uuid.uuid4().hex)
 
