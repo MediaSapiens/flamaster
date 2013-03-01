@@ -48,6 +48,7 @@ class CategoryResource(ModelResource):
 @api_resource(bp, 'countries', {'id': int})
 class CountriesResource(ModelResource):
     model = Country
+    page_size = 1000
 
     @method_wrapper(http.METHOD_NOT_ALLOWED)
     def put(self, id, data):
