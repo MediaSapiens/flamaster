@@ -38,11 +38,13 @@ ORGANIZER_ROLE = 'organizer'
 
 ROLES = [USER_ROLE, ADMIN_ROLE, ORGANIZER_ROLE]
 
-ACCEPT_LANGUAGES = ['de', 'en']
 LANGUAGES = {
+    'de': u'Deutsch',
     'en': u'English',
-    'de': u'Deutsch'
 }
+
+ACCEPT_LANGUAGES = LANGUAGES.keys()
+
 BABEL_DEFAULT_LOCALE = 'de'
 LOCALE_KEY = 'locale'
 
