@@ -74,8 +74,6 @@ class AppFactory(object):
                     matched = request.accept_languages.best_match(languages)
                     return session.get(app.config['LOCALE_KEY'], matched)
 
-            print ext_name
-
     def _register_blueprints(self, app):
         """ Register all blueprint modules listed under the settings
             BLUEPRINTS key """
