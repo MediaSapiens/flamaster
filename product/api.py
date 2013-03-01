@@ -24,7 +24,7 @@ __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
 
 @api_resource(bp, 'categories', {'id': int})
 class CategoryResource(ModelResource):
-
+    page_size = 10000
     model = Category
 
     validation = t.Dict({
@@ -39,10 +39,6 @@ class CategoryResource(ModelResource):
     filters_map = t.Dict({
         'parent_id': t.Int(gt=0)
     }).make_optional('parent_id').ignore_extra('*')
-
-    def gen_list_response(self, **kwargs):
-        return super(CategoryResource, self) \
-            .gen_list_response(page_size=10000, **kwargs)
 
 
 @api_resource(bp, 'countries', {'id': int})
@@ -62,10 +58,6 @@ class CountriesResource(ModelResource):
     def delete(self, id, data):
         return ''
 
-    def gen_list_response(self, **kwargs):
-        return super(CountriesResource, self) \
-            .gen_list_response(page_size=10000, **kwargs)
-
     @classmethod
     def serialize(cls, instance):
         """ Method to controls model serialization in derived classes
@@ -77,6 +69,7 @@ class CountriesResource(ModelResource):
 @api_resource(bp, 'carts', {'id': int})
 class CartResource(ModelResource):
     model = Cart
+    page_size = 10000
 
     validation = t.Dict({
         'product_id': t.MongoId,
@@ -146,10 +139,6 @@ class CartResource(ModelResource):
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
-
-    def gen_list_response(self, **kwargs):
-        return super(CartResource, self) \
-            .gen_list_response(page_size=10000, **kwargs)
 
     def _check_customer(self, data):
         if data['customer_id'] != session['customer_id']:
