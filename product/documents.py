@@ -71,7 +71,7 @@ class BaseProduct(Document, DocumentMixin):
         ]
     }
 
-    sku = StringField(unique=True)
+    sku = StringField()
     name = MLStringField(required=True)
     type = StringField(required=True)
     teaser = MLStringField()
