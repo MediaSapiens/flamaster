@@ -8,8 +8,10 @@ import sys
 dir = os.path.dirname
 sys.path.insert(0, dir(dir(dir(os.path.abspath(__file__)))))
 
-from flamaster.conf import settings
+import settings
 
 
 if __name__ == '__main__':
-    main(url=settings.SQLALCHEMY_DATABASE_URI, debug='False', repository=settings.MIGRATIONS_REPOSITORY)
+    main(url=settings.SQLALCHEMY_DATABASE_URI,
+         debug='False',
+         repository=settings.MIGRATIONS_REPOSITORY)
