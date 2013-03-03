@@ -31,5 +31,3 @@ Running project:
 
 ./manage.py createall
 ./manage.py runserver
-
-Test string
