@@ -36,7 +36,8 @@ class LazyResource(LazyView):
 
     @cached_property
     def view(self):
-        return import_string(self.import_name).as_view(self.endpoint)
+        resource_cls = import_string(self.import_name)
+        return resource_cls.as_view(self.endpoint)
 
 
 def add_api_rule(bp, endpoint, pk_def, import_name):

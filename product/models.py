@@ -171,6 +171,7 @@ class Shelf(db.Model, CRUDMixin):
     """
     price_option_id = db.Column(db.String(24), unique=True, index=True)
     quantity = db.Column(db.Integer, default=0)
+    sold = db.Column(db.Integer, default=0)
 
     @classmethod
     def get_by_price_option(cls, price_option_id):

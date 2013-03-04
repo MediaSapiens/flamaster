@@ -63,8 +63,8 @@ class Resource(MethodView):
         except t.DataError as err:
             current_app.logger.info("Error in filters: %s", err.as_dict())
 
-        page = kwargs.pop('page')
-        args_page_size = kwargs.pop('page_size')
+        page = kwargs.pop('page', 1)
+        args_page_size = kwargs.pop('page_size', 20)
         page_size = self.page_size or args_page_size
 
         objects = self.get_objects(**kwargs)

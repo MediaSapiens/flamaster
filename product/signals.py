@@ -4,6 +4,7 @@ import logging
 from blinker import Namespace
 
 # from flamaster.account.models import User
+from flask import current_app
 from flamaster.extensions import db
 from .models import Shelf
 
@@ -41,6 +42,18 @@ def remove_from_shelf(price_option):
     Shelf.query.delete().where(price_option_id=price_option.id)
     db.session.commit()
 
+
+@order_created.connect
+def on_order_created(sender, order):
+    for cart_item in order.goods:
+        shelves = Shelf.get_by_price_option(
+                    price_option_id=cart_item.price_option_id)
+        if shelves.first() is None:
+            current_app.logger.error('Item is not on shelf %s',
+                                     cart_item.price_option_id)
+        else:
+            shelves.update({'sold': Shelf.sold + 1})
+        db.session.commit()
 
 #def order_creation_sender(mapper, connection, instance):
 #    owners = list(set(map(attrgetter('product.created_by'), instance.goods)))
