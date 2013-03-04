@@ -212,6 +212,30 @@ class User(db.Model, CRUDMixin, UserMixin):
         self.customer.phone = value
 
     @hybrid_property
+    def fax(self):
+        return self.customer and self.customer.fax or None
+
+    @fax.setter
+    def fax(self, value):
+        self.customer.fax = value
+
+    @hybrid_property
+    def gender(self):
+        return self.customer and self.customer.gender or None
+
+    @gender.setter
+    def gender(self, value):
+        self.customer.gender = value
+
+    @hybrid_property
+    def company(self):
+        return self.customer and self.customer.company or None
+
+    @company.setter
+    def company(self, value):
+        self.customer.company = value
+
+    @hybrid_property
     def addresses(self):
         return self.customer.addresses
 
