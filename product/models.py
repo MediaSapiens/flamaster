@@ -159,8 +159,11 @@ class Order(db.Model, CRUDMixin):
         return self.update(payment_details=payment_details)
 
     @classmethod
-    def get_by_payment_details(cls, payment_details):
-        return cls.query.filter_by(payment_details=payment_details).first()
+    def get_by_payment_details(cls, payment_details, fuzzy=False):
+        if fuzzy:
+            return None
+        else:
+            return cls.query.filter_by(payment_details=payment_details).first()
 
     def mark_paid(self):
         return self.update(state=OrderStates.paid)
