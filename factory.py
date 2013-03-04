@@ -14,7 +14,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
 
 from flamaster.core import http
-from flamaster.extensions import register_jinja_helpers, babel
+from flamaster.extensions import register_jinja_helpers
 
 
 class ExtensionLoadError(Exception):
@@ -92,7 +92,6 @@ class AppFactory(object):
         @app.before_request
         def setup_session():
             g.now = time.mktime(datetime.utcnow().timetuple())
-            print babel_locale()
             g.locale = babel_locale().language
             session['id'] = session.get('id', uuid.uuid4().hex)
 
