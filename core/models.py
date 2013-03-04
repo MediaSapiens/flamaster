@@ -20,9 +20,7 @@ def raise_value(text):
 class BaseMixin(object):
     """ Base mixin
     """
-    __table_args__ = {'extend_existing': True,
-                      'mysql_charset': 'utf8',
-                      'mysql_engine': 'InnoDB'}
+    __table_args__ = {'extend_existing': True}
 
     @declared_attr
     def __tablename__(cls):
@@ -30,14 +28,26 @@ class BaseMixin(object):
         """
         return plural_name(underscorize(cls.__name__))
 
-    def save(self, commit=True):
-        db.session.add(self)
-        commit and db.session.commit()
-        return self
+    def as_dict(self, include=None, exclude=['password']):
+        """ method for building dictionary for model value-properties filled
+            with data from mapped storage backend
+        """
+        column_properties = [p.key for p in self.__mapper__.iterate_properties
+                                if isinstance(p, orm.ColumnProperty)]
+        fields = [field.strip('_') for field in column_properties]
 
-    def delete(self, commit=True):
-        db.session.delete(self)
-        commit and db.session.commit()
+        exportable_fields = (include or []) + fields
+        exportable_fields = set(exportable_fields) - set(exclude)
+        # convert undescored fields:
+
+        result = dict()
+        for field in exportable_fields:
+            value = getattr(self, field)
+            if hasattr(value, '__call__'):
+                value = value()
+            result[field] = value
+
+        return result
 
 
 class CRUDMixin(BaseMixin):
@@ -63,30 +73,19 @@ class CRUDMixin(BaseMixin):
     def update(self, commit=True, **kwargs):
         return self._setattrs(**kwargs).save(commit)
 
-    def as_dict(self, include=None, exclude=['password']):
-        """ method for building dictionary for model value-properties filled
-            with data from mapped storage backend
-        """
-        column_properties = [p.key for p in self.__mapper__.iterate_properties
-                                if isinstance(p, orm.ColumnProperty)]
-        fields = [field.strip('_') for field in column_properties]
+    def save(self, commit=True):
+        db.session.add(self)
+        commit and db.session.commit()
+        return self
 
-        exportable_fields = (include or []) + fields
-        exportable_fields = set(exportable_fields) - set(exclude)
-        # convert undescored fields:
-
-        result = dict()
-        for field in exportable_fields:
-            value = getattr(self, field)
-            if hasattr(value, '__call__'):
-                value = value()
-            result[field] = value
-
-        return result
+    def delete(self, commit=True):
+        db.session.delete(self)
+        commit and db.session.commit()
 
     def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
-            k.startswith('_') and raise_value('Underscored values are not allowed')
+            k.startswith('_') and raise_value('Underscored values are not '
+                                              'allowed')
             setattr(self, k, v)
 
         return self
