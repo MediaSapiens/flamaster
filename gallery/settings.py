@@ -23,4 +23,5 @@ THUMBNAIL_ORIENTATION = True
 EXTENSIONS = {
     'JPEG': 'jpg',
     'PNG': 'png',
+    'BMP': 'bmp'
 }
