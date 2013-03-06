@@ -85,7 +85,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         try:
             data = self.validation.check(data)
 
-            order = Order.get_by_payment_details(data)
+            order = Order.get_by_payment_details(data, fuzzy=True)
             if order is not None:
                 data.update({'message': 'EXIST'})
                 return jsonify_status_code(data, status)
