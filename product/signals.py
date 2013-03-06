@@ -23,7 +23,7 @@ order_created = signals.signal('order-created')
 
 
 @price_created.connect
-def put_on_shelf(price_option):
+def put_on_shelf(sender, price_option):
     """ Putting newly created priced item on shelf
     """
     Shelf.create(price_option_id=str(price_option.id),
