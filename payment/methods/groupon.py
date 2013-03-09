@@ -87,7 +87,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
 
             order = Order.get_by_payment_details(data, fuzzy=True)
             if order is not None:
-                data.update({'message': 'EXIST'})
+                data.update({'status': 'EXISTS'})
                 return jsonify_status_code(data, status)
 
             variant = BaseProductVariant.objects(
@@ -105,13 +105,13 @@ class GrouponPaymentMethod(BasePaymentMethod):
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
             data.update({
-                'message': 'OK',
+                'status': 'OK',
                 'seats': deal['number'],
                 'option': option,
             })
         except t.DataError as e:
             data.update({
-                'message': 'ERROR',
+                'status': 'ERR',
                 'errors': e.as_dict()
             })
 
