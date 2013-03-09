@@ -163,7 +163,8 @@ class Order(db.Model, CRUDMixin):
 class Shelf(db.Model, CRUDMixin):
     """ Model to keep available products
     """
-    product_variant_id = db.Column(db.String(24), unique=True, index=True)
+    product_id = db.Column(db.String, nullable=False, unique=True, index=True)
+    product_variant_id = db.Column(db.String(24))
     quantity = db.Column(db.Integer, default=0)
 
     @classmethod
