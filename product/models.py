@@ -19,8 +19,7 @@ class Cart(db.Model, CRUDMixin):
     """
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
     product_id = db.Column(db.String, nullable=False)
-    product_variant_id = db.Column(db.String, nullable=False)
-    price_option_id = db.Column(db.String, nullable=False)
+    product_variant_id = db.Column(db.String)
     service = db.Column(db.String)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
@@ -31,20 +30,17 @@ class Cart(db.Model, CRUDMixin):
                                backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
-    def create(cls, amount, customer, product, product_variant,
-               price_option, service):
+    def create(cls, amount, customer, product, product_variant, service):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
         :param product_variant: instance of BaseProductVariant subclass
-        :param price_option: instance of BasePriceOption subclass
         :param amount: amount of products to place in cart
         :param customer_id: instance of Customer model
         """
         instance_kwargs = {
             'product_id': str(product.id),
             'product_variant_id': str(product_variant.id),
-            'price_option_id': str(price_option.id),
-            'price': product.get_price(price_option.id, amount),
+            'price': product.get_price(product_variant.id, amount),
             'customer': customer,
             'amount': amount,
             'service': service
@@ -167,16 +163,16 @@ class Order(db.Model, CRUDMixin):
 class Shelf(db.Model, CRUDMixin):
     """ Model to keep available products
     """
-    price_option_id = db.Column(db.String(24), unique=True, index=True)
+    product_variant_id = db.Column(db.String(24), unique=True, index=True)
     quantity = db.Column(db.Integer, default=0)
 
     @classmethod
-    def get_by_price_option(cls, price_option_id):
+    def get_by_product_variant(cls, product_variant_id):
         """ Filter shelf items by price options
         """
-        if not isinstance(price_option_id, basestring):
-            price_option_id = str(price_option_id)
-        return cls.query.filter_by(price_option_id=price_option_id)
+        if not isinstance(product_variant_id, basestring):
+            product_variant_id = str(product_variant_id)
+        return cls.query.filter_by(product_variant_id=product_variant_id)
 
 
 # TODO: add favorites
