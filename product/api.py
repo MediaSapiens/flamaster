@@ -73,11 +73,11 @@ class CartResource(ModelResource):
     validation = t.Dict({
         'product_id': t.MongoId,
         'concrete_product_id': t.MongoId,
-        'price_option_id': t.MongoId,
+        'product_variant_id': t.MongoId,
         'amount': t.Int,
         'customer_id': t.Int,
         'service': t.String
-    }).make_optional('service').ignore_extra('*')
+    }).make_optional('service', 'product_variant_id').ignore_extra('*')
 
     filters_map = t.Dict({
         'product_id': t.MongoId,
@@ -103,17 +103,25 @@ class CartResource(ModelResource):
                 customer = Customer.create()
         else:
             customer = current_user.customer
+
         session['customer_id'] = customer.id
         data['customer_id'] = customer.id
+
         try:
             data = validation.check(data)
             product = mongo.db.products.find_one({'_id': data['product_id']})
+            variant_id = data.get('product_variant_id', None)
+            variant = mongo.db.product_variants.find_one({'_id': variant_id})
+
             if product is None:
-                raise t.DataError({'product_id': _('Product not fount')})
+                raise t.DataError({'product_id': _('Product not found')})
+
+            if variant_id is not None and variant_id not in product.product_variants:
+                raise t.DataError({'product_variant_id': _('Product variant not found')})
 
             cart = product.add_to_cart(customer=customer,
                                        amount=data['amount'],
-                                       price_option_id=data['price_option_id'],
+                                       product_variant=variant,
                                        service=data.get('service'))
 
             response = cart.as_dict()

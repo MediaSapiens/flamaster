@@ -30,7 +30,7 @@ class Cart(db.Model, CRUDMixin):
                                backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
-    def create(cls, amount, customer, product, product_variant, service):
+    def create(cls, amount, customer, product, product_variant=None, service=''):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
         :param product_variant: instance of BaseProductVariant subclass
@@ -39,12 +39,15 @@ class Cart(db.Model, CRUDMixin):
         """
         instance_kwargs = {
             'product_id': str(product.id),
-            'product_variant_id': str(product_variant.id),
-            'price': product.get_price(product_variant.id, amount),
+            'price': product.get_price(product_variant, amount),
             'customer': customer,
             'amount': amount,
             'service': service
         }
+
+        if product_variant is not None:
+            instance_kwargs['product_variant_id'] = str(product_variant.id)
+
         return super(Cart, cls).create(**instance_kwargs)
 
     @classmethod
