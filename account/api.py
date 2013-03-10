@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import trafaret as t
 from trafaret import extras as te
 
-from flask import abort, request, session, g, current_app, json
+from flask import abort, request, session, current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
@@ -26,6 +26,21 @@ from .models import User, Role, BankAccount, Address, Customer
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
 security = LocalProxy(lambda: current_app.extensions['security'])
+
+
+class CustomerMixin(object):
+
+    @property
+    def _customer(self):
+        if current_user.is_anonymous():
+            customer_id = session.get('customer_id')
+            if customer_id is None:
+                abort(http.BAD_REQUEST)
+            customer = Customer.query.get_or_404(customer_id)
+        else:
+            customer = current_user.customer
+
+        return customer
 
 
 class SessionResource(Resource):
@@ -199,7 +214,7 @@ class ProfileResource(ModelResource):
         return instance.as_dict(include, exclude)
 
 
-class AddressResource(ModelResource):
+class AddressResource(ModelResource, CustomerMixin):
     model = Address
     validation = t.Dict({
         'country_id': t.Int,
@@ -207,24 +222,18 @@ class AddressResource(ModelResource):
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)"),
-        'zip_code': t.String,
-        'customer_id': t.Or(t.Int, t.Null)
-    }).make_optional('apartment', 'customer_id').ignore_extra('*')
+        'zip_code': t.String
+    }).make_optional('apartment').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
         # Hack for IE XDomainRequest support:
 
         try:
-            data = self._request_data
-
+            data = self.clean(request.json)
             address_type = data.pop('type')
             address = self.model.create(**data)
-            customer = self._customer(data)
-
-            customer.set_address(address_type, address)
-            customer.save()
-
+            self._customer.set_address(address_type, address).save()
             response = self.serialize(address)
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
@@ -234,33 +243,10 @@ class AddressResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        customer = self._customer(self._request_data)
-        kwargs['customer_id'] = customer.id
+        if not current_user.is_superuser():
+            kwargs['customer_id'] = self._customer.id
 
         return super(AddressResource, self).get_objects(**kwargs)
-
-    def _customer(self, data):
-        key = 'customer_id'
-        if current_user.is_anonymous():
-            customer_id = session.get(key) or data.get(key)
-            if customer_id is None:
-                abort(http.BAD_REQUEST)
-            else:
-                customer = Customer.query.get_or_404(customer_id)
-        else:
-            customer = current_user.customer
-
-        return customer
-
-    @property
-    def _request_data(self):
-        try:
-            data = request.json or json.loads(request.data)
-            return self.clean(data)
-        except t.DataError as err:
-            raise err
-        except:
-            abort(http.BAD_REQUEST)
 
 
 class RoleResource(ModelResource):
@@ -317,37 +303,23 @@ class BankAccountResource(ModelResource):
         return self.model.query.filter_by(**kwargs)
 
 
-class CustomerResource(ModelResource):
+class CustomerResource(ModelResource, CustomerMixin):
     model = Customer
+
     method_decorators = {'delete': roles_required('admin')}
+
     validation = t.Dict({
         'first_name': t.String,
         'last_name': t.String,
         'email': t.Email,
         'phone': t.String(allow_blank=True),
         'notes': t.Or(t.String(allow_blank=True), t.Null),
-        'customer_id': t.Or(t.Int, t.Null),
-    }).make_optional('phone', 'notes', 'customer_id').ignore_extra('*')
-
-    # IE CORS Hack
-    def post(self):
-        status = http.CREATED
-
-        try:
-            data = self._request_data
-            customer = self._customer(data)
-            data.pop('customer_id', None)
-            customer.update(**data)
-            response = self.serialize(customer)
-        except t.DataError as err:
-            status, response = http.BAD_REQUEST, err.as_dict()
-
-        return jsonify_status_code(response, status)
+    }).make_optional('phone', 'notes').ignore_extra('*')
 
     def put(self, id):
         status = http.ACCEPTED
         try:
-            data = self._request_data
+            data = self.clean(request.json)
             instance = self.get_object(id).update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
@@ -356,29 +328,6 @@ class CustomerResource(ModelResource):
         return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
-        if current_user.is_anonymous() or not current_user.is_superuser():
-            kwargs['id'] = self._customer(self._request_data).id
+        if not current_user.is_superuser():
+            kwargs['id'] = self._customer.id
         return super(CustomerResource, self).get_objects(**kwargs)
-
-    @property
-    def _request_data(self):
-        try:
-            data = request.json or json.loads(request.data)
-            return self.clean(data)
-        except t.DataError as err:
-            raise err
-        except:
-            abort(http.BAD_REQUEST)
-
-    def _customer(self, data):
-        key = 'customer_id'
-        if current_user.is_anonymous():
-            customer_id = session.get(key) or data.get(key)
-            if customer_id is None:
-                abort(http.BAD_REQUEST)
-            else:
-                customer = Customer.query.get_or_404(customer_id)
-        else:
-            customer = current_user.customer
-
-        return customer
