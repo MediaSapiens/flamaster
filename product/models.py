@@ -5,8 +5,10 @@ from flask import current_app
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
 from flamaster.core.decorators import multilingual
 from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
+from flamaster.core import mongo
 
 from werkzeug.utils import import_string
+from bson import ObjectId
 
 from . import OrderStates
 
@@ -64,6 +66,18 @@ class Cart(db.Model, CRUDMixin):
         """
         return cls.query.filter(cls.created_at < timedelta,
                                 cls.is_ordered == False)
+
+    @property
+    def product(self):
+        return mongo.db.product.find_one({'_id': ObjectId(self.product_id)})
+
+    @property
+    def product_variant(self):
+        return mongo.db.product_variants.find_one({
+            '_id': ObjectId(self.product_variant_id)})
+
+    def recalculate(self, amount):
+        self.update(amount=amount)
 
 
 @multilingual
