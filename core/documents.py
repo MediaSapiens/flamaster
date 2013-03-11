@@ -33,7 +33,6 @@ class BaseMixin(object):
         return result
 
     def update(self, **kwargs):
-        print "Update:", kwargs
         return self._setattrs(**kwargs).save()
 
     def _setattrs(self, **kwargs):

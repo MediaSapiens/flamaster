@@ -8,7 +8,7 @@ from flask import current_app, json
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product.documents import BaseProductVariant
-from flamaster.product.models import Order
+from flamaster.product.utils import get_order_class
 
 from requests.auth import HTTPBasicAuth
 
@@ -84,8 +84,9 @@ class GrouponPaymentMethod(BasePaymentMethod):
         status = http.OK
         try:
             data = self.validation.check(data)
+            order_cls = get_order_class()
+            order = order_cls.get_by_payment_details(data)
 
-            order = Order.get_by_payment_details(data, fuzzy=True)
             if order is not None:
                 data.update({'status': 'EXISTS'})
                 return jsonify_status_code(data, status)

@@ -16,7 +16,8 @@ from werkzeug.utils import import_string
 from flamaster.core.documents import DocumentMixin, BaseMixin
 
 from .exceptions import ShelfNotAvailable
-from .models import Cart, Shelf
+from .models import Shelf
+from .utils import get_cart_class
 # from .signals import price_created, price_updated, price_deleted
 
 
@@ -134,7 +135,7 @@ class BaseProduct(Document, DocumentMixin):
         price_option = filter(lambda opt: opt.id == ObjectId(price_option_id),
                               product_variant.price_options)[0]
 
-        cart = Cart.create(amount, customer, self, product_variant,
+        cart = get_cart_class().create(amount, customer, self, product_variant,
                            price_option, service)
         return cart
         # except Exception as error:

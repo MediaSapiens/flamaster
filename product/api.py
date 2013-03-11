@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 import trafaret as t
-from flask import abort, request, session
+from flask import request, session
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -15,15 +15,14 @@ from flamaster.core.utils import jsonify_status_code
 from . import product as bp
 from .helpers import resolve_parent
 from .documents import BaseProduct
-from .models import Cart, Category, Country, Order
-from .datastore import OrderDatastore
+from .models import Category, Country
+from .utils import get_order_class, get_cart_class
 
 
 __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
            'OrderResource']
 
 
-@api_resource(bp, 'categories', {'id': int})
 class CategoryResource(ModelResource):
     page_size = 10000
     model = Category
@@ -42,7 +41,6 @@ class CategoryResource(ModelResource):
     }).make_optional('parent_id').ignore_extra('*')
 
 
-@api_resource(bp, 'countries', {'id': int})
 class CountriesResource(ModelResource):
     model = Country
     page_size = 1000
@@ -67,9 +65,8 @@ class CountriesResource(ModelResource):
         return instance.as_dict(include=['id', 'short', 'name'])
 
 
-@api_resource(bp, 'carts', {'id': int})
 class CartResource(ModelResource, CustomerMixin):
-    model = Cart
+    model = get_cart_class()
     page_size = 10000
 
     validation = t.Dict({
@@ -142,9 +139,8 @@ class CartResource(ModelResource, CustomerMixin):
         return customer
 
 
-@api_resource(bp, 'orders', {'id': int})
 class OrderResource(ModelResource, CustomerMixin):
-    model = Order
+    model = get_order_class()
 
     validation = t.Dict({
         'next_state': t.Int,
@@ -162,8 +158,7 @@ class OrderResource(ModelResource, CustomerMixin):
         status = http.ACCEPTED
 
         try:
-            datastore = OrderDatastore(self.model, Cart, Customer)
-            instance = datastore.create_from_api(**request.json)
+            instance = self.model.create_from_api(**request.json)
             response = self.serialize(instance)
         except t.DataError as err:
             status, response = http.BAD_REQUEST, err.as_dict()
