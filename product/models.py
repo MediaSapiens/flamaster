@@ -69,7 +69,7 @@ class Cart(db.Model, CRUDMixin):
 
     @property
     def product(self):
-        return mongo.db.product.find_one({'_id': ObjectId(self.product_id)})
+        return mongo.db.products.find_one({'_id': ObjectId(self.product_id)})
 
     @property
     def product_variant(self):
@@ -77,7 +77,8 @@ class Cart(db.Model, CRUDMixin):
             '_id': ObjectId(self.product_variant_id)})
 
     def recalculate(self, amount):
-        self.update(amount=amount)
+        new_price = self.product.get_price(self.product_variant, amount)
+        return self.update(amount=amount, price=new_price)
 
 
 @multilingual

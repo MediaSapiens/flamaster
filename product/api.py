@@ -72,7 +72,6 @@ class CartResource(ModelResource):
 
     validation = t.Dict({
         'product_id': t.MongoId,
-        'concrete_product_id': t.MongoId,
         'product_variant_id': t.MongoId,
         'amount': t.Int,
         'customer_id': t.Int,
@@ -92,8 +91,6 @@ class CartResource(ModelResource):
         except:
             abort(http.BAD_REQUEST)
 
-        validation = self.validation.make_optional('concrete_product_id')
-
         # condition to ensure that we have a customer when item added to cart
         if current_user.is_anonymous():
             customer_id = session.get('customer_id') or data.get('customer_id')
@@ -108,7 +105,7 @@ class CartResource(ModelResource):
         data['customer_id'] = customer.id
 
         try:
-            data = validation.check(data)
+            data = self.validation.check(data)
             product = mongo.db.products.find_one({'_id': data['product_id']})
             variant_id = data.get('product_variant_id', None)
             variant = mongo.db.product_variants.find_one({'_id': variant_id})
@@ -134,13 +131,16 @@ class CartResource(ModelResource):
         status = http.ACCEPTED
         data = request.json or abort(http.BAD_REQUEST)
         validation = self.validation.append(self._check_customer)
+
         try:
             data = validation.check(data)
             instance = self.get_object(id)
+
             if session['customer_id'] == instance.customer_id:
-                response = instance.update(amount=data['amount']).as_dict()
+                response = instance.recalculate(data['amount']).as_dict()
             else:
                 abort(http.UNAUTHORIZED)
+
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
