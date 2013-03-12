@@ -116,7 +116,8 @@ class AppFactory(object):
                 ('Access-Control-Allow-Methods',
                     'GET,POST,PUT,DELETE,HEAD,OPTIONS'),
                 ('Access-Control-Allow-Headers',
-                    'Origin, X-Requested-With, Content-Type, Accept'),
+                    'Origin, X-Requested-With, Content-Type, Accept,'
+                    ' X-HTTP-Method-Override'),
             ]
             map(lambda h: response.headers.add(*h), headers)
             return response
