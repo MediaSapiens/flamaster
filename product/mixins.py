@@ -8,7 +8,10 @@ from flamaster.conf.settings import SHOP_ID
 
 from flask import current_app
 from operator import attrgetter
+
+from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
+
 from werkzeug.utils import import_string
 
 from . import OrderStates
@@ -196,9 +199,10 @@ class CartMixin(CRUDMixin):
                                 cls.is_ordered == False)
 
     @classmethod
-    def get_price(cls, carts_query):
-        # TODO: change to SQLA agregation query
-        return sum(map(attrgetter('price'), carts_query))
+    def get_price(cls, query):
+        # return sum(map(attrgetter('price'), carts_query))
+        return db.session.query(func.sum(cls.price)) \
+            .filter(query._criterion).scalar()
 
     @classmethod
     def mark_ordered(cls, carts_query, order):
