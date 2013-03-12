@@ -73,8 +73,8 @@ class CartResource(ModelResource, CustomerMixin):
         'concrete_product_id': t.MongoId,
         'price_option_id': t.MongoId,
         'amount': t.Int,
-        'service': t.String
-    }).make_optional('service', 'concrete_product_id').ignore_extra('*')
+        'details': t.String
+    }).make_optional('details', 'concrete_product_id').ignore_extra('*')
 
     filters_map = t.Dict({
         'product_id': t.MongoId,
