@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+import trafaret as t
+
 from flamaster.account.models import Customer
 from flamaster.core import lazy_cascade
 from flamaster.core.models import CRUDMixin
@@ -7,7 +9,6 @@ from flamaster.extensions import db
 from flamaster.conf.settings import SHOP_ID
 
 from flask import current_app
-from operator import attrgetter
 
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
@@ -17,6 +18,13 @@ from werkzeug.utils import import_string
 from . import OrderStates
 from .signals import order_created
 from .utils import get_cart_class
+
+
+groupon_details = t.Dict({
+    'deal': t.Int,
+    'voucher': t.String,
+    'code': t.String
+}).ignore_extra('*')
 
 
 class OrderMixin(CRUDMixin):
@@ -78,8 +86,10 @@ class OrderMixin(CRUDMixin):
         delivery_address = customer.delivery_address or billing_address
 
         goods = cart_cls.for_customer(customer)
-
         goods_price = cart_cls.get_price(goods)
+
+        details = kwargs.pop('payment_details')
+
         # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
         #                                         delivery_address)
 
@@ -100,6 +110,9 @@ class OrderMixin(CRUDMixin):
         cart_cls.mark_ordered(goods, instance)
         # Commit manipulation on goods
         db.session.commit()
+
+        if kwargs['payment_method'] == 'groupon':
+            instance.details = groupon_details.check(details)
 
         method = instance.resolve_payment()
         method.process_payment()
