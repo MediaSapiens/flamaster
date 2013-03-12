@@ -117,7 +117,7 @@ class BaseProduct(Document, DocumentMixin):
                            Shelf.quantity > 0) \
                             .update({'quantity': Shelf.quantity - 1})
 
-    def add_to_cart(self, customer, amount, price_option_id, service):
+    def add_to_cart(self, customer, amount, price_option_id):
         # try:
         self.__get_from_shelf(price_option_id)
 
@@ -136,7 +136,7 @@ class BaseProduct(Document, DocumentMixin):
                               product_variant.price_options)[0]
 
         cart = get_cart_class().create(amount, customer, self, product_variant,
-                           price_option, service)
+                           price_option)
         return cart
         # except Exception as error:
         #     current_app.logger.debug(error.message)

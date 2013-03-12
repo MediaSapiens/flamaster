@@ -11,7 +11,7 @@ def add_resource(endpoint, pk_def, import_name):
 
 add_resource('categories', {'id': int}, 'CategoryResource')
 add_resource('carts', {'id': int}, 'CartResource')
-add_resource('countries', {'id': int}, 'CountriesResource')
+add_resource('countries', {'id': int}, 'CountryResource')
 add_resource('orders', {'id': int}, 'OrderResource')
 
 

@@ -8,18 +8,17 @@ from flask.ext.security import login_required, current_user
 from flamaster.account.models import Customer
 from flamaster.account.api import CustomerMixin
 from flamaster.core import http
-from flamaster.core.decorators import api_resource, method_wrapper
+from flamaster.core.decorators import method_wrapper
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from . import product as bp
 from .helpers import resolve_parent
 from .documents import BaseProduct
 from .models import Category, Country
 from .utils import get_order_class, get_cart_class
 
 
-__all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
+__all__ = ['CategoryResource', 'CountryResource', 'CartResource',
            'OrderResource']
 
 
@@ -41,7 +40,7 @@ class CategoryResource(ModelResource):
     }).make_optional('parent_id').ignore_extra('*')
 
 
-class CountriesResource(ModelResource):
+class CountryResource(ModelResource):
     model = Country
     page_size = 1000
 
@@ -96,8 +95,8 @@ class CartResource(ModelResource, CustomerMixin):
 
             cart = product.add_to_cart(customer=customer,
                                        amount=data['amount'],
-                                       price_option_id=data['price_option_id'],
-                                       service=data.get('service'))
+                                       price_option_id=data['price_option_id'])
+            # cart.details = service_data
 
             response = self.serialize(cart)
         except t.DataError as err:

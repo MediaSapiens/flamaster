@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from flamaster.account.models import Customer
 from flamaster.core import lazy_cascade
+from flamaster.core.models import CRUDMixin
 from flamaster.extensions import db
 from flamaster.conf.settings import SHOP_ID
 
@@ -15,8 +16,7 @@ from .signals import order_created
 from .utils import get_cart_class
 
 
-class OrderMixin(object):
-
+class OrderMixin(CRUDMixin):
     shop_id = db.Column(db.String(128), default=SHOP_ID)
 
     billing_city = db.Column(db.Unicode(255), nullable=False)
@@ -133,13 +133,12 @@ class OrderMixin(object):
         return delivery.calculate_price()
 
 
-class CartMixin(object):
+class CartMixin(CRUDMixin):
     """ Cart record for concrete product
     """
     product_id = db.Column(db.String, nullable=False)
     product_variant_id = db.Column(db.String, nullable=False)
     price_option_id = db.Column(db.String, nullable=False)
-    service = db.Column(db.String)
     amount = db.Column(db.Integer, default=0)
     price = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
@@ -160,7 +159,7 @@ class CartMixin(object):
 
     @classmethod
     def create(cls, amount, customer, product, product_variant,
-               price_option, service):
+               price_option):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
         :param product_variant: instance of BaseProductVariant subclass
@@ -173,9 +172,8 @@ class CartMixin(object):
             'product_variant_id': str(product_variant.id),
             'price_option_id': str(price_option.id),
             'price': product.get_price(price_option.id, amount),
-            'customer': customer,
-            'amount': amount,
-            'service': service
+            'customer_id': customer.id,
+            'amount': amount
         }
         return super(CartMixin, cls).create(**instance_kwargs)
 
