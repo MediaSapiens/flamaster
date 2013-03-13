@@ -95,6 +95,8 @@ class SessionResource(Resource):
                         'customer_id': user.customer.id})
                     customer.delete()
 
+            session['customer_id'] = user.customer.id
+
         else:
             raise t.DataError({
                 'email': "Can't find anyone with this credentials"
