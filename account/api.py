@@ -7,6 +7,7 @@ from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
 from flask.ext.babel import lazy_gettext as _
@@ -66,7 +67,7 @@ class SessionResource(Resource):
         return jsonify_status_code(response, status)
 
     def delete(self, id):
-        for key in ('identity.name', 'identity.auth_type'):
+        for key in ('identity.name', 'identity.auth_type', 'customer_id'):
             session.pop(key, None)
 
         identity_changed.send(current_app._get_current_object(),
@@ -82,6 +83,18 @@ class SessionResource(Resource):
 
         if verify_password(data_dict.get('password'), user.password):
             login_user(user)
+
+            # Get cart items from anonymous customer
+            customer_id = session.get('customer_id')
+
+            if customer_id is not None:
+                customer = Customer.query.get(customer_id)
+
+                if customer is not None:
+                    Cart.for_customer(customer).update({
+                        'customer_id': user.customer.id})
+                    customer.delete()
+
         else:
             raise t.DataError({
                 'email': "Can't find anyone with this credentials"
