@@ -128,13 +128,10 @@ class BaseProduct(Document, DocumentMixin):
         #         ' you need ({}) '.format(shelf.quantity, amount))
         # else:
             # shelf.quantity -= amount
-        product_variant_class = import_string(self.product_variant_class)
+        product_variant_cls = import_string(self.product_variant_class)
 
-        product_variant = product_variant_class.objects(
-                            price_options__id=price_option_id).get()
-        price_option = filter(lambda opt: opt.id == ObjectId(price_option_id),
-                              product_variant.price_options)[0]
-
+        price_option, product_variant = product_variant_cls.get_price_option(
+                                            price_option_id)
         cart = get_cart_class().create(amount, customer, self, product_variant,
                            price_option)
         return cart
