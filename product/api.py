@@ -72,7 +72,7 @@ class CartResource(ModelResource):
     optional_fields = ('service', 'product_variant_id',)
     validation = t.Dict({
         'product_id': t.MongoId,
-        'product_variant_id': t.MongoId | t.Null,
+        'product_variant_id': t.Null | t.MongoId,
         'amount': t.Int,
         'customer_id': t.Int,
         'service': t.String | t.Null
@@ -113,7 +113,7 @@ class CartResource(ModelResource):
             if product is None:
                 raise t.DataError({'product_id': _('Product not found')})
 
-            if variant_id is not None and variant_id not in product.product_variants:
+            if variant_id is not None and variant_id not in product.get('product_variants', []):
                 raise t.DataError({'product_variant_id': _('Product variant not found')})
 
             cart = product.add_to_cart(customer=customer,
@@ -145,6 +145,9 @@ class CartResource(ModelResource):
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
+
+    def delete(self, id):
+        super(CartResource).delete(id)
 
     def gen_list_response(self, **kwargs):
         return super(CartResource, self) \
