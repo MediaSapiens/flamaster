@@ -146,9 +146,6 @@ class CartResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def delete(self, id):
-        super(CartResource).delete(id)
-
     def gen_list_response(self, **kwargs):
         return super(CartResource, self) \
             .gen_list_response(page_size=10000, **kwargs)
