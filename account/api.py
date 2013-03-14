@@ -90,7 +90,7 @@ class SessionResource(Resource):
             if customer_id is not None:
                 customer = Customer.query.get(customer_id)
 
-                if customer is not None:
+                if customer is not None and customer.user_id is None:
                     Cart.for_customer(customer).update({
                         'customer_id': user.customer.id})
                     customer.delete()
