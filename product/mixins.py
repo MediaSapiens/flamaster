@@ -88,14 +88,14 @@ class OrderMixin(CRUDMixin):
         raise NotImplementedError("Payment Details: %s", payment_details)
 
     @classmethod
-    def __prepare_address(cls, addr_type, address_instance):
+    def _prepare_address(cls, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']
         address_dict = address_instance.as_dict(exclude=exclude_fields)
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
 
     @classmethod
-    def __resolve_delivery(cls, delivery, address):
+    def _resolve_delivery(cls, delivery, address):
         return delivery.calculate_price()
 
 
