@@ -69,14 +69,14 @@ class CountriesResource(ModelResource):
 @api_resource(bp, 'carts', {'id': int})
 class CartResource(ModelResource):
     model = Cart
-
+    optional_fields = ('service', 'product_variant_id',)
     validation = t.Dict({
         'product_id': t.MongoId,
-        'product_variant_id': t.MongoId,
+        'product_variant_id': t.MongoId | t.Null,
         'amount': t.Int,
         'customer_id': t.Int,
-        'service': t.String
-    }).make_optional('service', 'product_variant_id').ignore_extra('*')
+        'service': t.String | t.Null
+    }).make_optional(*optional_fields).ignore_extra('*')
 
     filters_map = t.Dict({
         'product_id': t.MongoId,
