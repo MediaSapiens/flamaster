@@ -87,7 +87,10 @@ class GrouponPaymentMethod(BasePaymentMethod):
             order = order_cls.get_by_payment_details(data)
 
             if order is not None:
-                data.update({'status': 'EXISTS'})
+                data.update({
+                    'status': 'EXISTS',
+                    'order': order.as_dict()
+                })
                 return jsonify_status_code(data, status)
 
             variant = BaseProductVariant.objects(
