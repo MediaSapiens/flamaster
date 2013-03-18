@@ -338,10 +338,7 @@ class BankAccountResource(ModelResource):
 @api_resource(bp, 'customers', {'id': int})
 class CustomerResource(ModelResource):
     model = Customer
-    method_decorators = {
-        'put': login_required,
-        'delete': roles_required('admin')
-    }
+    method_decorators = {'delete': roles_required('admin')}
     validation = t.Dict({
         'first_name': t.String,
         'last_name': t.String,
@@ -360,8 +357,14 @@ class CustomerResource(ModelResource):
 
         try:
             data = self._request_data
-            customer = self._customer(data)
-            customer.update(**data)
+            customer = self._customer()
+
+            if customer is not None:
+                customer.update(**data)
+            else:
+                customer = self.model.create(**data)
+                session['customer_id'] = customer.id
+
             response = self.serialize(customer)
         except t.DataError as err:
             status, response = http.BAD_REQUEST, err.as_dict()
@@ -397,17 +400,18 @@ class CustomerResource(ModelResource):
             return self.clean(data)
         except t.DataError as err:
             raise err
-        except:
+        except Exception, err:
+            print err
             abort(http.BAD_REQUEST)
 
     def _customer(self):
+        customer = None
+
         if current_user.is_anonymous():
             customer_id = session.get('customer_id')
 
-            if customer_id is None:
-                abort(http.BAD_REQUEST)
-            else:
-                customer = Customer.query.get_or_404(customer_id)
+            if customer_id is not None:
+                customer = Customer.query.get(customer_id)
         else:
             customer = current_user.customer
 
