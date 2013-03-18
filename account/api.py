@@ -338,15 +338,21 @@ class BankAccountResource(ModelResource):
 @api_resource(bp, 'customers', {'id': int})
 class CustomerResource(ModelResource):
     model = Customer
-    method_decorators = {'delete': roles_required('admin')}
+    method_decorators = {
+        'put': login_required,
+        'delete': roles_required('admin')
+    }
     validation = t.Dict({
         'first_name': t.String,
         'last_name': t.String,
         'email': t.Email,
         'phone': t.String(allow_blank=True),
         'notes': t.Or(t.String(allow_blank=True), t.Null),
-        'customer_id': t.Or(t.Int, t.Null),
-    }).make_optional('phone', 'notes', 'customer_id').ignore_extra('*')
+        'fax': t.String(allow_blank=True),
+        'company': t.String(allow_blank=True),
+        'gender': t.String(allow_blank=True)
+    }).make_optional('phone', 'notes', 'fax', 'company', 'gender')\
+        .ignore_extra('*')
 
     # IE CORS Hack
     def post(self):
@@ -355,7 +361,6 @@ class CustomerResource(ModelResource):
         try:
             data = self._request_data
             customer = self._customer(data)
-            data.pop('customer_id', None)
             customer.update(**data)
             response = self.serialize(customer)
         except t.DataError as err:
@@ -375,8 +380,14 @@ class CustomerResource(ModelResource):
         return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
-        if current_user.is_anonymous() or not current_user.is_superuser():
-            kwargs['id'] = self._customer(self._request_data).id
+        customer = self._customer()
+
+        if customer is not None:
+            if not customer.user.is_superuser():
+                kwargs['id'] = customer.id
+        else:
+            kwargs['id'] = None
+
         return super(CustomerResource, self).get_objects(**kwargs)
 
     @property
@@ -389,10 +400,10 @@ class CustomerResource(ModelResource):
         except:
             abort(http.BAD_REQUEST)
 
-    def _customer(self, data):
-        key = 'customer_id'
+    def _customer(self):
         if current_user.is_anonymous():
-            customer_id = session.get(key) or data.get(key)
+            customer_id = session.get('customer_id')
+
             if customer_id is None:
                 abort(http.BAD_REQUEST)
             else:
