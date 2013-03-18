@@ -1,8 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-import trafaret as t
 
-from flamaster.account.models import Customer
 from flamaster.core import lazy_cascade
 from flamaster.core.models import CRUDMixin
 from flamaster.extensions import db
@@ -16,15 +14,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.utils import import_string
 
 from . import OrderStates
-from .signals import order_created
-from .utils import get_cart_class
-
-
-groupon_details = t.Dict({
-    'deal': t.Int,
-    'voucher': t.String,
-    'code': t.String
-}).ignore_extra('*')
 
 
 class OrderMixin(CRUDMixin):
@@ -77,48 +66,9 @@ class OrderMixin(CRUDMixin):
 
     @classmethod
     def create_from_api(cls, customer_id, **kwargs):
-        """ Create order instance from data came from the API
+        """ This method should be overrided in Order model implemetation
         """
-        cart_cls = get_cart_class()
-        customer = Customer.query.get_or_404(customer_id)
-
-        billing_address = customer.billing_address
-        delivery_address = customer.delivery_address or billing_address
-
-        goods = cart_cls.for_customer(customer)
-        goods_price = cart_cls.get_price(goods)
-
-        details = kwargs.pop('payment_details')
-
-        # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
-        #                                         delivery_address)
-
-        # TODO: total_price = goods_price + delivery_price
-        kwargs.update({
-            'delivery_method': 'eticket',
-            'customer': customer,
-            'goods_price': goods_price,
-            'total_price': goods_price,
-            'state': OrderStates.created
-        })
-
-        kwargs.update(cls.__prepare_address('delivery', delivery_address))
-        kwargs.update(cls.__prepare_address('billing', billing_address))
-
-        instance = cls.create(**kwargs)
-        # Attach cart items to order and mark as ordered
-        cart_cls.mark_ordered(goods, instance)
-        # Commit manipulation on goods
-        db.session.commit()
-
-        if kwargs['payment_method'] == 'groupon':
-            instance.details = groupon_details.check(details)
-
-        method = instance.resolve_payment()
-        method.process_payment()
-        # Send signal on order creation
-        order_created.send(current_app._get_current_object(), order=instance)
-        return instance
+        raise NotImplementedError()
 
     def mark_paid(self):
         return self.update(state=OrderStates.paid)
@@ -138,14 +88,14 @@ class OrderMixin(CRUDMixin):
         raise NotImplementedError("Payment Details: %s", payment_details)
 
     @classmethod
-    def __prepare_address(cls, addr_type, address_instance):
+    def _prepare_address(cls, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']
         address_dict = address_instance.as_dict(exclude=exclude_fields)
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
 
     @classmethod
-    def __resolve_delivery(cls, delivery, address):
+    def _resolve_delivery(cls, delivery, address):
         return delivery.calculate_price()
 
 

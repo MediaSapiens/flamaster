@@ -90,7 +90,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
-            self.order.set_payment_details(unicode(response))
+            self.order.details = unicode(response)
             self.order.mark_paid()
 
             return Response(response=json.dumps(response), status=201,
