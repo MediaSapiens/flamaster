@@ -63,7 +63,7 @@ class BaseProductVariant(Document, DocumentMixin):
         return sum(map(operator.attrgetter('quantity'), self.price_options))
 
 
-class BaseProduct(Document, DocumentMixin):
+class BaseProduct(DocumentMixin, Document):
     meta = {
         'allow_inheritance': True,
         'collection': 'products',
