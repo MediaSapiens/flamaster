@@ -358,13 +358,7 @@ class CustomerResource(ModelResource):
         try:
             data = self._request_data
             customer = self._customer()
-
-            if customer is not None:
-                customer.update(**data)
-            else:
-                customer = self.model.create(**data)
-                session['customer_id'] = customer.id
-
+            customer.update(**data)
             response = self.serialize(customer)
         except t.DataError as err:
             status, response = http.BAD_REQUEST, err.as_dict()
@@ -400,18 +394,17 @@ class CustomerResource(ModelResource):
             return self.clean(data)
         except t.DataError as err:
             raise err
-        except Exception, err:
-            print err
+        except Exception:
             abort(http.BAD_REQUEST)
 
     def _customer(self):
-        customer = None
-
         if current_user.is_anonymous():
             customer_id = session.get('customer_id')
 
             if customer_id is not None:
                 customer = Customer.query.get(customer_id)
+            else:
+                abort(http.BAD_REQUEST)
         else:
             customer = current_user.customer
 
