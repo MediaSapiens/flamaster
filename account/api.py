@@ -203,7 +203,7 @@ class ProfileResource(ModelResource):
         exclude = ['password']
         include = ["first_name", "last_name", "created_at", "phone",
                    "current_login_at", "active", "billing_address",
-                   "logged_at", 'is_superuser']
+                   "delivery_address", "logged_at", 'is_superuser']
         # include = ['is_superuser']
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
@@ -223,9 +223,8 @@ class AddressResource(ModelResource):
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)"),
-        'zip_code': t.String,
-        'customer_id': t.Or(t.Int, t.Null)
-    }).make_optional('apartment', 'customer_id').ignore_extra('*')
+        'zip_code': t.String
+    }).make_optional('apartment').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -236,7 +235,7 @@ class AddressResource(ModelResource):
 
             address_type = data.pop('type')
             address = self.model.create(**data)
-            customer = self._customer(data)
+            customer = self._customer()
 
             customer.set_address(address_type, address)
             customer.save()
@@ -250,19 +249,19 @@ class AddressResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        customer = self._customer(self._request_data)
+        customer = self._customer()
         kwargs['customer_id'] = customer.id
 
         return super(AddressResource, self).get_objects(**kwargs)
 
-    def _customer(self, data):
-        key = 'customer_id'
+    def _customer(self):
         if current_user.is_anonymous():
-            customer_id = session.get(key) or data.get(key)
-            if customer_id is None:
-                abort(http.BAD_REQUEST)
+            customer_id = session.get('customer_id')
+
+            if customer_id is not None:
+                customer = Customer.query.get(customer_id)
             else:
-                customer = Customer.query.get_or_404(customer_id)
+                abort(http.BAD_REQUEST)
         else:
             customer = current_user.customer
 

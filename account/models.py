@@ -250,6 +250,10 @@ class User(db.Model, CRUDMixin, UserMixin):
     def billing_address(self):
         return self.customer and self.customer.billing_address or None
 
+    @property
+    def delivery_address(self):
+        return self.customer and self.customer.delivery_address or None
+
     def is_superuser(self):
         """ Flag signalized that user is superuse """
         superuser = _security.datastore.find_role(current_app.config['ADMIN_ROLE'])
