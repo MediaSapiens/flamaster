@@ -5,7 +5,7 @@ import settings
 
 from functools import wraps
 
-from flask import abort, request
+from flask import abort, request, g
 from flask.ext.babel import get_locale
 
 from flamaster.extensions import db
@@ -104,10 +104,10 @@ def multilingual(cls):
 def method_wrapper(http_status):
     def method_catcher(meth):
         @wraps(meth)
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             try:
-                data = request.json or abort(http.BAD_REQUEST)
-                return jsonify_status_code(meth(*args, data=data), http_status)
+                g.request_data = request.json or abort(http.BAD_REQUEST)
+                return jsonify_status_code(meth(*args, **kwargs), http_status)
             except t.DataError as e:
                 return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
         return wrapper

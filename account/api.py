@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import trafaret as t
 from trafaret import extras as te
 
-from flask import abort, request, session, current_app
+from flask import abort, request, session, current_app, g
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
@@ -18,6 +18,7 @@ from werkzeug.local import LocalProxy
 from sqlalchemy import or_
 
 from flamaster.core import http
+from flamaster.core.decorators import method_wrapper
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -52,34 +53,21 @@ class SessionResource(Resource):
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
 
+    @method_wrapper(http.CREATED)
     def post(self):
-        try:
-            data = self.clean(request.json)
+        data = self.clean(g.request_json)
 
-            if not User.is_unique(data['email']):
-                raise t.DataError({'email': _("This email is already taken")})
+        if not User.is_unique(data['email']):
+            raise t.DataError({'email': _("This email is already taken")})
 
-            register_user(email=data['email'],
-                          password=data.get('password', '*'))
+        register_user(email=data['email'], password=data.get('password', '*'))
+        return self._get_response()
 
-            response, status = self._get_response(), http.CREATED
-
-        except t.DataError as e:
-            response, status = e.as_dict(), http.BAD_REQUEST
-        return jsonify_status_code(response, status)
-
+    @method_wrapper(http.ACCEPTED)
     def put(self, id):
-        status = http.ACCEPTED
-
-        try:
-            cleaned_data = self.clean(request.json)
-            self._authenticate(cleaned_data)
-            response = self._get_response()
-
-        except t.DataError as e:
-            response, status = e.as_dict(), http.NOT_FOUND
-
-        return jsonify_status_code(response, status)
+        cleaned_data = self.clean(g.request_data)
+        self._authenticate(cleaned_data)
+        return self._get_response()
 
     def delete(self, id):
         for key in ('identity.name', 'identity.auth_type'):
@@ -225,20 +213,13 @@ class AddressResource(ModelResource, CustomerMixin):
         'zip_code': t.String
     }).make_optional('apartment').ignore_extra('*')
 
+    @method_wrapper(http.CREATED)
     def post(self):
-        status = http.CREATED
-        # Hack for IE XDomainRequest support:
-
-        try:
-            data = self.clean(request.json)
-            address_type = data.pop('type')
-            address = self.model.create(**data)
-            self._customer.set_address(address_type, address).save()
-            response = self.serialize(address)
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
+        data = self.clean(g.request_data)
+        address_type = data.pop('type')
+        address = self.model.create(**data)
+        self._customer.set_address(address_type, address).save()
+        return self.serialize(address)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
@@ -271,18 +252,11 @@ class BankAccountResource(ModelResource):
     }).ignore_extra('*')
     decorators = [login_required]
 
+    @method_wrapper(http.CREATED)
     def post(self):
-        status = http.CREATED
-        data = request.json or abort(http.BAD_REQUEST)
-
-        try:
-            data = self.clean(data)
-            data['user_id'] = current_user.id
-            response = self.serialize(self.model.create(**data))
-        except t.DataError as err:
-            response, status = err.as_dict(), http.BAD_REQUEST
-
-        return jsonify_status_code(response, status)
+        data = self.clean(g.request_data)
+        data['user_id'] = current_user.id
+        return self.serialize(self.model.create(**data))
 
     def get_object(self, id):
         instance = super(BankAccountResource, self).get_object(id)
@@ -293,7 +267,8 @@ class BankAccountResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        self.model is None and abort(http.BAD_REQUEST)
+        if self.model is None:
+            abort(http.BAD_REQUEST)
         if 'user_id' in request.args:
             kwargs['user_id'] = request.args['user_id']
 
@@ -316,16 +291,11 @@ class CustomerResource(ModelResource, CustomerMixin):
         'notes': t.Or(t.String(allow_blank=True), t.Null),
     }).make_optional('phone', 'notes').ignore_extra('*')
 
+    @method_wrapper(http.ACCEPTED)
     def put(self, id):
-        status = http.ACCEPTED
-        try:
-            data = self.clean(request.json)
-            instance = self.get_object(id).update(with_reload=True, **data)
-            response = self.serialize(instance)
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
+        data = self.clean(g.request_data)
+        instance = self.get_object(id).update(with_reload=True, **data)
+        return self.serialize(instance)
 
     def get_objects(self, **kwargs):
         if not current_user.is_superuser():
