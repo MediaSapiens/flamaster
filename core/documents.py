@@ -33,9 +33,9 @@ class BaseMixin(object):
         return result
 
     def update(self, **kwargs):
-        return self.__setattrs(**kwargs).save()
+        return self._setattrs(**kwargs).save()
 
-    def __setattrs(self, **kwargs):
+    def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
             if k.startswith('_'):
                 raise ValueError('Underscored values are not allowed')

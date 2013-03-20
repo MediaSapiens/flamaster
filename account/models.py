@@ -83,6 +83,7 @@ class Customer(db.Model, CRUDMixin):
             self.addresses.append(value)
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
+        return self
 
     @hybrid_property
     def billing_address(self):

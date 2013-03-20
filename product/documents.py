@@ -16,7 +16,8 @@ from werkzeug.utils import import_string
 from flamaster.core.documents import DocumentMixin, BaseMixin
 
 from .exceptions import ShelfNotAvailable
-from .models import Cart, Shelf
+from .models import Shelf
+from .utils import get_cart_class
 # from .signals import price_created, price_updated, price_deleted
 
 
@@ -62,7 +63,7 @@ class BaseProductVariant(Document, DocumentMixin):
         return sum(map(operator.attrgetter('quantity'), self.price_options))
 
 
-class BaseProduct(Document, DocumentMixin):
+class BaseProduct(DocumentMixin, Document):
     meta = {
         'allow_inheritance': True,
         'collection': 'products',
@@ -116,7 +117,7 @@ class BaseProduct(Document, DocumentMixin):
                            Shelf.quantity > 0) \
                             .update({'quantity': Shelf.quantity - 1})
 
-    def add_to_cart(self, customer, amount, price_option_id, service):
+    def add_to_cart(self, customer, amount, price_option_id):
         # try:
         self.__get_from_shelf(price_option_id)
 
@@ -127,15 +128,12 @@ class BaseProduct(Document, DocumentMixin):
         #         ' you need ({}) '.format(shelf.quantity, amount))
         # else:
             # shelf.quantity -= amount
-        product_variant_class = import_string(self.product_variant_class)
+        product_variant_cls = import_string(self.product_variant_class)
 
-        product_variant = product_variant_class.objects(
-                            price_options__id=price_option_id).get()
-        price_option = filter(lambda opt: opt.id == ObjectId(price_option_id),
-                              product_variant.price_options)[0]
-
-        cart = Cart.create(amount, customer, self, product_variant,
-                           price_option, service)
+        price_option, product_variant = product_variant_cls.get_price_option(
+                                            price_option_id)
+        cart = get_cart_class().create(amount, customer, self, product_variant,
+                           price_option)
         return cart
         # except Exception as error:
         #     current_app.logger.debug(error.message)

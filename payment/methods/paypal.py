@@ -5,7 +5,7 @@ import requests
 from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
-from flamaster.product import Order
+from flamaster.product.utils import get_order_class
 
 from .base import BasePaymentMethod
 
@@ -74,7 +74,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Final step. The payment can be captured (collected) using the
             DoExpressCheckoutPayment call.
         """
-        self.order = Order.get_by_payment_details(response['TOKEN'])
+        order_cls = get_order_class()
+        self.order = order_cls.get_by_payment_details(response['TOKEN'])
         if self.order is None:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
@@ -89,7 +90,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
-            self.order.set_payment_details(unicode(response))
+            self.order.details = unicode(response)
             self.order.mark_paid()
 
             return Response(response=json.dumps(response), status=201,

@@ -3,12 +3,12 @@ from __future__ import absolute_import
 import trafaret as t
 import requests
 
-from flask import current_app, json
+from flask import current_app
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product.documents import BaseProductVariant
-from flamaster.extensions import mongo
+from flamaster.product.utils import get_order_class
 
 from requests.auth import HTTPBasicAuth
 
@@ -21,8 +21,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         'deal': t.Int,
         'voucher': t.String,
         'code': t.String,
-        'variant': t.Or(t.MongoId, t.Null)
-    }).make_optional('variant')
+    }).ignore_extra('*')
 
     validate_path = 'merchant/redemptions/validate'
     redeem_path = 'merchant/redemptions'
@@ -56,8 +55,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
 
     def process_payment(self):
         status = http.OK
+        data = self.order.details
         try:
-            data = json.loads(self.order.payment_details)
             redemption = self.__redeem(voucher=data['voucher'],
                                        security=data['code'],
                                        deal=data['deal'])
@@ -68,7 +67,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
             status = http.BAD_REQUEST
             data.update({
                 'message': 'ERROR',
-                'exception': e.as_dict(),
+                'errors': e.as_dict(),
             })
 
         return jsonify_status_code(data, status)
@@ -84,33 +83,39 @@ class GrouponPaymentMethod(BasePaymentMethod):
         status = http.OK
         try:
             data = self.validation.check(data)
+            order_cls = get_order_class()
+            order = order_cls.get_by_payment_details(data)
+
+            if order is not None:
+                data.update({
+                    'status': 'EXISTS',
+                    'order': order.as_dict()
+                })
+                return jsonify_status_code(data, status)
+
             variant = BaseProductVariant.objects(
                             price_options__groupon__cda=data['deal']).first()
             if variant is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
             option, deal = self.__filter_option(variant, data['deal'])
-
             if option is None:
                 raise t.DataError({'deal': u'Invalid deal'})
 
             validation = self.__validate(voucher=data['voucher'],
                                          security=data['code'],
                                          deal=data['deal'])
-
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
-
             data.update({
-                'message': 'OK',
+                'status': 'OK',
                 'seats': deal['number'],
                 'option': option,
             })
         except t.DataError as e:
             data.update({
-                'message': 'ERROR',
-                'exception': e.as_dict(),
+                'status': 'ERR',
+                'errors': e.as_dict()
             })
-            status = http.BAD_REQUEST
 
         return jsonify_status_code(data, status)

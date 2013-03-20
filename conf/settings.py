@@ -109,7 +109,14 @@ PAYMENT_METHODS = {
     }
 }
 
-SHOP_ID = '1'
+SHOP_ID = 0
+# Sample shop objects configuration
+# SHOPS = [
+#     {
+#         'cart': 'findevent.vending.models.Cart',
+#         'order': 'findevent.vending.models.Order'
+#     }
+# ]
 # Flask-Security settings for default email sender
 SECURITY_EMAIL_SENDER = DEFAULT_MAIL_SENDER
 # either user should confirm email after registration or no
@@ -119,6 +126,7 @@ SECURITY_TRACKABLE = True
 SECURITY_REGISTERABLE = True
 
 SECURITY_CONFIRM_URL = "/account/activate"
+SECURITY_LOGIN_URL = "/login/"
 SECURITY_LOGOUT_URL = "/account/signout"
 SECURITY_POST_LOGIN_VIEW = "/account/"
 SECURITY_POST_CONFIRM_VIEW = "/account/"
