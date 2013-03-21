@@ -132,13 +132,13 @@ class ProfileResource(ModelResource):
     def _cmp_pwds(cls, value):
         """ Password changing for user
         """
-        if 'password' not in value and 'confirmation' not in value:
+        if not value.get('password'):
             return value
 
         elif len(value['password']) < 6:
             return {'password': t.DataError(_("Passwords should be more "
                                               "than 6 symbols length"))}
-        elif value['password'] != value['confirmation']:
+        elif value['password'] != value.get('confirmation'):
             return {'confirmation': t.DataError(_("Passwords doesn't match"))}
 
         return {'password': encrypt_password(value['password'])}
