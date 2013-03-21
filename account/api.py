@@ -129,7 +129,9 @@ class ProfileResource(ModelResource):
         raise NotImplemented('Method is not implemented')
 
     def put(self, id):
-        # we should check for password matching if user is trying to update it
+        """ we should check for password matching if
+            user is trying to update it
+        """
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
