@@ -14,6 +14,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.utils import import_string
 
 from . import OrderStates
+from .signals import cart_created, cart_removed
 
 
 class OrderMixin(CRUDMixin):
@@ -105,7 +106,7 @@ class CartMixin(CRUDMixin):
     product_id = db.Column(db.String, nullable=False)
     product_variant_id = db.Column(db.String, nullable=False)
     price_option_id = db.Column(db.String, nullable=False)
-    amount = db.Column(db.Integer, default=0)
+    amount = db.Column(db.Integer, default=0)  # amount of the same items
     price = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
 
@@ -124,8 +125,7 @@ class CartMixin(CRUDMixin):
                         backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
-    def create(cls, amount, customer, product, product_variant,
-               price_option):
+    def create(cls, commit=True, **kwargs):
         """ Cart creation method. Accepted params are:
         :param product: BaseProduct or it's subclass instance
         :param product_variant: instance of BaseProductVariant subclass
@@ -134,17 +134,25 @@ class CartMixin(CRUDMixin):
         :param customer_id: instance of Customer model
         """
         instance_kwargs = {
-            'product_id': str(product.id),
-            'product_variant_id': str(product_variant.id),
-            'price_option_id': str(price_option.id),
-            'price': product.get_price(price_option.id, amount),
-            'customer_id': customer.id,
-            'amount': amount
+            'product_id': str(kwargs['product'].id),
+            'product_variant_id': str(kwargs['product_variant'].id),
+            'price_option_id': str(kwargs['price_option'].id),
+            'customer_id': kwargs['customer'].id,
+            'amount': kwargs['amount'],
+            'price': kwargs['product'].get_price(kwargs['price_option'].id,
+                                                 kwargs['amount']),
         }
-        return super(CartMixin, cls).create(**instance_kwargs)
+        instance = super(CartMixin, cls).create(**instance_kwargs)
+        cart_created(current_app._get_current_object(),
+                     price_option_id=kwargs['price_option'].id,
+                     amount=kwargs['amount'])
+        return instance
 
-    # @classmethod
-    # def for_seat_data(cls, price_option, )
+    def delete(self, commit=True):
+        cart_removed.send(current_app._get_current_object(),
+                          self.price_option_id,
+                          self.amount)
+        return super(CartMixin, self).delete(commit)
 
     @classmethod
     def for_customer(cls, customer, is_ordered=False):
