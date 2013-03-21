@@ -152,6 +152,7 @@ class User(db.Model, CRUDMixin, UserMixin):
     current_login_at = db.Column(db.DateTime)
     current_login_ip = db.Column(db.String(128))
     login_count = db.Column(db.Integer)
+    avatar_id = db.Column(db.String(24))
 
     roles = db.relationship('Role', secondary=user_roles,
                                 backref=db.backref('users', lazy='dynamic'))
