@@ -225,8 +225,12 @@ class AddressResource(ModelResource):
         'city': t.String,
         'street': t.String,
         'type': t.String(regex="(billing|delivery)"),
-        'zip_code': t.String
-    }).make_optional('apartment').ignore_extra('*')
+        'zip_code': t.String,
+        'first_name': t.String(allow_blank=True),
+        'last_name': t.String(allow_blank=True),
+        'company': t.String(allow_blank=True)
+    }).make_optional('apartment', 'first_name', 'last_name', 'company')\
+        .ignore_extra('*')
 
     def post(self):
         status = http.CREATED

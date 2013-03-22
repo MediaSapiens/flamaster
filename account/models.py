@@ -22,6 +22,9 @@ class Address(db.Model, CRUDMixin):
     street = db.Column(db.Unicode(255), nullable=False)
     apartment = db.Column(db.Unicode(20))
     zip_code = db.Column(db.String(20))
+    first_name = db.Column(db.Unicode(255), default=u'')
+    last_name = db.Column(db.Unicode(255), default=u'')
+    company = db.Column(db.Unicode(255), default=u'')
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id',
                                                       ondelete='CASCADE',
                                                       use_alter=True,
