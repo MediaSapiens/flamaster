@@ -143,7 +143,7 @@ class CartMixin(CRUDMixin):
                                                  kwargs['amount']),
         }
         instance = super(CartMixin, cls).create(**instance_kwargs)
-        cart_created(current_app._get_current_object(),
+        cart_created.send(current_app._get_current_object(),
                      price_option_id=kwargs['price_option'].id,
                      amount=kwargs['amount'])
         return instance
