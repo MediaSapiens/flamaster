@@ -123,8 +123,9 @@ class ProfileResource(ModelResource):
             'last_name': t.String,
             'phone': t.String,
             'role_id': t.Int,
+            'avatar_id': t.Or(t.Null, t.String),
             te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
-        }).append(self._change_role(id)).make_optional('role_id'). \
+        }).append(self._change_role(id)).make_optional('role_id', 'avatar_id'). \
                                                 ignore_extra('*')
 
         return super(ProfileResource, self).put(id)
