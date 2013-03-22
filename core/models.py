@@ -75,19 +75,20 @@ class CRUDMixin(BaseMixin):
 
     def save(self, commit=True):
         db.session.add(self)
-        commit and db.session.commit()
+        if commit:
+            db.session.commit()
         return self
 
     def delete(self, commit=True):
         db.session.delete(self)
-        commit and db.session.commit()
+        if commit:
+            db.session.commit()
 
     def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
-            k.startswith('_') and raise_value('Underscored values are not '
-                                              'allowed')
+            if k.startswith('_'):
+                raise ValueError('Underscored values are not allowed')
             setattr(self, k, v)
-
         return self
 
 
@@ -165,7 +166,8 @@ class TreeNode(CRUDMixin):
         """
         instance = self.query.get(self.id)
         self.__class__.mp.delete_subtree(db.session, instance.id)
-        commit and db.session.commit()
+        if commit:
+            db.session.commit()
 
     def update(self, **kwargs):
         """ Overrided update method from CRUDMixin

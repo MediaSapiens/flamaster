@@ -17,6 +17,8 @@ price_updated = signals.signal('price_updated')
 price_deleted = signals.signal('price_deleted')
 
 order_created = signals.signal('order-created')
+cart_created = signals.signal('cart-created')
+cart_removed = signals.signal('cart-removed')
 # @user_registered.connect
 # def create_customer_for_newcommer(sender, app):
 #     sender['user'].customer = Customer()
@@ -45,16 +47,33 @@ def remove_from_shelf(price_option):
 
 @order_created.connect
 def on_order_created(sender, order):
-    for cart_item in order.goods:
-        shelves = Shelf.get_by_price_option(
-                    price_option_id=cart_item.price_option_id)
-        if shelves.first() is None:
-            current_app.logger.error('Item is not on shelf %s',
-                                     cart_item.price_option_id)
-        else:
-            shelves.update({'sold': Shelf.sold + 1})
-        db.session.commit()
+    pass
 
+
+@cart_created.connect
+def on_cart_created(sender, price_option_id, amount):
+    """ Synchronizing shelf state with amount added to cart
+
+    :param sender: current app
+    :param cart: Cart instance to be recorded
+    """
+    shelves = Shelf.get_by_price_option(price_option_id)
+    if shelves.count() == 0:
+        message = 'Item {} is not on shelf or depleeted'.format(price_option_id)
+        current_app.logger.error(message)
+    else:
+        shelves.update({'sold': Shelf.sold + amount})
+    db.session.commit()
+
+
+@cart_removed.connect
+def on_cart_removed(sender, price_option_id, amount):
+    shelves = Shelf.get_by_price_option(price_option_id)
+    if shelves.count() == 0:
+        message = 'Item {} is not on shelf or depleeted'.format(price_option_id)
+        current_app.logger.error(message)
+    else:
+        shelves.update({'sold': Shelf.sold - amount})
 #def order_creation_sender(mapper, connection, instance):
 #    owners = list(set(map(attrgetter('product.created_by'), instance.goods)))
 
