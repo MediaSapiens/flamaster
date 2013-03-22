@@ -140,8 +140,10 @@ class BaseProduct(DocumentMixin, Document):
 
         price_option, product_variant = product_variant_cls.get_price_option(
                                             price_option_id)
-        cart = get_cart_class().create(amount, customer, self, product_variant,
-                           price_option)
+        cart = get_cart_class().create(amount=amount, customer=customer,
+                                       product=self,
+                                       product_variant=product_variant,
+                                       price_option=price_option)
         return cart
         # except Exception as error:
         #     current_app.logger.debug(error.message)
