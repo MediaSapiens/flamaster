@@ -150,8 +150,8 @@ class CartMixin(CRUDMixin):
 
     def delete(self, commit=True):
         cart_removed.send(current_app._get_current_object(),
-                          self.price_option_id,
-                          self.amount)
+                          price_option_id=self.price_option_id,
+                          amount=self.amount)
         return super(CartMixin, self).delete(commit)
 
     @classmethod
