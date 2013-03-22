@@ -229,8 +229,7 @@ class AddressResource(ModelResource):
         'first_name': t.String(allow_blank=True),
         'last_name': t.String(allow_blank=True),
         'company': t.String(allow_blank=True)
-    }).make_optional('apartment', 'first_name', 'last_name', 'company')\
-        .ignore_extra('*')
+    }).make_optional('apartment', 'first_name', 'last_name', 'company').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
