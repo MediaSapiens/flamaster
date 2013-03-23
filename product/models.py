@@ -4,7 +4,8 @@ from flask import current_app
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
 from flamaster.core.decorators import multilingual
-from flamaster.core.models import CRUDMixin, TreeNode, NodeMetaClass
+from flamaster.core.models import (CRUDMixin, TreeNode,
+                                   NodeMetaClass, SlugMixin)
 from flamaster.core import mongo
 
 from werkzeug.utils import import_string
@@ -82,13 +83,12 @@ class Cart(db.Model, CRUDMixin):
 
 
 @multilingual
-class Category(db.Model, TreeNode):
+class Category(db.Model, TreeNode, SlugMixin):
     """ Product category mixin
     """
     __metaclass__ = NodeMetaClass
     __mp_manager__ = 'mp'
 
-    name = db.Column(db.Unicode(256))
     description = db.Column(db.UnicodeText)
     category_type = db.Column(db.String, nullable=False, default='catalog')
     order = db.Column(db.Integer, default=0)
@@ -99,6 +99,12 @@ class Category(db.Model, TreeNode):
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,
             self.__class__.__name__)
+
+    @property
+    def image_url(self):
+        if self.image:
+            return '/gridfs/file/{}'.format(self.images)
+        return ''
 
 
 class Country(db.Model, CRUDMixin):
