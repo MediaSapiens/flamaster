@@ -92,6 +92,7 @@ class Category(db.Model, TreeNode):
     description = db.Column(db.UnicodeText)
     category_type = db.Column(db.String, nullable=False, default='catalog')
     order = db.Column(db.Integer, default=0)
+    image = db.Column(db.String(256), default='')
     is_deleted = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=True)
 

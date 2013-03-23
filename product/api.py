@@ -33,7 +33,8 @@ class CategoryResource(ModelResource):
         'category_type': t.String,
         'parent_id': t.Int | t.Null,
         'order': t.Int,
-    }).append(resolve_parent).make_optional('parent_id', 'order') \
+        'image': t.MongoId
+    }).append(resolve_parent).make_optional('parent_id', 'order', 'image') \
         .ignore_extra('*')
 
     filters_map = t.Dict({
