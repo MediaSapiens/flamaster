@@ -42,7 +42,15 @@ class BaseProductVariant(Document, DocumentMixin):
         'collection': 'product_variants'
     }
 
-    price_options = ListField(EmbeddedDocumentField(BasePriceOption))
+    _price_options = ListField(EmbeddedDocumentField(BasePriceOption))
+
+    def _get_price_options(self):
+        return self._price_options
+
+    def _set_price_options(self, value):
+        self._price_options = map(BasePriceOption.convert, value)
+
+    price_options = property(_get_price_options, _set_price_options)
 
     def __get_prices(self):
         prices = [Decimal(0)]
@@ -132,8 +140,10 @@ class BaseProduct(DocumentMixin, Document):
 
         price_option, product_variant = product_variant_cls.get_price_option(
                                             price_option_id)
-        cart = get_cart_class().create(amount, customer, self, product_variant,
-                           price_option)
+        cart = get_cart_class().create(amount=amount, customer=customer,
+                                       product=self,
+                                       product_variant=product_variant,
+                                       price_option=price_option)
         return cart
         # except Exception as error:
         #     current_app.logger.debug(error.message)
