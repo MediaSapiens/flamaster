@@ -106,6 +106,20 @@ class Category(db.Model, TreeNode, SlugMixin):
             return '/gridfs/file/{}'.format(self.images)
         return ''
 
+    def products(self, limit=None):
+        ids = map(lambda child: child.id, self.children)
+        ids.append(self.id)
+        qs = mongo.db.products.find({'categories': {'$in': ids}})
+
+        if limit is not None:
+            qs = qs.limit(limit)
+
+        return qs
+
+    @property
+    def is_empty(self):
+        return self.products().count() == 0
+
 
 class Country(db.Model, CRUDMixin):
     """ Model holding countries list """
