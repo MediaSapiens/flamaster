@@ -106,7 +106,10 @@ def method_wrapper(http_status):
         @wraps(meth)
         def wrapper(*args, **kwargs):
             try:
-                g.request_data = request.json or abort(http.BAD_REQUEST)
+                if request.method != 'DELETE':
+                    g.request_data = request.json or abort(http.BAD_REQUEST)
+                else:
+                    g.request_data = None
                 return jsonify_status_code(meth(*args, **kwargs), http_status)
             except t.DataError as e:
                 return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
