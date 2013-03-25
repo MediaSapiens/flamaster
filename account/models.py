@@ -59,15 +59,17 @@ class Customer(db.Model, CRUDMixin):
                                                       uselist=False))
     addresses = db.relationship('Address', backref=db.backref('customer'),
                         primaryjoin="Address.customer_id==Customer.id",
-                        cascade='all, delete', lazy='dynamic')
+                        cascade='all, delete', lazy='dynamic', post_update=True)
     billing_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id',
                         use_alter=True, name='fk_billing_address'))
     _billing_address = db.relationship("Address", cascade='all, delete',
-                        primaryjoin="Customer.billing_address_id==Address.id")
+                        primaryjoin="Customer.billing_address_id==Address.id",
+                        post_update=True)
     delivery_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id',
                         use_alter=True, name='fk_delivery_address'))
     _delivery_address = db.relationship("Address", cascade='all, delete',
-                        primaryjoin="Customer.delivery_address_id==Address.id")
+                        primaryjoin="Customer.delivery_address_id==Address.id",
+                        post_update=True)
 
     def __unicode__(self):
         return "{0.first_name} {0.last_name}".format(self)
