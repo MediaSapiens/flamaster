@@ -130,7 +130,7 @@ class ProfileResource(ModelResource):
 
         return super(ProfileResource, self).put(id)
 
-    def _cmp_pwds(cls, value):
+    def _cmp_pwds(self, value):
         """ Password changing for user
         """
         if not value.get('password'):
