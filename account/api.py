@@ -210,10 +210,10 @@ class ProfileResource(ModelResource):
         # include = ['is_superuser']
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
-
         if g.user.id != instance.id and g.user.is_superuser() is False:
             exclude.append('email')
-
+        else:
+            include.append('email')
         return instance.as_dict(include, exclude)
 
 
