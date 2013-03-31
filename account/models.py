@@ -79,7 +79,7 @@ class Customer(db.Model, CRUDMixin):
     def __addresses_ids(self):
         return map(attrgetter('id'), self.addresses)
 
-    def set_address(self, addr_type, value):
+    def set_address(self, value, addr_type=None):
         """
         :param addr_type: Either `billing` or `delivery` to describe type the
                           address will be used for
@@ -88,7 +88,8 @@ class Customer(db.Model, CRUDMixin):
         if value.id not in self.__addresses_ids:
             self.addresses.append(value)
 
-        setattr(self, "{}_address_id".format(addr_type), value.id)
+        if addr_type is not None:
+            setattr(self, "{}_address_id".format(addr_type), value.id)
 
     @hybrid_property
     def billing_address(self):
@@ -100,7 +101,7 @@ class Customer(db.Model, CRUDMixin):
     def billing_address(self, value):
         """ setter for billing_address property
         """
-        self.set_address('billing', value)
+        self.set_address(value, 'billing')
 
     @hybrid_property
     def delivery_address(self):
@@ -112,7 +113,7 @@ class Customer(db.Model, CRUDMixin):
     def delivery_address(self, value):
         """ setter for delivery_address property
         """
-        self.set_address('delivery', value)
+        self.set_address(value, 'delivery')
 
 
 class Role(db.Model, CRUDMixin, RoleMixin):
