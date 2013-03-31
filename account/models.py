@@ -25,6 +25,7 @@ class Address(db.Model, CRUDMixin):
     first_name = db.Column(db.Unicode(255), default=u'')
     last_name = db.Column(db.Unicode(255), default=u'')
     company = db.Column(db.Unicode(255), default=u'')
+    phone = db.Column(db.String(17), default='')
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id',
                                                       ondelete='CASCADE',
                                                       use_alter=True,
