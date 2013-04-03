@@ -137,7 +137,7 @@ class ProfileResource(ModelResource):
             if len(password) < 6:
                 return t.DataError({'password': _("Passwords should be more than 6 symbols length")})
             if password != confirmation:
-                return t.DataError({'confirmation': _("Passwords doesn't match"}))
+                return t.DataError({'confirmation': _("Passwords doesn't match")})
             value['password'] = encrypt_password(password)
         return value
 
