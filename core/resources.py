@@ -2,12 +2,13 @@
 from __future__ import absolute_import
 import trafaret as t
 
-from flask import abort, request, current_app
+from flask import abort, request, current_app, g
 from flask.views import MethodView
 
 from mongoengine.base import ValidationError
 
 from . import http
+from flamaster.core.decorators import method_wrapper
 from .utils import jsonify_status_code
 
 
@@ -175,30 +176,16 @@ class ModelResource(Resource):
             response = self.serialize(self.get_object(id))
         return jsonify_status_code(response)
 
+    @method_wrapper(http.CREATED)
     def post(self):
-        status = http.CREATED
-        data = request.json or abort(http.BAD_REQUEST)
+        data = self.clean(g.request_data)
+        return self.serialize(self.model.create(**data))
 
-        try:
-            data = self.clean(data)
-            response = self.serialize(self.model.create(**data))
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
-
+    @method_wrapper(http.ACCEPTED)
     def put(self, id):
-        status = http.ACCEPTED
-        data = request.json or abort(http.BAD_REQUEST)
-
-        try:
-            data = self.clean(data)
-            instance = self.get_object(id).update(**data)
-            response = self.serialize(instance)
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
+        data = self.clean(g.request_data)
+        instance = self.get_object(id).update(**data)
+        return self.serialize(instance)
 
     def delete(self, id):
         self.get_object(id).delete()
@@ -207,7 +194,8 @@ class ModelResource(Resource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        self.model is None and abort(http.BAD_REQUEST)
+        if self.model is None:
+            abort(http.BAD_REQUEST)
         return self.model.query.filter_by(**kwargs)
 
     def get_object(self, id):
