@@ -186,10 +186,10 @@ class ProfileResource(ModelResource):
         return self.model.query.filter(or_(*filters))
 
     def serialize(self, instance, include=None):
-        # include = ['is_superuser']
+        include = ['is_superuser']
         exclude = ['password']
         if current_user.is_anonymous() or instance.is_anonymous():
-            return instance.as_dict()
+            return instance.as_dict(include, exclude)
 
         if current_user.id != instance.id or not current_user.is_superuser():
             exclude.append('email')
