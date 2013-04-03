@@ -107,7 +107,10 @@ def method_wrapper(http_status):
         def wrapper(*args, **kwargs):
             try:
                 if request.method != 'DELETE':
-                    g.request_data = request.json or abort(http.BAD_REQUEST)
+                    form_data = request.form and request.form.copy()
+                    json_data = request.json
+                    g.request_data = json_data or form_data or \
+                        abort(http.BAD_REQUEST)
                 else:
                     g.request_data = None
                 return jsonify_status_code(meth(*args, **kwargs), http_status)
@@ -120,10 +123,10 @@ def method_wrapper(http_status):
 class ClassProperty(property):
     def __init__(self, method, *args, **kwargs):
         method = classmethod(method)
-        return super(ClassProperty, self).__init__(method, *args, **kwargs)
+        super(ClassProperty, self).__init__(method, *args, **kwargs)
 
-    def __get__(self, cls, owner):
-        return self.fget.__get__(None, owner)()
+    def __get__(self, cls, type=None):
+        return self.fget.__get__(None, type)()
 
 
 classproperty = ClassProperty
