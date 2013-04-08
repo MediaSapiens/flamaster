@@ -2,6 +2,8 @@
 from __future__ import absolute_import
 from flask import current_app
 
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
 from flamaster.core.decorators import multilingual
 from flamaster.core.models import (CRUDMixin, TreeNode,
@@ -119,6 +121,17 @@ class Category(db.Model, TreeNode, SlugMixin):
     @property
     def is_empty(self):
         return self.products().count() == 0
+
+    @hybrid_property
+    def slug(self):
+        return self._slug
+
+    @slug.setter
+    def slug(self, value):
+        self._slug = value
+
+    def save(self, commit=True):
+        return super(SlugMixin, self).save(commit)
 
 
 class Country(db.Model, CRUDMixin):

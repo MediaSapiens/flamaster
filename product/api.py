@@ -33,7 +33,8 @@ class CategoryResource(ModelResource):
         'category_type': t.String,
         'parent_id': t.Int | t.Null,
         'order': t.Int,
-        'image': t.String(allow_blank=True)
+        'image': t.String(allow_blank=True),
+        'slug': t.String
     }).append(resolve_parent).make_optional('parent_id', 'order', 'image') \
         .ignore_extra('*')
 
