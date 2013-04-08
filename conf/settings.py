@@ -80,7 +80,7 @@ PAYMENT_METHODS = {
     'card': {
         'module': 'flamaster.payment.methods.CardPaymentMethod'
     },
-    'bank transfer': {
+    'bank_transfer': {
         'module': 'flamaster.payment.methods.BankPaymentMethod'
     }
 }
