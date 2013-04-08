@@ -28,7 +28,7 @@ class BaseMixin(object):
         """
         return plural_name(underscorize(cls.__name__))
 
-    def as_dict(self, include=None, exclude=['password']):
+    def as_dict(self, include=None, exclude=None):
         """ method for building dictionary for model value-properties filled
             with data from mapped storage backend
         """
@@ -37,7 +37,7 @@ class BaseMixin(object):
         fields = [field.strip('_') for field in column_properties]
 
         exportable_fields = (include or []) + fields
-        exportable_fields = set(exportable_fields) - set(exclude)
+        exportable_fields = set(exportable_fields) - set(exclude or [])
         # convert undescored fields:
 
         result = dict()

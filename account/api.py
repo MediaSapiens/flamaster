@@ -124,25 +124,22 @@ class ProfileResource(ModelResource):
             'phone': t.String,
             'role_id': t.Int,
             'avatar_id': t.Or(t.Null, t.String),
-            te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
+            te.KeysSubset('password', 'confirmation'): self._cmp_pwd,
         }).append(self._change_role(id)).make_optional('role_id', 'avatar_id'). \
                                                 ignore_extra('*')
 
         return super(ProfileResource, self).put(id)
 
-    def _cmp_pwds(cls, value):
-        """ Password changing for user
-        """
-        if not value.get('password'):
-            return value
-
-        elif len(value['password']) < 6:
-            return {'password': t.DataError(_("Passwords should be more "
-                                              "than 6 symbols length"))}
-        elif value['password'] != value.get('confirmation'):
-            return {'confirmation': t.DataError(_("Passwords doesn't match"))}
-
-        return {'password': encrypt_password(value['password'])}
+    def _cmp_pwd(self, value):
+        password, confirmation = (value.pop('password', None),
+                                  value.pop('confirmation', None))
+        if password:
+            if len(password) < 6:
+                return t.DataError({'password': _("Passwords should be more than 6 symbols length")})
+            if password != confirmation:
+                return t.DataError({'confirmation': _("Passwords doesn't match")})
+            value['password'] = encrypt_password(password)
+        return value
 
     def _change_role(self, id):
         """ helper method for changing user role if specified and current_user
@@ -189,11 +186,8 @@ class ProfileResource(ModelResource):
         return self.model.query.filter(or_(*filters))
 
     def serialize(self, instance, include=None):
+        include = ['is_superuser']
         exclude = ['password']
-        include = ["first_name", "last_name", "created_at", "phone",
-                   "current_login_at", "active", "billing_address",
-                   "logged_at", 'is_superuser']
-        # include = ['is_superuser']
         if current_user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
 
@@ -225,7 +219,7 @@ class AddressResource(ModelResource, CustomerMixin):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        if not current_user.is_superuser():
+        if current_user.is_anonymous() or not current_user.is_superuser():
             kwargs['customer_id'] = self._customer.id
 
         return super(AddressResource, self).get_objects(**kwargs)

@@ -243,6 +243,12 @@ class User(db.Model, CRUDMixin, UserMixin):
         full_name = " ".join([self.first_name or '', self.last_name or ''])
         return full_name.strip() or self.email
 
+    def as_dict(self, include=None, exclude=None):
+        include, exclude = exclude or [], include or []
+        exclude.append('password')
+        include.extend(["first_name", "last_name", "phone", "billing_address",
+                        "is_superuser"])
+        return super(User, self).as_dict(include, exclude)
 
 class BankAccount(db.Model, CRUDMixin):
     bank_name = db.Column(db.Unicode(512))

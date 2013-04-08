@@ -151,4 +151,6 @@ class AppFactory(object):
         '''))
 
         mail_handler.setLevel(logging.DEBUG)
-        app.debug or app.logger.addHandler(mail_handler)
+
+        if not app.debug:
+            app.logger.addHandler(mail_handler)
