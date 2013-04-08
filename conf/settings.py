@@ -12,6 +12,7 @@ EXTENSIONS = [
     'flamaster.extensions.babel',
     'flamaster.extensions.cache',
     'flamaster.extensions.db',
+    'flamaster.extensions.elasticsearch',
     'flamaster.extensions.mail',
     'flamaster.extensions.mongo',
     'flamaster.extensions.security',
@@ -62,6 +63,8 @@ MONGODB_AUTOREF = True
 MONGODB_AUTOINCREMENT = False
 MONGODB_FALLBACK_LANG = BABEL_DEFAULT_LOCALE
 # ----------------
+
+ELASTICSEARCH_URL = "http://localhost:9200/"
 
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender

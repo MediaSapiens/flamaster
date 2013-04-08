@@ -6,7 +6,7 @@ from flask.ext.mongoengine import MongoEngine
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security
 from flask.ext.social import Social
-
+from flask.ext.elasticsearch import ElasticSearch
 
 def register_jinja_helpers(app):
     app.jinja_env.globals.update({
@@ -20,6 +20,7 @@ cache = Cache()
 db = SQLAlchemy()
 mail = Mail()
 mongo = MongoEngine()
+es = ElasticSearch()
 
 from flamaster.account import user_ds, connection_ds
 
