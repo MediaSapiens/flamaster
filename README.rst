@@ -27,14 +27,13 @@ ________
 Running project:
 ================
 
-You should implement your own Cart and Order models based on `flamaster.product.mixins` and register it on your local settings
-for each shop you'd connect:
+You should implement your own Cart and Order models based on `flamaster.product.mixins` and register it on your local settings for each shop you'd connect:
 
-```python
-SHOPS = [
-    {
-        'cart': 'findevent.vending.models.Cart',
-        'order': 'findevent.vending.models.Order'
-    }
-]
-```
+::
+
+  SHOPS = [
+      {
+          'cart': 'findevent.vending.models.Cart',
+          'order': 'findevent.vending.models.Order'
+      }
+  ]
