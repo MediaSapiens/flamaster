@@ -63,8 +63,6 @@ MONGODB_AUTOINCREMENT = False
 MONGODB_FALLBACK_LANG = BABEL_DEFAULT_LOCALE
 # ----------------
 
-MIGRATIONS_REPOSITORY = 'migrations'
-
 DEFAULT_PAGE_SIZE = 100
 # Flask-Mail sender for default email sender
 DEFAULT_ALBUM_COVERAGE = None  # image/defaut/album_coverage
@@ -157,6 +155,13 @@ DELIVERY_OPTIONS = {
         'default': True
     }
 }
+
+SHOPS = [
+    {
+        'cart': 'findevent.vending.models.Cart',
+        'order': 'findevent.vending.models.Order'
+    }
+]
 
 try:
     ls = importlib.import_module('flamaster.conf.local_settings')
