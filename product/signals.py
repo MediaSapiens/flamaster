@@ -25,11 +25,10 @@ cart_removed = signals.signal('cart-removed')
 
 
 @price_created.connect
-def put_on_shelf(sender, price_option):
+def put_on_shelf(sender, price_option_id, quantity):
     """ Putting newly created priced item on shelf
     """
-    Shelf.create(price_option_id=str(price_option.id),
-                 quantity=price_option.quantity)
+    Shelf.create(price_option_id=str(price_option_id), quantity=quantity)
 
 
 @price_updated.connect
@@ -40,8 +39,8 @@ def update_on_shelf(price_option):
 
 
 @price_deleted.connect
-def remove_from_shelf(price_option):
-    Shelf.query.delete().where(price_option_id=price_option.id)
+def remove_from_shelf(sender, price_option_id):
+    Shelf.query.delete().where(price_option_id=str(price_option_id))
     db.session.commit()
 
 
