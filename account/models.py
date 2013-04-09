@@ -233,7 +233,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         return self.customer and self.customer.billing_address or None
 
     def is_superuser(self):
-        """ Flag signalized that user is superuse """
+        """ Flag signalized that user is superuser """
         # Todo — rewrite on Principal approach
         return self.has_role(current_app.config['ADMIN_ROLE'])
 
