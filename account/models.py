@@ -233,7 +233,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         return self.customer and self.customer.billing_address or None
 
     def is_superuser(self):
-        """ Flag signalized that user is superuse """
+        """ Flag signalized that user is superuser """
         # Todo — rewrite on Principal approach
         return self.has_role(current_app.config['ADMIN_ROLE'])
 
@@ -245,10 +245,11 @@ class User(db.Model, CRUDMixin, UserMixin):
 
     def as_dict(self, include=None, exclude=None):
         include, exclude = exclude or [], include or []
-        exclude.append('password')
-        include.extend(["first_name", "last_name", "phone", "billing_address",
-                        "is_superuser"])
+        exclude.extend(['password', 'remember_token', 'authentication_token'])
+        include.extend(['first_name', 'last_name', 'phone', 'billing_address',
+                        'is_superuser'])
         return super(User, self).as_dict(include, exclude)
+
 
 class BankAccount(db.Model, CRUDMixin):
     bank_name = db.Column(db.Unicode(512))
