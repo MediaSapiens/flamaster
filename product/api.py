@@ -1,10 +1,12 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-from cStringIO import StringIO
 import csv
-from itertools import imap, chain
 import trafaret as t
-from flask import request, session, send_file
+
+from cStringIO import StringIO
+from itertools import imap
+
+from flask import request, session, current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -172,10 +174,14 @@ class OrderResource(ModelResource, CustomerMixin):
             response = self.serialize(self.get_object(id))
 
         if request_args.get('format') == 'csv':
-            stream = StringIO()
-            csv_dst = csv.writer(stream)
-            csv_dst.writerows(imap(lambda order: order.as_dict().values(), self.get_objects()))
-            return send_file(stream, mimetype='text/csv')
+            def data():
+                stream = StringIO()
+                csv_dst = csv.writer(stream)
+                csv_dst.writerows(imap(lambda order: order.as_dict().values(), self.get_objects()))
+                yield stream.getvalue()
+
+            return current_app.response_class(data(), status=http.OK,
+                                              mimetype='text/csv')
 
         return jsonify_status_code(response)
 
