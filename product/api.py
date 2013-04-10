@@ -1,7 +1,10 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+from cStringIO import StringIO
+import csv
+from itertools import imap
 import trafaret as t
-from flask import request, session
+from flask import request, session, send_file
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -153,6 +156,29 @@ class OrderResource(ModelResource, CustomerMixin):
         'delete': [login_required]
     }
 
+    filters_map = t.Dict({
+        'from': t.DateTime,
+        'till': t.DateTime,
+        'format': t.String
+    }).make_optional('*').ignore_extra('*')
+    filters_map_default = False
+
+    def get(self, id=None):
+        request_args = self.filters_map.check(request.args.copy())
+
+        if id is None:
+            response = self.gen_list_response()
+        else:
+            response = self.serialize(self.get_object(id))
+
+        if request_args.get('format') == 'csv':
+            stream = StringIO()
+            csv_dst = csv.writer(stream)
+            csv_dst.writerows(imap(lambda order: order.as_dict(), self.get_objects()))
+            return send_file(stream, mimetype='text/csv')
+
+        return jsonify_status_code(response)
+
     def post(self):
         status = http.ACCEPTED
 
@@ -169,5 +195,19 @@ class OrderResource(ModelResource, CustomerMixin):
         """
         if not current_user.is_superuser():
             kwargs['customer_id'] = self._customer.id
+        query = super(OrderResource, self).get_objects(**kwargs)
+        return self.filter(query)
 
-        return super(OrderResource, self).get_objects(**kwargs)
+    def filter(self, query):
+        """
+        Apply additional filters provided with request args:
+        `?from=2013-04-10T09:41:08.658Z&till=2013-04-10T09:41:08.658Z`
+        :param query: SqlAlchemy BaseQuery bound instance
+        :return: SqlAlchemy BaseQuery bound instance
+        """
+        request_args = self.filters_map.check(request.args.copy())
+        if 'from' in request_args:
+            query = query.filter(self.model.created_at >= request_args['from'])
+        if 'till' in request_args:
+            query = query.filter(self.model.created_at <= request_args['till'])
+        return query

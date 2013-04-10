@@ -16,6 +16,7 @@ class Resource(MethodView):
 
     method_decorators = None
     filters_map = t.Dict().make_optional('*').ignore_extra('*')
+    filters_map_default = True
     page_size = None
 
     def dispatch_request(self, *args, **kwargs):
@@ -58,11 +59,12 @@ class Resource(MethodView):
         raise NotImplemented('Method is not implemented')
 
     def _prepare_pagination(self, **kwargs):
-        try:
-            self.filter_args = self.clean_args(request.args)
-            kwargs.update(self.filter_args)
-        except t.DataError as err:
-            current_app.logger.info("Error in filters: %s", err.as_dict())
+        if self.filters_map_default:
+            try:
+                self.filter_args = self.clean_args(request.args)
+                kwargs.update(self.filter_args)
+            except t.DataError as err:
+                current_app.logger.info("Error in filters: %s", err.as_dict())
 
         page = kwargs.pop('page', 1)
         args_page_size = kwargs.pop('page_size', 20)
