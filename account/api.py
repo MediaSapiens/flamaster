@@ -129,22 +129,25 @@ class ProfileResource(ModelResource):
     def post(self):
         raise NotImplemented('Method is not implemented')
 
-    def put(self, id):
-        """ we should check for password matching if
-            user is trying to update it
-        """
+    def set_put_validation_dict(self):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
             'phone': t.String,
             'role_id': t.Int,
             te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
-        }).append(self._change_role(id)).make_optional('role_id'). \
-                                                ignore_extra('*')
+            }).append(self._change_role(id)).make_optional('role_id'). \
+            ignore_extra('*')
+
+    def put(self, id):
+        """ we should check for password matching if
+            user is trying to update it
+        """
+        self.set_put_validation_dict(id)
 
         return super(ProfileResource, self).put(id)
 
-    def _cmp_pwds(cls, value):
+    def _cmp_pwds(self, value):
         """ Password changing for user
         """
         if 'password' not in value and 'confirmation' not in value:
