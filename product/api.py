@@ -4,9 +4,10 @@ import csv
 import trafaret as t
 
 from cStringIO import StringIO
+from dateutil import parser
 from itertools import imap
 
-from flask import request, session, current_app
+from flask import request, session, current_app, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -174,10 +175,12 @@ class OrderResource(ModelResource, CustomerMixin):
             response = self.serialize(self.get_object(id))
 
         if request_args.get('format') == 'csv':
+            orders = self.get_objects()
+            rows = imap(lambda o: o.as_dict().values(), orders)
             def data():
                 stream = StringIO()
                 csv_dst = csv.writer(stream)
-                csv_dst.writerows(imap(lambda order: order.as_dict().values(), self.get_objects()))
+                csv_dst.writerows(rows)
                 yield stream.getvalue()
 
             return current_app.response_class(data(), status=http.OK,
@@ -212,8 +215,6 @@ class OrderResource(ModelResource, CustomerMixin):
         :return: SqlAlchemy BaseQuery bound instance
         """
         request_args = self.filters_map.check(request.args.copy())
-        if 'from' in request_args:
-            query = query.filter(self.model.created_at >= request_args['from'])
-        if 'till' in request_args:
-            query = query.filter(self.model.created_at <= request_args['till'])
-        return query
+        start = request_args.get('from')
+        end = request_args.get('till')
+        return self.model.get_bounded(start, end, query)
