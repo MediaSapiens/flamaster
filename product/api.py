@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from cStringIO import StringIO
 import csv
-from itertools import imap
+from itertools import imap, chain
 import trafaret as t
 from flask import request, session, send_file
 from flask.ext.babel import lazy_gettext as _
@@ -174,7 +174,7 @@ class OrderResource(ModelResource, CustomerMixin):
         if request_args.get('format') == 'csv':
             stream = StringIO()
             csv_dst = csv.writer(stream)
-            csv_dst.writerows(imap(lambda order: order.as_dict(), self.get_objects()))
+            csv_dst.writerows(imap(lambda order: order.as_dict().values(), self.get_objects()))
             return send_file(stream, mimetype='text/csv')
 
         return jsonify_status_code(response)
