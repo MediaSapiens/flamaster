@@ -163,12 +163,20 @@ class Order(db.Model, CRUDMixin):
     billing_street = db.Column(db.Unicode(255), nullable=False)
     billing_apartment = db.Column(db.Unicode(20))
     billing_zip_code = db.Column(db.String(20))
+    billing_first_name = db.Column(db.Unicode(255), default=u'')
+    billing_last_name = db.Column(db.Unicode(255), default=u'')
+    billing_company = db.Column(db.Unicode(255), default=u'')
+    billing_phone = db.Column(db.String(17), default='')
     delivery_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                 use_alter=True, name='fk_delivery_country'))
     delivery_city = db.Column(db.Unicode(255), nullable=False)
     delivery_street = db.Column(db.Unicode(255), nullable=False)
     delivery_apartment = db.Column(db.Unicode(20))
     delivery_zip_code = db.Column(db.String(20))
+    delivery_first_name = db.Column(db.Unicode(255), default=u'')
+    delivery_last_name = db.Column(db.Unicode(255), default=u'')
+    delivery_company = db.Column(db.Unicode(255), default=u'')
+    delivery_phone = db.Column(db.String(17), default='')
     # summary cost of all cart items linked with this order
     goods_price = db.Column(db.Numeric(precision=18, scale=2))
 
@@ -210,6 +218,14 @@ class Order(db.Model, CRUDMixin):
 
     def mark_paid(self):
         return self.update(state=OrderStates.paid)
+
+    @property
+    def billing_country(self):
+        return Country.query.get(self.billing_country_id)
+
+    @property
+    def delivery_country(self):
+        return Country.query.get(self.delivery_country_id)
 
 
 class Shelf(db.Model, CRUDMixin):
