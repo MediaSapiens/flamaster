@@ -42,6 +42,8 @@ user_roles = db.Table('user_roles', db.metadata,
 
 
 class Customer(db.Model, CRUDMixin):
+    sex = db.Column(db.Unicode(1), index=True)
+    birthdate = db.Column(db.DateTime, index=True)
     first_name = db.Column(db.Unicode(255), default=u'')
     last_name = db.Column(db.Unicode(255), default=u'')
     email = db.Column(db.String(80), index=True)
