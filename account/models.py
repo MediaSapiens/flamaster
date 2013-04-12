@@ -220,14 +220,6 @@ class User(db.Model, CRUDMixin, UserMixin):
         self.customer.phone = value
 
     @hybrid_property
-    def email(self):
-        return self.customer and self.customer.email or None
-
-    @email.setter
-    def email(self, value):
-        self.customer.email = value
-
-    @hybrid_property
     def fax(self):
         return self.customer and self.customer.fax or None
 
