@@ -247,7 +247,7 @@ class User(db.Model, CRUDMixin, UserMixin):
     def birth_date(self):
         return self.customer and self.customer.birth_date or None
 
-    @company.setter
+    @birth_date.setter
     def birth_date(self, value):
         self.customer.birth_date = value
 
