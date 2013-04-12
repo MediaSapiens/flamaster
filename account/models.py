@@ -53,6 +53,7 @@ class Customer(db.Model, CRUDMixin):
     fax = db.Column(db.String(80), default='')
     gender = db.Column(db.String(1), default='')
     company = db.Column(db.Unicode(255), default=u'')
+    birth_date = db.Column(db.Date)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.UnicodeText)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -249,6 +250,14 @@ class User(db.Model, CRUDMixin, UserMixin):
     @company.setter
     def company(self, value):
         self.customer.company = value
+
+    @hybrid_property
+    def birth_date(self):
+        return self.customer and self.customer.birth_date or None
+
+    @company.setter
+    def birth_date(self, value):
+        self.customer.birth_date = value
 
     @hybrid_property
     def addresses(self):

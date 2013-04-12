@@ -8,6 +8,8 @@ from operator import attrgetter
 from . import OrderStates
 from .signals import order_created
 
+import uuid
+
 
 class OrderDatastore(AbstractDatastore):
     """ Class for manipulations with order model state
@@ -37,6 +39,7 @@ class OrderDatastore(AbstractDatastore):
 
         # TODO: total_price = goods_price + delivery_price
         kwargs.update({
+            'reference': str(uuid.uuid4().node),
             'delivery_method': 'eticket',
             'customer': customer,
             'goods_price': goods_price,
@@ -49,7 +52,7 @@ class OrderDatastore(AbstractDatastore):
 
         order = self.order_model.create(**kwargs)
         # Attach cart items to order and mark as ordered
-        self.goods_ds.mark_ordered(goods, order)
+        #self.goods_ds.mark_ordered(goods, order)
         # Commit manipulation on goods
         db.session.commit()
 

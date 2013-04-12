@@ -156,6 +156,7 @@ class Favorite(db.Model, CRUDMixin):
 class Order(db.Model, CRUDMixin):
     """ Model to keep ordered goods
     """
+    reference = db.Column(db.String(128), nullable=False, unique=True)
     shop_id = db.Column(db.String(128), default=current_app.config['SHOP_ID'])
     billing_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                     use_alter=True, name='fk_billing_country'))

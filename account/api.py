@@ -233,9 +233,9 @@ class AddressResource(ModelResource):
         'first_name': t.String(allow_blank=True),
         'last_name': t.String(allow_blank=True),
         'company': t.String(allow_blank=True),
-        'phone': t.String(allow_blank=True)
+        'phone': t.String
     }).make_optional('apartment', 'first_name', 'last_name', 'company',
-                     'phone', 'type').ignore_extra('*')
+                     'type').ignore_extra('*')
 
     def post(self):
         status = http.CREATED
@@ -357,8 +357,9 @@ class CustomerResource(ModelResource):
         'notes': t.Or(t.String(allow_blank=True), t.Null),
         'fax': t.String(allow_blank=True),
         'company': t.String(allow_blank=True),
-        'gender': t.String(allow_blank=True)
-    }).make_optional('phone', 'notes', 'fax', 'company', 'gender')\
+        'gender': t.String,
+        'birth_date': t.String
+    }).make_optional('phone', 'notes', 'fax', 'company')\
         .ignore_extra('*')
 
     # IE CORS Hack
