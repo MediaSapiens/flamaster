@@ -105,6 +105,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
             validation = self.__validate(voucher=data['voucher'],
                                          security=data['code'],
                                          deal=data['deal'])
+            current_app.logger.info("Validation response: %s",
+                                    validation.content)
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': u'InvalidVoucher'})
             data.update({
