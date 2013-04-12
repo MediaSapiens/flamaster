@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from flask import request
 
 from klarna import Klarna, Config, Address
-from klarna.const import GoodsIs, Gender
+from klarna.const import GoodsIs, Gender, GenderMap
 
 from .base import BasePaymentMethod
 
@@ -43,7 +43,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
     def __get_address(self, addr_type):
         _get = lambda k: getattr(self.order, '{0}_{1}'.format(addr_type, k))
         return Address(email=self.order.customer.email,
-                       telno=_get('phone'),
+                       telno=_get('phone').replace(' ', '').replace('+', ''),
                        fname=_get('first_name'),
                        lname=_get('last_name'),
                        street=_get('street'),
@@ -56,6 +56,8 @@ class KlarnaPaymentMethod(BasePaymentMethod):
 
     def process_payment(self):
         self.init_payment()
-        return self.klarna.add_transaction(gender=Gender.MALE,
-                                           pno='07071960',
+        customer = self.order.customer
+        pno = '{:%d-%m-%Y}'.format(customer.birth_date)
+        return self.klarna.add_transaction(gender=GenderMap[customer.gender],
+                                           pno=pno,
                                            flags=0)
