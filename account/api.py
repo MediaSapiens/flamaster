@@ -129,7 +129,7 @@ class ProfileResource(ModelResource):
     def post(self):
         raise NotImplemented('Method is not implemented')
 
-    def set_put_validation_dict(self):
+    def set_put_validation_dict(self, id):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
