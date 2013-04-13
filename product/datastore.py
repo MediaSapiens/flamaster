@@ -52,7 +52,7 @@ class OrderDatastore(AbstractDatastore):
 
         order = self.order_model.create(**kwargs)
         # Attach cart items to order and mark as ordered
-        #self.goods_ds.mark_ordered(goods, order)
+        self.goods_ds.mark_ordered(goods, order)
         # Commit manipulation on goods
         db.session.commit()
 

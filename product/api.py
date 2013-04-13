@@ -181,7 +181,6 @@ class OrderResource(ModelResource):
         'payment_method': t.String,
         'payment_details': t.String
     }).make_optional('next_state',
-                     'payment_method',
                      'payment_details').ignore_extra('*')
 
     method_decorators = {
