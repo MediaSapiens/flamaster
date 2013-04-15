@@ -46,6 +46,7 @@ user_roles = db.Table('user_roles', db.metadata,
 
 
 class Customer(db.Model, CRUDMixin):
+    shop_id = db.Column(db.String(128), default=current_app.config['SHOP_ID'])
     first_name = db.Column(db.Unicode(255), default=u'')
     last_name = db.Column(db.Unicode(255), default=u'')
     email = db.Column(db.String(80), index=True)
