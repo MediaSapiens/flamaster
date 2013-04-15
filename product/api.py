@@ -207,7 +207,7 @@ class OrderResource(ModelResource):
         """
         if current_user.is_anonymous():
             kwargs['customer_id'] = session['customer_id']
-        elif not current_user.is_superuser():
+        else:
             kwargs['customer_id'] = current_user.customer.id
         # TODO: process product owners
 
