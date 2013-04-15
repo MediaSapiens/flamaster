@@ -97,6 +97,7 @@ class Category(db.Model, TreeNode, SlugMixin):
     image = db.Column(db.String(256), default='')
     is_deleted = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=True)
+    is_visible_in_nav = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,

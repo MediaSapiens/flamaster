@@ -34,8 +34,11 @@ class CategoryResource(ModelResource):
         'parent_id': t.Int | t.Null,
         'order': t.Int,
         'image': t.String(allow_blank=True),
-        'slug': t.String
-    }).append(resolve_parent).make_optional('parent_id', 'order', 'image') \
+        'slug': t.String,
+        'is_visible': t.Bool,
+        'is_visible_in_nav': t.Bool
+    }).append(resolve_parent).make_optional('parent_id', 'order', 'image',
+                                            'is_visible', 'is_visible_in_nav') \
         .ignore_extra('*')
 
     filters_map = t.Dict({
