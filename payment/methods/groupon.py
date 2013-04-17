@@ -4,6 +4,7 @@ import trafaret as t
 import requests
 
 from flask import current_app
+from flask.ext.babel import gettext as _
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
@@ -61,7 +62,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
                                        security=data['code'],
                                        deal=data['deal'])
             if redemption.status_code != http.OK:
-                raise t.DataError({'voucher': u'InvalidVoucher'})
+                raise t.DataError({'voucher': _('Invalid voucher')})
 
         except t.DataError as e:
             status = http.BAD_REQUEST
@@ -96,17 +97,18 @@ class GrouponPaymentMethod(BasePaymentMethod):
             variant = BaseProductVariant.objects(
                             _price_options__groupon__cda=data['deal']).first()
             if variant is None:
-                raise t.DataError({'deal': u'Invalid deal'})
+                raise t.DataError({'deal': _('Invalid deal')})
 
             option, deal = self.__filter_option(variant, data['deal'])
             if option is None:
-                raise t.DataError({'deal': u'Invalid deal'})
+                raise t.DataError({'deal': _('Invalid deal')})
 
             validation = self.__validate(voucher=data['voucher'],
                                          security=data['code'],
                                          deal=data['deal'])
+            current_app.logger.info("Validation response: %s", validation)
             if validation.status_code != http.OK:
-                raise t.DataError({'voucher': u'InvalidVoucher'})
+                raise t.DataError({'voucher': _('Invalid voucher')})
             data.update({
                 'status': 'OK',
                 'seats': deal['number'],

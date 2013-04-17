@@ -1,7 +1,13 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+import csv
 import trafaret as t
-from flask import request, session
+
+from cStringIO import StringIO
+from dateutil import parser
+from itertools import imap
+
+from flask import request, session, current_app, json
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -153,6 +159,35 @@ class OrderResource(ModelResource, CustomerMixin):
         'delete': [login_required]
     }
 
+    filters_map = t.Dict({
+        'from': t.DateTime,
+        'till': t.DateTime,
+        'format': t.String
+    }).make_optional('*').ignore_extra('*')
+    filters_map_default = False
+
+    def get(self, id=None):
+        request_args = self.filters_map.check(request.args.copy())
+
+        if id is None:
+            response = self.gen_list_response()
+        else:
+            response = self.serialize(self.get_object(id))
+
+        if request_args.get('format') == 'csv':
+            orders = self.get_objects()
+            rows = imap(lambda o: o.as_dict().values(), orders)
+            def data():
+                stream = StringIO()
+                csv_dst = csv.writer(stream)
+                csv_dst.writerows(rows)
+                yield stream.getvalue()
+
+            return current_app.response_class(data(), status=http.OK,
+                                              mimetype='text/csv')
+
+        return jsonify_status_code(response)
+
     def post(self):
         status = http.ACCEPTED
 
@@ -169,5 +204,17 @@ class OrderResource(ModelResource, CustomerMixin):
         """
         if not current_user.is_superuser():
             kwargs['customer_id'] = self._customer.id
+        query = super(OrderResource, self).get_objects(**kwargs)
+        return self.filter(query)
 
-        return super(OrderResource, self).get_objects(**kwargs)
+    def filter(self, query):
+        """
+        Apply additional filters provided with request args:
+        `?from=2013-04-10T09:41:08.658Z&till=2013-04-10T09:41:08.658Z`
+        :param query: SqlAlchemy BaseQuery bound instance
+        :return: SqlAlchemy BaseQuery bound instance
+        """
+        request_args = self.filters_map.check(request.args.copy())
+        start = request_args.get('from')
+        end = request_args.get('till')
+        return self.model.get_bounded(start, end, query)
