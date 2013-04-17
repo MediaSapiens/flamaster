@@ -3,7 +3,7 @@ import re
 import types
 import uuid
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, date
 
 from flask import current_app, render_template
 from flask.ext.mail import Message
@@ -69,6 +69,8 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.ctime()
+        if isinstance(obj, date):
+            return obj.isoformat()
         if isinstance(obj, ObjectId):
             return str(obj)
         if isinstance(obj, _LazyString):
