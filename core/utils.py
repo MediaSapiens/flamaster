@@ -81,7 +81,7 @@ class CustomEncoder(json.JSONEncoder):
 
 def json_dumps(data):
     try:
-        return json.dumps(data, indent=2, cls=CustomEncoder)
+        return json.dumps(data, cls=CustomEncoder)
     except ValueError as e:
         current_app.logger.debug("%s: %s", e.message, data)
         raise e
