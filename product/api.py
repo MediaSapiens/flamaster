@@ -13,6 +13,7 @@ from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
 
 from . import product as bp
+from . import order_states_i18n
 from .helpers import resolve_parent
 from .models import Cart, Category, Country, Order
 from .datastore import OrderDatastore
@@ -223,3 +224,23 @@ class OrderResource(ModelResource):
             raise err
         except:
             abort(http.BAD_REQUEST)
+
+    @classmethod
+    def serialize(cls, instance, include=None):
+        """ Method to controls model serialization in derived classes
+        :rtype : dict
+        """
+        data = instance.as_dict(api_fields=include)
+        data.update({
+            'state_name': order_states_i18n[str(instance.state)],
+            'goods': instance.goods.all(),
+            'goods_count': instance.goods.count()
+        })
+
+        if instance.billing_country_id:
+            data['billing_country_name'] = instance.billing_country.name
+
+        if instance.billing_country_id:
+            data['delivery_country_name'] = instance.delivery_country.name
+
+        return data
