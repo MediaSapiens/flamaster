@@ -44,7 +44,7 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     resource = LazyResource(import_name, endpoint)
     collection_url = "/{}/".format(endpoint)
     # collection endpoint
-    collection_methods = ['GET', 'POST']
+    collection_methods = ['GET', 'PUT', 'POST']
     item_methods = ['GET', 'PUT', 'DELETE']
 
     pk = pk_def.keys()[0]
@@ -189,3 +189,26 @@ def send_email(subject, recipient, template, callback=None, **context):
     #     _security._send_mail_task(msg)
     #     return
     mail.send(msg)
+
+
+class AttrDict(dict):
+    """
+    """
+    _protected_fields = ['_protected_fields']
+
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self._protected_fields.extend(self.__dict__.keys())
+
+    def __getattr__(self, item):
+        if item in self:
+            return self[item]
+        else:
+            return self.__getattribute__(item)
+
+    def __setattr__(self, key, value):
+        if key not in self.__getattribute__('_protected_fields'):
+            self[key] = value
+
+        else:
+            dict.__setattr__(self, key, value)

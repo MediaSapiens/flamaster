@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 # from bson.errors import InvalidId
 from collections import Mapping
+from mongoengine import Document
 
 from .decorators import classproperty
 from .utils import plural_underscored
@@ -33,7 +34,11 @@ class BaseMixin(object):
         return result
 
     def update(self, **kwargs):
-        return self._setattrs(**kwargs).save()
+        instance = self._setattrs(**kwargs)
+        if isinstance(self, Document):
+            return instance.save()
+        else:
+            return instance
 
     def _setattrs(self, **kwargs):
         for k, v in kwargs.iteritems():
