@@ -12,7 +12,7 @@ from importlib import import_module
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
-from werkzeug import import_string, cached_property
+from werkzeug.utils import import_string, cached_property
 
 from flamaster.extensions import mail
 
@@ -91,7 +91,7 @@ def jsonify_status_code(data=None, status=200, mimetype='application/json'):
     data = data or {}
 
     return current_app.response_class(json_dumps(data),
-        status=status, mimetype=mimetype)
+                                      status=status, mimetype=mimetype)
 
 
 def slugify(text, separator='-', prefix=True):
