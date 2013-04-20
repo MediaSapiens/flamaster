@@ -260,7 +260,7 @@ class AddressResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        if not current_user.is_superuser():
+        if current_user.is_anonymous() or not current_user.is_superuser():
             customer = self._customer()
             kwargs['customer_id'] = customer.id
 

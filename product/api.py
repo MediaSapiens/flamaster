@@ -152,6 +152,16 @@ class CartResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
+    def get_objects(self, **kwargs):
+        """ Method for extraction object list query
+        """
+        if current_user.is_anonymous():
+            kwargs['customer_id'] = session.get('customer_id', None)
+        else:
+            kwargs['customer_id'] = current_user.customer.id
+
+        return super(CartResource, self).get_objects(**kwargs)
+
     def gen_list_response(self, **kwargs):
         return super(CartResource, self) \
             .gen_list_response(page_size=10000, **kwargs)
