@@ -243,7 +243,7 @@ class OrderResource(ModelResource):
         data = instance.as_dict(api_fields=include)
         data.update({
             'state_name': order_states_i18n[str(instance.state)],
-            'goods': instance.goods.all(),
+            'goods': [obj.as_dict() for obj in instance.goods.all()],
             'goods_count': instance.goods.count()
         })
 

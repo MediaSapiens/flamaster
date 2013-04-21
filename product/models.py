@@ -83,6 +83,15 @@ class Cart(db.Model, CRUDMixin):
         new_price = self.product.get_price(self.product_variant, amount)
         return self.update(amount=amount, price=new_price)
 
+    def as_dict(self, api_fields=None, exclude=['password']):
+        data = super(Cart, self).as_dict(api_fields, exclude)
+        product = self.product.as_dict()
+        data.update({
+            'product_name': product['name'],
+            'product_images': product.get('images', [])
+        })
+        return data
+
 
 @multilingual
 class Category(db.Model, TreeNode, SlugMixin):
