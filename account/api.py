@@ -389,13 +389,9 @@ class CustomerResource(ModelResource):
         return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
-        customer = self._customer()
-
-        if customer is not None:
-            if not customer.user.is_superuser():
-                kwargs['id'] = customer.id
-        else:
-            kwargs['id'] = None
+        if current_user.is_anonymous() or not current_user.is_superuser():
+            customer = self._customer()
+            kwargs['id'] = customer.id
 
         return super(CustomerResource, self).get_objects(**kwargs)
 
