@@ -217,8 +217,10 @@ class Order(db.Model, CRUDMixin):
         return PaymentMethod(self)
 
     @classmethod
-    def __resolve_delivery(cls, delivery, address):
-        return delivery.calculate_price()
+    def resolve_delivery(cls, delivery_provider_id, goods, address):
+        module = import_string(current_app.config['DELIVERY_MODULE_PATH'])
+        provider = module.query.get(delivery_provider_id)
+        return provider.calculate_price(goods, address)
 
     def set_payment_details(self, payment_details):
         return self.update(payment_details=payment_details)

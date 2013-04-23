@@ -193,7 +193,8 @@ class OrderResource(ModelResource):
         'customer_id': t.Int,
         'next_state': t.Int,
         'payment_method': t.String,
-        'payment_details': t.String
+        'payment_details': t.String,
+        'delivery_provider_id': t.MongoId,
     }).make_optional('next_state',
                      'payment_details').ignore_extra('*')
 

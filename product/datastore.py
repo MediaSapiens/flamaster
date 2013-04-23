@@ -32,18 +32,22 @@ class OrderDatastore(AbstractDatastore):
         billing_address = customer.billing_address
         delivery_address = customer.delivery_address or billing_address
 
-        goods = self.goods_ds.find(customer=customer)
-        goods_price = self.goods_ds.get_price(goods)
-        # delivery_price = cls.__resolve_delivery(kwargs['delivery'],
-        #                                         delivery_address)
+        goods = self.goods_ds.find(customer=customer, is_ordered=False)
+        total_price = goods_price = self.goods_ds.get_price(goods)
+        delivery_price = self.order_model.resolve_delivery(kwargs['delivery_provider_id'],
+                                                           goods,
+                                                           delivery_address)
 
-        # TODO: total_price = goods_price + delivery_price
+        if delivery_price is not None:
+            total_price += delivery_price
+            kwargs.update({'delivery_price': delivery_price})
+
         kwargs.update({
             'reference': str(uuid.uuid4().node),
-            'delivery_method': 'eticket',
+            'delivery_method': 'provider',
             'customer': customer,
             'goods_price': goods_price,
-            'total_price': goods_price,
+            'total_price': total_price,
             'state': OrderStates.created
         })
 
