@@ -29,8 +29,8 @@ class OrderDatastore(AbstractDatastore):
         """ Create order instance from data came from the API
         """
         customer = self.customer_model.query.get_or_404(customer_id)
-        billing_address = customer.billing_address
-        delivery_address = customer.delivery_address or billing_address
+        delivery_address = customer.delivery_address
+        billing_address = customer.billing_address or delivery_address
 
         goods = self.goods_ds.find(customer=customer, is_ordered=False)
         goods_price = self.goods_ds.get_price(goods)
