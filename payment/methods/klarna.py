@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from flask import request
 
 from klarna import Klarna, Config, Address
-from klarna.const import GoodsIs, Gender, GenderMap
+from klarna.const import GoodsIs, GenderMap
 
 from .base import BasePaymentMethod
 
@@ -18,7 +18,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
         self.klarna.init()
 
     def init_payment(self):
-        self.klarna.clientip = request.remote_addr
+        self.klarna.clientip = '83.10.0.5'#request.remote_addr
         self.klarna.shipping = self.__get_address('delivery')
         self.klarna.billing = self.__get_address('billing')
 
@@ -38,7 +38,15 @@ class KlarnaPaymentMethod(BasePaymentMethod):
             self.klarna.add_article(qty=1,
                                     title='Shipment Fee',
                                     price=float(self.order.delivery_price),
+                                    vat=0,
                                     flags=GoodsIs.SHIPPING)
+
+        if self.order.payment_fee is not None:
+            self.klarna.add_article(qty=1,
+                                    title='Payment Fee',
+                                    price=float(self.order.payment_fee),
+                                    vat=0,
+                                    flags=GoodsIs.NOFLAG)
 
     def __get_address(self, addr_type):
         _get = lambda k: getattr(self.order, '{0}_{1}'.format(addr_type, k))
@@ -57,7 +65,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
     def process_payment(self):
         self.init_payment()
         customer = self.order.customer
-        pno = '{:%d-%m-%Y}'.format(customer.birth_date)
+        pno = '{:%d%m%Y}'.format(customer.birth_date)
         return self.klarna.add_transaction(gender=GenderMap[customer.gender],
                                            pno=pno,
                                            flags=0)

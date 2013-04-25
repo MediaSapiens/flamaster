@@ -196,6 +196,7 @@ class Order(db.Model, CRUDMixin):
 
     payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
+    payment_fee = db.Column(db.Numeric(precision=18, scale=2))
     state = db.Column(db.Integer, index=True)
     # stored cost for the order delivery
     delivery_method = db.Column(db.String, nullable=False, index=True)

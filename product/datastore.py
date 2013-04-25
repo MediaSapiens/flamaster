@@ -34,17 +34,19 @@ class OrderDatastore(AbstractDatastore):
 
         goods = self.goods_ds.find(customer=customer, is_ordered=False)
         goods_price = self.goods_ds.get_price(goods)
-        delivery_price = self.order_model.resolve_delivery(kwargs['delivery_provider_id'],
+        delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
-        total_price = goods_price + delivery_price
-        total_price += self.order_model.resolve_payment_fee(kwargs['payment_method'],
-                                                            goods_price)
+        payment_fee = self.order_model.resolve_payment_fee(kwargs['payment_method'],
+                                                           goods_price)
+        total_price = goods_price + delivery_price + payment_fee
+
         kwargs.update({
             'reference': str(uuid.uuid4().node),
             'delivery_method': 'provider',
             'customer': customer,
             'goods_price': goods_price,
+            'payment_fee': payment_fee,
             'total_price': total_price,
             'delivery_price': delivery_price,
             'state': OrderStates.created
