@@ -233,6 +233,7 @@ class AddressResource(ModelResource):
         'first_name': t.String(allow_blank=True),
         'last_name': t.String(allow_blank=True),
         'company': t.String(allow_blank=True),
+        'gender': t.String,
         'phone': t.String
     }).make_optional('apartment', 'first_name', 'last_name', 'company',
                      'type').ignore_extra('*')
