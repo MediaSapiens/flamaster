@@ -37,13 +37,15 @@ class OrderDatastore(AbstractDatastore):
         delivery_price = self.order_model.resolve_delivery(kwargs['delivery_provider_id'],
                                                            goods,
                                                            delivery_address)
-
+        total_price = goods_price + delivery_price
+        total_price += self.order_model.resolve_payment_fee(kwargs['payment_method'],
+                                                            goods_price)
         kwargs.update({
             'reference': str(uuid.uuid4().node),
             'delivery_method': 'provider',
             'customer': customer,
             'goods_price': goods_price,
-            'total_price': goods_price + delivery_price,
+            'total_price': total_price,
             'delivery_price': delivery_price,
             'state': OrderStates.created
         })

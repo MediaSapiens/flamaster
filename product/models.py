@@ -217,6 +217,12 @@ class Order(db.Model, CRUDMixin):
         return PaymentMethod(self)
 
     @classmethod
+    def resolve_payment_fee(cls, method, goods_price):
+        module = import_string(current_app.config['PAYMENT_MODULE_PATH'])
+        method = module.query.filter_by(method=method).first()
+        return method.calculate_fee(goods_price)
+
+    @classmethod
     def resolve_delivery(cls, delivery_provider_id, goods, address):
         module = import_string(current_app.config['DELIVERY_MODULE_PATH'])
         provider = module.query.get(delivery_provider_id)
