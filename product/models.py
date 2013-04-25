@@ -178,6 +178,7 @@ class Order(db.Model, CRUDMixin):
     billing_last_name = db.Column(db.Unicode(255), default=u'')
     billing_company = db.Column(db.Unicode(255), default=u'')
     billing_phone = db.Column(db.String(17), default='')
+    billing_gender = db.Column(db.String(1), default='')
     delivery_country_id = db.Column(db.Integer, db.ForeignKey('countries.id',
                                 use_alter=True, name='fk_delivery_country'))
     delivery_city = db.Column(db.Unicode(255), nullable=False)
@@ -188,6 +189,7 @@ class Order(db.Model, CRUDMixin):
     delivery_last_name = db.Column(db.Unicode(255), default=u'')
     delivery_company = db.Column(db.Unicode(255), default=u'')
     delivery_phone = db.Column(db.String(17), default='')
+    delivery_gender = db.Column(db.String(1), default='')
     # summary cost of all cart items linked with this order
     goods_price = db.Column(db.Numeric(precision=18, scale=2))
 
