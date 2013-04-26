@@ -11,8 +11,14 @@ from .models import FlatPage
 @api_resource(bp, 'pages', {'id': None})
 class FlatPageResource(ModelResource):
 
-    validation = t.Dict({'name': t.String,
-                         'content': t.String}).ignore_extra('*')
+    validation = t.Dict({
+        'name': t.String,
+        'slug': t.String,
+        t.Key('registration_required', default=False): t.Bool,
+        'template_name': t.String,
+        'content': t.String
+    }).make_optional('template_name').ignore_extra('*')
+
     model = FlatPage
     method_decorators = {'post': roles_required('admin'),
                          'put': roles_required('admin'),
