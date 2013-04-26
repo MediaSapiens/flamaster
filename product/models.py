@@ -250,6 +250,19 @@ class Order(db.Model, CRUDMixin):
         return Country.query.get(self.delivery_country_id)
 
 
+class PaymentTransaction(db.Model, CRUDMixin):
+    ACCEPTED = 1
+    PENDING = 2
+    DENIED = 3
+
+    status = db.Column(db.Integer, index=True, nullable=False)
+    details = db.Column(db.UnicodeText, unique=True, nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'),
+                         nullable=False, index=True)
+    order = db.relationship('Order',
+                            backref=db.backref('orders', **lazy_cascade))
+
+
 class Shelf(db.Model, CRUDMixin):
     """ Model to keep available products
     """

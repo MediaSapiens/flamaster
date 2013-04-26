@@ -14,10 +14,11 @@ import uuid
 class OrderDatastore(AbstractDatastore):
     """ Class for manipulations with order model state
     """
-    def __init__(self, order_model, cart_model, customer_model):
+    def __init__(self, order_model, cart_model, customer_model, transaction_model):
         self.order_model = order_model
         self.goods_ds = CartDatastore(cart_model)
         self.customer_model = customer_model
+        self.transaction_model = transaction_model
 
     def find_one(self, **kwargs):
         return self.find(**kwargs).first()
@@ -91,3 +92,16 @@ class CartDatastore(AbstractDatastore):
 
     def mark_ordered(self, carts_query, order):
         return carts_query.update({'is_ordered': True, 'order_id': order.id})
+
+
+class PaymentTransactionDatastore(AbstractDatastore):
+
+    def __init__(self, transaction_model):
+        self.transaction_model = transaction_model
+
+    def process(self, tnx, order):
+        if tnx.status == self.transaction_model.ACCEPTED:
+            tnx.update({'order_id': order.id})
+
+        if tnx.status == self.transaction_model.DENIED:
+            pass

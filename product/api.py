@@ -15,7 +15,7 @@ from flamaster.core.utils import jsonify_status_code
 from . import product as bp
 from . import order_states_i18n
 from .helpers import resolve_parent
-from .models import Cart, Category, Country, Order
+from .models import Cart, Category, Country, Order, PaymentTransaction
 from .datastore import OrderDatastore
 
 
@@ -206,7 +206,7 @@ class OrderResource(ModelResource):
         status = http.ACCEPTED
 
         try:
-            datastore = OrderDatastore(self.model, Cart, Customer)
+            datastore = OrderDatastore(self.model, Cart, Customer, PaymentTransaction)
 
             try:
                 instance = datastore.create_from_api(**self._request_data)
