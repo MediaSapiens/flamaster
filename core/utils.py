@@ -12,7 +12,7 @@ from importlib import import_module
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
-from werkzeug import import_string, cached_property
+from werkzeug.utils import import_string, cached_property
 
 from flamaster.extensions import mail
 
@@ -44,7 +44,7 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     resource = LazyResource(import_name, endpoint)
     collection_url = "/{}/".format(endpoint)
     # collection endpoint
-    collection_methods = ['GET', 'POST']
+    collection_methods = ['GET', 'PUT', 'POST']
     item_methods = ['GET', 'PUT', 'DELETE']
 
     pk = pk_def.keys()[0]
@@ -81,7 +81,7 @@ class CustomEncoder(json.JSONEncoder):
 
 def json_dumps(data):
     try:
-        return json.dumps(data, indent=2, cls=CustomEncoder)
+        return json.dumps(data, cls=CustomEncoder)
     except ValueError as e:
         current_app.logger.debug("%s: %s", e.message, data)
         raise e
@@ -91,7 +91,7 @@ def jsonify_status_code(data=None, status=200, mimetype='application/json'):
     data = data or {}
 
     return current_app.response_class(json_dumps(data),
-        status=status, mimetype=mimetype)
+                                      status=status, mimetype=mimetype)
 
 
 def slugify(text, separator='-', prefix=True):
@@ -189,3 +189,26 @@ def send_email(subject, recipient, template, callback=None, **context):
     #     _security._send_mail_task(msg)
     #     return
     mail.send(msg)
+
+
+class AttrDict(dict):
+    """
+    """
+    _protected_fields = ['_protected_fields']
+
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self._protected_fields.extend(self.__dict__.keys())
+
+    def __getattr__(self, item):
+        if item in self:
+            return self[item]
+        else:
+            return self.__getattribute__(item)
+
+    def __setattr__(self, key, value):
+        if key not in self.__getattribute__('_protected_fields'):
+            self[key] = value
+
+        else:
+            dict.__setattr__(self, key, value)

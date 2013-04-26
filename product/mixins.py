@@ -20,13 +20,13 @@ from .signals import cart_created, cart_removed
 class OrderMixin(CRUDMixin):
     shop_id = db.Column(db.String(128), default=SHOP_ID)
 
-    billing_city = db.Column(db.Unicode(255), nullable=False)
-    billing_street = db.Column(db.Unicode(255), nullable=False)
+    billing_city = db.Column(db.Unicode(255))
+    billing_street = db.Column(db.Unicode(255))
     billing_apartment = db.Column(db.Unicode(20))
     billing_zip_code = db.Column(db.String(20))
 
-    delivery_city = db.Column(db.Unicode(255), nullable=False)
-    delivery_street = db.Column(db.Unicode(255), nullable=False)
+    delivery_city = db.Column(db.Unicode(255))
+    delivery_street = db.Column(db.Unicode(255))
     delivery_apartment = db.Column(db.Unicode(20))
     delivery_zip_code = db.Column(db.String(20))
     # summary cost of all cart items linked with this order
@@ -97,7 +97,7 @@ class OrderMixin(CRUDMixin):
 
     @classmethod
     def _resolve_delivery(cls, delivery, address):
-        return delivery.calculate_price()
+        return delivery.calculate_price(address)
 
 
 class CartMixin(CRUDMixin):

@@ -40,7 +40,7 @@ def update_on_shelf(price_option):
 
 @price_deleted.connect
 def remove_from_shelf(sender, price_option_id):
-    Shelf.query.delete().where(price_option_id=str(price_option_id))
+    # Shelf.query.where(price_option_id=str(price_option_id)).delete()
     db.session.commit()
 
 
