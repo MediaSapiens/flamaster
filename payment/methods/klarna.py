@@ -5,6 +5,8 @@ from flask import request
 from klarna import Klarna, Config, Address
 from klarna.const import GoodsIs, GenderMap
 
+from flamaster.product.models import Country
+
 from .base import BasePaymentMethod
 
 
@@ -22,11 +24,9 @@ class KlarnaPaymentMethod(BasePaymentMethod):
         self.klarna.shipping = self.__get_address('delivery')
         self.klarna.billing = self.__get_address('billing')
 
-        self.klarna.set_estore_info(orderid1=self.order.reference)
+        self.klarna.set_estore_info(orderid1=self.order_data['reference'])
 
-        goods = self.order.goods.all()
-
-        for art in goods:
+        for art in self.goods:
             self.klarna.add_article(qty=art.amount,
                                     title=art.product.name,
                                     price=float(art.price),
@@ -34,38 +34,37 @@ class KlarnaPaymentMethod(BasePaymentMethod):
                                     discount=0,
                                     flags=GoodsIs.INC_VAT)
 
-        if self.order.delivery_price is not None:
+        if self.order_data['delivery_price'] is not None:
             self.klarna.add_article(qty=1,
                                     title='Shipment Fee',
-                                    price=float(self.order.delivery_price),
+                                    price=float(self.order_data['delivery_price']),
                                     vat=0,
                                     flags=GoodsIs.SHIPPING)
 
-        if self.order.payment_fee is not None:
+        if self.order_data['payment_fee'] is not None:
             self.klarna.add_article(qty=1,
                                     title='Payment Fee',
-                                    price=float(self.order.payment_fee),
+                                    price=float(self.order_data['payment_fee']),
                                     vat=0,
                                     flags=GoodsIs.NOFLAG)
 
     def __get_address(self, addr_type):
-        _get = lambda k: getattr(self.order, '{0}_{1}'.format(addr_type, k))
-        return Address(email=self.order.customer.email,
+        _get = lambda k: self.order_data.get('{0}_{1}'.format(addr_type, k), '')
+        return Address(email=self.customer.email,
                        telno=_get('phone').replace(' ', '').replace('+', ''),
                        fname=_get('first_name'),
                        lname=_get('last_name'),
                        street=_get('street'),
                        zip=_get('zip_code'),
                        city=_get('city'),
-                       country=_get('country').short,
+                       country=Country.query.get(_get('country_id')).short,
                        house_number=_get('apartment'),
                        house_extension=None)
 
 
     def process_payment(self):
         self.init_payment()
-        customer = self.order.customer
-        pno = '{:%d%m%Y}'.format(customer.birth_date)
-        return self.klarna.add_transaction(gender=GenderMap[customer.gender],
+        pno = '{:%d%m%Y}'.format(self.customer.birth_date)
+        return self.klarna.add_transaction(gender=GenderMap[self.customer.gender],
                                            pno=pno,
                                            flags=0)

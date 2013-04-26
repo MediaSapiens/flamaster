@@ -212,12 +212,12 @@ class Order(db.Model, CRUDMixin):
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
     notes = db.Column(db.UnicodeText, default=u'')
 
-    def resolve_payment(self, method=None):
-        payment_method = self.payment_method or method
-        method = current_app.config['PAYMENT_METHODS'][payment_method]
-        class_string = method['module']
-        PaymentMethod = import_string(class_string)
-        return PaymentMethod(self)
+    @classmethod
+    def resolve_payment(cls, method=None, goods=None, order_data=None):
+        method = method or order_data.get('payment_method')
+        conf = current_app.config['PAYMENT_METHODS'][method]
+        PaymentMethod = import_string(conf['module'])
+        return PaymentMethod(goods, order_data)
 
     @classmethod
     def resolve_payment_fee(cls, method, goods_price):

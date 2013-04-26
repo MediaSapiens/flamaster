@@ -10,11 +10,13 @@ class BasePaymentMethod(object):
     """
     method_name = 'base'
 
-    def __init__(self, order=None):
+    def __init__(self, goods=None, order_data=None):
         my_method = current_app.config['PAYMENT_METHODS'][self.method_name]
         self.settings = my_method.get('settings')
         self.sandbox = my_method['SANDBOX']
-        self.order = order
+        self.goods = goods
+        self.order_data = order_data
+        self.customer = order_data.get('customer')
 
     def verify(self, data):
         raise NotImplementedError

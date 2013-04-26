@@ -55,14 +55,15 @@ class OrderDatastore(AbstractDatastore):
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))
 
+        method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
+        method.process_payment()
+
         order = self.order_model.create(**kwargs)
         # Attach cart items to order and mark as ordered
         self.goods_ds.mark_ordered(goods, order)
         # Commit manipulation on goods
         db.session.commit()
 
-        method = order.resolve_payment()
-        method.process_payment()
         # Send signal on order creation
         order_created.send(current_app._get_current_object(), order=order)
         return order
