@@ -207,8 +207,13 @@ class OrderResource(ModelResource):
 
         try:
             datastore = OrderDatastore(self.model, Cart, Customer)
-            instance = datastore.create_from_api(**self._request_data)
-            response = self.serialize(instance)
+
+            try:
+                instance = datastore.create_from_api(**self._request_data)
+            except Exception:
+                raise t.DataError({'payment_method': _('Unknown error')})
+            else:
+                response = self.serialize(instance)
         except t.DataError as err:
             status, response = http.BAD_REQUEST, err.as_dict()
 
