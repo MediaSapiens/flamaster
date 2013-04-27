@@ -19,6 +19,7 @@ class OrderDatastore(AbstractDatastore):
         self.goods_ds = CartDatastore(cart_model)
         self.customer_model = customer_model
         self.transaction_model = transaction_model
+        self.transaction_ds = PaymentTransactionDatastore(transaction_model, cart_model)
 
     def find_one(self, **kwargs):
         return self.find(**kwargs).first()
@@ -57,11 +58,11 @@ class OrderDatastore(AbstractDatastore):
         kwargs.update(self.__prepare_address('billing', billing_address))
 
         method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
-        method.process_payment()
+        tnx = method.process_payment()
 
         order = self.order_model.create(**kwargs)
-        # Attach cart items to order and mark as ordered
-        self.goods_ds.mark_ordered(goods, order)
+
+        self.transaction_ds.process(tnx, order, goods)
         # Commit manipulation on goods
         db.session.commit()
 
@@ -96,12 +97,16 @@ class CartDatastore(AbstractDatastore):
 
 class PaymentTransactionDatastore(AbstractDatastore):
 
-    def __init__(self, transaction_model):
+    def __init__(self, transaction_model, cart_model):
         self.transaction_model = transaction_model
+        self.goods_ds = CartDatastore(cart_model)
 
-    def process(self, tnx, order):
+    def process(self, tnx, order, goods):
+        tnx.order_id = order.id
+
         if tnx.status == self.transaction_model.ACCEPTED:
-            tnx.update({'order_id': order.id})
+            # Attach cart items to order and mark as ordered
+            self.goods_ds.mark_ordered(goods, order)
+            order.mark_paid()
 
-        if tnx.status == self.transaction_model.DENIED:
-            pass
+        tnx.save()

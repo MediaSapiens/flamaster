@@ -5,7 +5,7 @@ from flask import request
 from klarna import Klarna, Config, Address
 from klarna.const import GoodsIs, GenderMap
 
-from flamaster.product.models import Country
+from flamaster.product.models import Country, PaymentTransaction
 
 from .base import BasePaymentMethod
 
@@ -65,6 +65,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
     def process_payment(self):
         self.init_payment()
         pno = '{:%d%m%Y}'.format(self.customer.birth_date)
-        return self.klarna.add_transaction(gender=GenderMap[self.customer.gender],
+        resp = self.klarna.add_transaction(gender=GenderMap[self.customer.gender],
                                            pno=pno,
                                            flags=0)
+        return PaymentTransaction.create(status=resp[1], details=resp[0])

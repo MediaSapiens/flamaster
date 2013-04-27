@@ -16,7 +16,7 @@ from bson import ObjectId
 from . import OrderStates
 
 
-__all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
+__all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf', 'PaymentTransaction']
 
 
 class Cart(db.Model, CRUDMixin):
@@ -257,8 +257,7 @@ class PaymentTransaction(db.Model, CRUDMixin):
 
     status = db.Column(db.Integer, index=True, nullable=False)
     details = db.Column(db.UnicodeText, unique=True, nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'),
-                         nullable=False, index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), index=True)
     order = db.relationship('Order',
                             backref=db.backref('orders', **lazy_cascade))
 
