@@ -16,7 +16,6 @@ class BasePaymentMethod(object):
         self.sandbox = my_method['SANDBOX']
         self.goods = goods
         self.order_data = order_data
-        self.customer = order_data.get('customer')
 
     def verify(self, data):
         raise NotImplementedError
