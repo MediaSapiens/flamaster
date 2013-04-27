@@ -18,7 +18,10 @@ class KlarnaPaymentMethod(BasePaymentMethod):
 
         self.klarna = Klarna(Config(**self.settings))
         self.klarna.init()
-        self.customer = self.order_data.get('customer')
+        self.customer = None
+
+        if self.order_data is not None:
+            self.customer = self.order_data.get('customer')
 
     def init_payment(self):
         self.klarna.clientip = '83.10.0.5'#request.remote_addr
