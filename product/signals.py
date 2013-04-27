@@ -5,7 +5,9 @@ from blinker import Namespace
 
 # from flamaster.account.models import User
 from flamaster.core import db
+from flamaster.core.utils import send_email
 from .models import Shelf
+from . import OrderStates
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,13 @@ def update_on_shelf(price_option):
 def remove_from_shelf(price_option):
     Shelf.query.delete().where(price_option_id=price_option.id)
     db.session.commit()
+
+
+@order_created.connect
+def on_order_created(order):
+    if order.state == OrderStates.paid:
+        pass
+        # send_email(subject, recipient, template, **params)
 
 
 #def order_creation_sender(mapper, connection, instance):

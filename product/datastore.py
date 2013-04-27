@@ -67,7 +67,7 @@ class OrderDatastore(AbstractDatastore):
         db.session.commit()
 
         # Send signal on order creation
-        order_created.send(current_app._get_current_object(), order=order)
+        order_created.send(order)
         return order
 
     def __prepare_address(self, addr_type, address_instance):

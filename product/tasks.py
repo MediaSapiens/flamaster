@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from flask import current_app
 
 from flamaster.core import db
+from flamaster.core.utils import send_email
 from flamaster.product.datastore import CartDatastore
 from flamaster.product import OrderStates
 from flamaster.product.models import (Cart, Shelf,
@@ -23,7 +24,7 @@ def drop_unordered_cart_items():
     return response
 
 
-def check_order_status(payment_method):
+def check_pending_orders(payment_method):
     transactions = PaymentTransaction.query.filter_by(status=PaymentTransaction.PENDING)\
         .join(Order).filter(Order.payment_method == payment_method)
     conf = current_app.config['PAYMENT_METHODS'].get(payment_method)
@@ -38,11 +39,11 @@ def check_order_status(payment_method):
             order = transaction.order
             goods_ds.mark_ordered(order.goods, order)
             order.mark_paid()
-            # TODO: Send mail here
+            # send_email(subject, recipient, template, **params)
 
         if result == PaymentTransaction.DENIED:
             order.update(state=OrderStates.provider_denied)
-            # TODO: Send mail here
+            # send_email(subject, recipient, template, **params)
 
         transaction.update(status=result)
 
