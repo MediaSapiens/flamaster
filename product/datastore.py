@@ -102,11 +102,9 @@ class PaymentTransactionDatastore(AbstractDatastore):
         self.goods_ds = CartDatastore(cart_model)
 
     def process(self, tnx, order, goods):
-        tnx.order_id = order.id
+        tnx.update(order_id=order.id)
 
         if tnx.status == self.transaction_model.ACCEPTED:
             # Attach cart items to order and mark as ordered
             self.goods_ds.mark_ordered(goods, order)
             order.mark_paid()
-
-        tnx.save()

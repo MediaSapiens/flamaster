@@ -30,6 +30,9 @@ class BasePaymentMethod(object):
     def precess_payment_response(self, *args, **kwargs):
         raise NotImplementedError
 
+    def check_status(self, transaction):
+        raise NotImplementedError
+
 
 def resolve_payment_method(payment_method):
     method = current_app.config['PAYMENT_METHODS'][payment_method]

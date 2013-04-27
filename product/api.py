@@ -11,6 +11,7 @@ from flamaster.core import http, mongo
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product import OrderStates
 
 from . import product as bp
 from . import order_states_i18n
@@ -229,7 +230,8 @@ class OrderResource(ModelResource):
         # TODO: process product owners
 
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query.filter_by(**kwargs)
+        return self.model.query.filter_by(**kwargs)\
+            .filter(~(self.model.state == OrderStates.provider_denied))
 
     @property
     def _request_data(self):

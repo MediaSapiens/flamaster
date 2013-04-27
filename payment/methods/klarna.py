@@ -69,3 +69,12 @@ class KlarnaPaymentMethod(BasePaymentMethod):
                                            pno=pno,
                                            flags=0)
         return PaymentTransaction.create(status=resp[1], details=resp[0])
+
+    def check_status(self, transaction):
+        statuses = {
+            '1': PaymentTransaction.ACCEPTED,
+            '2': PaymentTransaction.PENDING,
+            '3': PaymentTransaction.DENIED
+        }
+        result = self.klarna.check_order_status(transaction.details)
+        return statuses[str(result)]

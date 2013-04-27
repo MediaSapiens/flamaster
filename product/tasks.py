@@ -1,6 +1,14 @@
 from datetime import datetime, timedelta
+
+from flask import current_app
+
 from flamaster.core import db
-from flamaster.product.models import Cart, Shelf
+from flamaster.product.datastore import CartDatastore
+from flamaster.product import OrderStates
+from flamaster.product.models import (Cart, Shelf,
+                                      PaymentTransaction, Order)
+
+from werkzeug.utils import import_string
 
 
 def drop_unordered_cart_items():
@@ -13,3 +21,29 @@ def drop_unordered_cart_items():
     expired_q.delete()
     db.session.commit()
     return response
+
+
+def check_order_status(payment_method):
+    transactions = PaymentTransaction.query.filter_by(status=PaymentTransaction.PENDING)\
+        .join(Order).filter(Order.payment_method == payment_method)
+    conf = current_app.config['PAYMENT_METHODS'].get(payment_method)
+    payment_module = import_string(conf.get('module'))
+    goods_ds = CartDatastore(Cart)
+
+    for transaction in transactions:
+        mod = payment_module()
+        result = mod.check_status(transaction)
+
+        if result == PaymentTransaction.ACCEPTED:
+            order = transaction.order
+            goods_ds.mark_ordered(order.goods, order)
+            order.mark_paid()
+            # TODO: Send mail here
+
+        if result == PaymentTransaction.DENIED:
+            order.update(state=OrderStates.provider_denied)
+            # TODO: Send mail here
+
+        transaction.update(status=result)
+
+    db.session.commit()

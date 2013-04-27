@@ -12,6 +12,7 @@ class OrderStates(object):
     complete = 3
     customer_canceled = 5
     merchant_canceled = 7
+    provider_denied = 9
 
 
 order_states_i18n = {
@@ -20,7 +21,8 @@ order_states_i18n = {
     '2': _('Delivered'),
     '3': _('Complete'),
     '5': _('Customer Canceled'),
-    '7': _('Merchant Canceled')
+    '7': _('Merchant Canceled'),
+    '9': _('Provider denied')
 }
 
 # from .models import *
