@@ -10,7 +10,7 @@ from flamaster.product.models import Order
 from .base import BasePaymentMethod
 
 
-CURRENCY = 'USD'
+CURRENCY = 'EUR'
 ACTION = 'SALE'
 SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
