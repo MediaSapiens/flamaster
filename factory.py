@@ -68,11 +68,8 @@ class AppFactory(object):
                 ext(app)
 
             if ext_name == 'babel':
-                @ext.localeselector
-                def get_locale():
-                    languages = app.config['ACCEPT_LANGUAGES']
-                    matched = request.accept_languages.best_match(languages)
-                    return session.get(app.config['LOCALE_KEY'], matched)
+                ext.localeselector(get_locale)
+
 
     def _register_blueprints(self, app):
         """ Register all blueprint modules listed under the settings
@@ -86,41 +83,11 @@ class AppFactory(object):
                                          'found'.format(bp_name))
 
     def _register_hooks(self, app):
-
         register_jinja_helpers(app)
-
-        @app.before_request
-        def setup_session():
-            g.now = time.mktime(datetime.utcnow().timetuple())
-            g.locale = babel_locale().language
-            session['id'] = session.get('id', uuid.uuid4().hex)
-
-        @app.errorhandler(http.NOT_FOUND)
-        def page_not_found(error):
-            try:
-                return render_template('base.html'), http.NOT_FOUND
-            except:
-                return abort(http.NOT_FOUND)
-
-        @app.errorhandler(http.INTERNAL_ERR)
-        def internal_error(error):
-            return render_template('50x.html'), http.INTERNAL_ERR
-
-        @app.after_request
-        def modify_headers(response):
-            headers = [
-                ('Cache-Control',
-                    'public, no-store, max-age=0'),
-                ('Access-Control-Allow-Origin',
-                    '*'),
-                ('Access-Control-Allow-Methods',
-                    'GET,POST,PUT,DELETE,HEAD,OPTIONS'),
-                ('Access-Control-Allow-Headers',
-                    'Origin, X-Requested-With, Content-Type, Accept,'
-                    ' X-HTTP-Method-Override'),
-            ]
-            map(lambda h: response.headers.add(*h), headers)
-            return response
+        app.before_request(setup_session)
+        app.errorhandler(http.NOT_FOUND)(show_page_not_found)
+        app.errorhandler(http.INTERNAL_ERR)(show_internal_error)
+        app.after_request(modify_headers)
 
     def _add_logger(self, app):
         """ Creates SMTPHandler for logging errors to the specified admins list
@@ -154,3 +121,44 @@ class AppFactory(object):
 
         if not app.debug:
             app.logger.addHandler(mail_handler)
+
+
+
+def get_locale(babel):
+    print("babel:", babel)
+    languages = babel.app.config['ACCEPT_LANGUAGES']
+    matched = request.accept_languages.best_match(languages)
+    return session.get(babel.app.config['LOCALE_KEY'], matched)
+
+
+def modify_headers(response):
+    headers = [
+        ('Cache-Control',
+            'public, no-store, max-age=0'),
+        ('Access-Control-Allow-Origin',
+            '*'),
+        ('Access-Control-Allow-Methods',
+            'GET,POST,PUT,DELETE,HEAD,OPTIONS'),
+        ('Access-Control-Allow-Headers',
+            'Origin, X-Requested-With, Content-Type, Accept,'
+            ' X-HTTP-Method-Override'),
+    ]
+    map(lambda h: response.headers.add(*h), headers)
+    return response
+
+
+def setup_session():
+    g.now = time.mktime(datetime.utcnow().timetuple())
+    g.locale = babel_locale().language
+    session['id'] = session.get('id', uuid.uuid4().hex)
+
+
+def show_internal_error(error):
+    return render_template('50x.html'), http.INTERNAL_ERR
+
+
+def show_page_not_found(error):
+    try:
+        return render_template('base.html'), http.NOT_FOUND
+    except:
+        return abort(http.NOT_FOUND)
