@@ -17,6 +17,7 @@ EXTENSIONS = [
     'flamaster.extensions.mongo',
     'flamaster.extensions.security',
     'flamaster.extensions.social',
+    'flamaster.extensions.redis',
 ]
 
 # Blueprint instances to register
@@ -30,8 +31,7 @@ BLUEPRINTS = [
     'flamaster.product.product',
 ]
 
-ADMINS = ('admin@example.com', 'sfelde@mediasapiens.co',
-          'yehor@mediasapiens.co')
+ADMINS = ('admin@example.com',)
 
 USER_ROLE = 'user'
 ADMIN_ROLE = 'admin'
