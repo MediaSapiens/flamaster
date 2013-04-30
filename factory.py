@@ -14,6 +14,7 @@ from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
 
 from flamaster.core import http
+from flamaster.core.session import RedisSessionInterface
 from flamaster.extensions import register_jinja_helpers
 
 
@@ -45,6 +46,7 @@ class AppFactory(object):
         self._register_blueprints(app)
         self._register_hooks(app)
 
+        app.session_interface = RedisSessionInterface()
         app.wsgi_app = ProxyFix(app.wsgi_app)
         return app
 
