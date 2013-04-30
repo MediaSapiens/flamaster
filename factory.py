@@ -67,10 +67,6 @@ class AppFactory(object):
             except AttributeError:
                 ext(app)
 
-            if ext_name == 'babel':
-                ext.localeselector(get_locale)
-
-
     def _register_blueprints(self, app):
         """ Register all blueprint modules listed under the settings
             BLUEPRINTS key """
@@ -88,6 +84,7 @@ class AppFactory(object):
         app.errorhandler(http.NOT_FOUND)(show_page_not_found)
         app.errorhandler(http.INTERNAL_ERR)(show_internal_error)
         app.after_request(modify_headers)
+        app.extensions['babel'].localeselector(get_locale(app))
 
     def _add_logger(self, app):
         """ Creates SMTPHandler for logging errors to the specified admins list
@@ -122,15 +119,6 @@ class AppFactory(object):
         if not app.debug:
             app.logger.addHandler(mail_handler)
 
-
-
-def get_locale(babel):
-    print("babel:", babel)
-    languages = babel.app.config['ACCEPT_LANGUAGES']
-    matched = request.accept_languages.best_match(languages)
-    return session.get(babel.app.config['LOCALE_KEY'], matched)
-
-
 def modify_headers(response):
     headers = [
         ('Cache-Control',
@@ -162,3 +150,15 @@ def show_page_not_found(error):
         return render_template('base.html'), http.NOT_FOUND
     except:
         return abort(http.NOT_FOUND)
+
+
+def get_locale(app):
+
+    def closure():
+        languages = app.config['ACCEPT_LANGUAGES']
+        matched = request.accept_languages.best_match(languages)
+        language = session.get(app.config['LOCALE_KEY'], matched)
+        app.logger.debug("Language: %s", language)
+        return language
+
+    return closure
