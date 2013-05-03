@@ -2,8 +2,10 @@
 import re
 import types
 import uuid
+
 from bson import ObjectId
 from datetime import datetime, date
+from decimal import Decimal, ROUND_HALF_UP
 
 from flask import current_app, render_template
 from flask.ext.mail import Message
@@ -190,4 +192,13 @@ def send_email(subject, recipient, template, callback=None, **context):
     #     _security._send_mail_task(msg)
     #     return
     mail.send(msg)
+
+
+def round_decimal(dec_value):
+    """
+    A routine to standardize rounding of decimal numbers to the format we expect
+    """
+    if type(dec_value) != Decimal:
+        raise Exception('Expected a decimal value')
+    return dec_value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 

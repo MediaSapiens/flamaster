@@ -1,7 +1,8 @@
 from __future__ import absolute_import
-from flask import current_app
+
 from flamaster.core import db
 from flamaster.core.datastore import AbstractDatastore
+from flamaster.core.utils import round_decimal
 
 from operator import attrgetter
 
@@ -41,7 +42,7 @@ class OrderDatastore(AbstractDatastore):
                                                            delivery_address)
         payment_fee = self.order_model.resolve_payment_fee(kwargs['payment_method'],
                                                            goods_price)
-        total_price = goods_price + delivery_price + payment_fee
+        total_price = round_decimal(goods_price + delivery_price + payment_fee)
 
         kwargs.update({
             'reference': str(uuid.uuid4().node),
@@ -89,7 +90,7 @@ class CartDatastore(AbstractDatastore):
         return self.cart_model.query.filter_by(**kwargs)
 
     def get_price(self, carts_query):
-        return sum(map(attrgetter('price'), carts_query))
+        return round_decimal(sum(map(attrgetter('price'), carts_query)))
 
     def mark_ordered(self, carts_query, order):
         return carts_query.update({'is_ordered': True, 'order_id': order.id})

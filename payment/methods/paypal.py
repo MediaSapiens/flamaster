@@ -1,11 +1,16 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+
 import logging
 import requests
+
 from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
-from flamaster.product.models import Order
+from flamaster.core import db
+from flamaster.product.models import PaymentTransaction, Order, Cart
+from flamaster.product.datastore import PaymentTransactionDatastore
+from flamaster.product.signals import order_created
 
 from .base import BasePaymentMethod
 
@@ -63,8 +68,11 @@ class PayPalPaymentMethod(BasePaymentMethod):
         response = self.__do_request(request_params)
 
         if response['ACK'] == RESPONSE_OK:
-            self.order.set_payment_details(response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
+            print webface_url
+            PaymentTransaction.create(status=PaymentTransaction.ACCEPTED,
+                                      details=response['TOKEN'],
+                                      order_data=self.order_data)
             return redirect(webface_url)
 
         return redirect(url_for('payment.error_payment',
@@ -74,8 +82,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Final step. The payment can be captured (collected) using the
             DoExpressCheckoutPayment call.
         """
-        self.order = Order.get_by_payment_details(response['TOKEN'])
-        if self.order is None:
+        tnx = PaymentTransaction.query.filter_by(details=response['TOKEN']).first()
+
+        if tnx is None:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
 
@@ -83,21 +92,26 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'METHOD': DO_PAYMENT,
             'TOKEN': response['TOKEN'],
             'PAYERID': response['PAYERID'],
-            'PAYMENTREQUEST_0_AMT': self.order.total_price,
+            'PAYMENTREQUEST_0_AMT': self.order_data['total_price'],
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
         }
         response = self.__do_request(request_params)
+
         if response['ACK'] == RESPONSE_OK:
-            self.order.set_payment_details(unicode(response))
-            self.order.mark_paid()
+            transaction_ds = PaymentTransactionDatastore(Order, Cart)
+            order = Order.create(**tnx.order_data)
+            goods = self.goods_ds.find(customer=tnx.order_data.get('customer'),
+                                       is_ordered=False)
+            transaction_ds.process(tnx, order, goods)
+            db.session.commit()
+            order_created.send(order)
 
             return Response(response=json.dumps(response), status=201,
-                    mimetype='application/json')
+                            mimetype='application/json')
 
         return redirect(url_for('payment.error_payment',
-                                payment_method=self.method_name,
-                                order_id=self.order.id))
+                                payment_method=self.method_name))
 
     def __get_payment_details(self, token, PayerID):
         """ If the customer authorizes the payment, the customer is redirected
@@ -108,6 +122,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         request_params = {
             'METHOD': GET_CHECKOUT,
             'TOKEN': token,
+            'PAYERID': PayerID
         }
 
         response = self.__do_request(request_params)
@@ -121,7 +136,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def init_payment(self):
         """ Initialization payment process.
         """
-        return self.__set_checkout(self.order.total_price)
+        return self.__set_checkout(self.order_data['total_price'])
 
     def process_payment(self):
         return self.__get_payment_details(**dict(request.args))
