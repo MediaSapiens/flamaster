@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from flask import current_app
+from flask.ext.babel import lazy_gettext as _
 
 from flamaster.core import db
 from flamaster.core.utils import send_email
@@ -39,11 +40,13 @@ def check_pending_orders(payment_method):
             order = transaction.order
             goods_ds.mark_ordered(order.goods, order)
             order.mark_paid()
-            # send_email(subject, recipient, template, **params)
+            send_email(_('Your order summary'), order.customer.email,
+                       'order_created', **{'order': order, 'customer': order.customer})
 
         if result == PaymentTransaction.DENIED:
             order.update(state=OrderStates.provider_denied)
-            # send_email(subject, recipient, template, **params)
+            send_email(_('Your order status'), order.customer,
+                       'payment_denied', **{'order': order})
 
         transaction.update(status=result)
 

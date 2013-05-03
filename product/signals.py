@@ -3,7 +3,9 @@ from __future__ import absolute_import
 import logging
 from blinker import Namespace
 
-# from flamaster.account.models import User
+from flask.ext.babel import lazy_gettext as _
+
+from flamaster.account.models import User
 from flamaster.core import db
 from flamaster.core.utils import send_email
 from .models import Shelf
@@ -46,9 +48,8 @@ def remove_from_shelf(price_option):
 
 @order_created.connect
 def on_order_created(order):
-    if order.state == OrderStates.paid:
-        pass
-        # send_email(subject, recipient, template, **params)
+    send_email(_('Your order summary'), order.customer.email,
+               'order_created', **{'order': order, 'customer': order.customer})
 
 
 #def order_creation_sender(mapper, connection, instance):
