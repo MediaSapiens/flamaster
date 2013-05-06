@@ -28,7 +28,7 @@ class OrderDatastore(AbstractDatastore):
     def find(self, **kwargs):
         return self.order_model.query.filter_by(**kwargs)
 
-    def create_from_api(self, customer_id, **kwargs):
+    def __collect_data(self, customer_id, **kwargs):
         """ Create order instance from data came from the API
         """
         customer = self.customer_model.query.get_or_404(customer_id)
@@ -58,6 +58,13 @@ class OrderDatastore(AbstractDatastore):
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))
 
+        return goods, kwargs
+
+    def create_from_api(self, customer_id, **kwargs):
+        """ Create order instance from data came from the API
+        """
+        goods, kwargs = self.__collect_data(customer_id, **kwargs)
+
         method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
         tnx = method.process_payment()
 
@@ -70,6 +77,14 @@ class OrderDatastore(AbstractDatastore):
         # Send signal on order creation
         order_created.send(order)
         return order
+
+    def create_from_request(self, customer_id, **kwargs):
+        """ Create order instance from data came from the API
+        """
+        goods, kwargs = self.__collect_data(customer_id, **kwargs)
+
+        method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
+        return method.init_payment()
 
     def __prepare_address(self, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']

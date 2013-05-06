@@ -69,10 +69,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         if response['ACK'] == RESPONSE_OK:
             webface_url = self.__get_redirect_url(response)
-            print webface_url
-            PaymentTransaction.create(status=PaymentTransaction.ACCEPTED,
-                                      details=response['TOKEN'],
-                                      order_data=self.order_data)
+            order = Order.create(**self.order_data)
+            order.set_payment_details(response['TOKEN'])
             return redirect(webface_url)
 
         return redirect(url_for('payment.error_payment',
@@ -82,9 +80,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Final step. The payment can be captured (collected) using the
             DoExpressCheckoutPayment call.
         """
-        tnx = PaymentTransaction.query.filter_by(details=response['TOKEN']).first()
+        order = Order.get_by_payment_details(response['TOKEN'])
 
-        if tnx is None:
+        if order is None:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
 
@@ -92,16 +90,18 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'METHOD': DO_PAYMENT,
             'TOKEN': response['TOKEN'],
             'PAYERID': response['PAYERID'],
-            'PAYMENTREQUEST_0_AMT': self.order_data['total_price'],
+            'PAYMENTREQUEST_0_AMT': order.total_price,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
         }
         response = self.__do_request(request_params)
 
         if response['ACK'] == RESPONSE_OK:
+            tnx = PaymentTransaction.create(status=PaymentTransaction.ACCEPTED,
+                                            details=response['TOKEN'],
+                                            order=order)
             transaction_ds = PaymentTransactionDatastore(Order, Cart)
-            order = Order.create(**tnx.order_data)
-            goods = self.goods_ds.find(customer=tnx.order_data.get('customer'),
+            goods = self.goods_ds.find(customer=order.customer,
                                        is_ordered=False)
             transaction_ds.process(tnx, order, goods)
             db.session.commit()
