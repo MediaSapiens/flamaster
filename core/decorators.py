@@ -5,7 +5,7 @@ import settings
 
 from functools import wraps
 
-from flask import abort, request, g
+from flask import abort, request, g, json
 from flask.ext.babel import get_locale
 
 from flamaster.extensions import db
@@ -101,21 +101,22 @@ def multilingual(cls):
     return closure(cls)
 
 
-def method_wrapper(http_status):
+def method_wrapper(success_status, error_status=http.BAD_REQUEST):
     def method_catcher(meth):
         @wraps(meth)
         def wrapper(*args, **kwargs):
             try:
                 if request.method != 'DELETE':
                     form_data = request.form and request.form.copy()
-                    json_data = request.json
+                    json_data = request.json or json.loads(request.data)
                     g.request_data = json_data or form_data or \
                         abort(http.BAD_REQUEST)
                 else:
                     g.request_data = None
-                return jsonify_status_code(meth(*args, **kwargs), http_status)
+                return jsonify_status_code(meth(*args, **kwargs),
+                                           success_status)
             except t.DataError as e:
-                return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
+                return jsonify_status_code(e.as_dict(), error_status)
         return wrapper
     return method_catcher
 
