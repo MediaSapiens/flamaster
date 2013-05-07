@@ -13,7 +13,7 @@ class RedisSession(CallbackDict, SessionMixin):
         def on_update(self):
             self.modified = True
         CallbackDict.__init__(self, initial, on_update)
-        self.sid = sid
+        self.sid = self['id'] = sid
         self.new = new
         self.modified = False
 
