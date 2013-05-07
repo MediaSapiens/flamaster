@@ -160,7 +160,6 @@ def get_locale(app):
         languages = app.config['ACCEPT_LANGUAGES']
         matched = request.accept_languages.best_match(languages)
         language = session.get(app.config['LOCALE_KEY'], matched)
-        app.logger.debug("Language: %s", language)
         return language
 
     return closure
