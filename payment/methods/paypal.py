@@ -9,7 +9,7 @@ from urlparse import parse_qsl
 
 from flamaster.core import db
 from flamaster.product.models import PaymentTransaction, Order, Cart
-from flamaster.product.datastore import PaymentTransactionDatastore
+from flamaster.product.datastore import PaymentTransactionDatastore, CartDatastore
 from flamaster.product.signals import order_created
 
 from .base import BasePaymentMethod
@@ -101,8 +101,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
                                             details=response['TOKEN'],
                                             order=order)
             transaction_ds = PaymentTransactionDatastore(Order, Cart)
-            goods = self.goods_ds.find(customer=order.customer,
-                                       is_ordered=False)
+            goods_ds = CartDatastore(Cart)
+            goods = goods_ds.find(customer=order.customer, is_ordered=False)
             transaction_ds.process(tnx, order, goods)
             db.session.commit()
             order_created.send(order)
@@ -122,7 +122,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         request_params = {
             'METHOD': GET_CHECKOUT,
             'TOKEN': token,
-            'PAYERID': PayerID
+            #'PAYERID': PayerID
         }
 
         response = self.__do_request(request_params)

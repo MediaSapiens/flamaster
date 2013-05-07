@@ -60,4 +60,4 @@ def cancel_payment(payment_method):
 
 @payment.route('/<payment_method>/error/')
 def error_payment(payment_method):
-    return render_template('error.html')
+    return render_template('payment/error.html')
