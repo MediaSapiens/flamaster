@@ -7,7 +7,8 @@ import requests
 from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
-from flamaster.core import db
+from flamaster.core import db, http
+from flamaster.core.utils import jsonify_status_code
 from flamaster.product.models import PaymentTransaction, Order, Cart
 from flamaster.product.datastore import PaymentTransactionDatastore, CartDatastore
 from flamaster.product.signals import order_created
@@ -22,6 +23,12 @@ GET_CHECKOUT = 'GetExpressCheckoutDetails'
 DO_PAYMENT = 'DoExpressCheckoutPayment'
 RESPONSE_OK = 'Success'
 logger = logging.getLogger(__name__)
+
+
+def jsonify_redirect(location):
+    response = jsonify_status_code({}, http.OK)
+    response.headers['Location'] = location
+    return response
 
 
 class PayPalPaymentMethod(BasePaymentMethod):
@@ -71,9 +78,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             webface_url = self.__get_redirect_url(response)
             order = Order.create(**self.order_data)
             order.set_payment_details(response['TOKEN'])
-            return redirect(webface_url)
+            return jsonify_redirect(webface_url)
 
-        return redirect(url_for('payment.error_payment',
+        return jsonify_redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
     def __capture_payment(self, response):
@@ -83,7 +90,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         order = Order.get_by_payment_details(response['TOKEN'])
 
         if order is None:
-            return redirect(url_for('payment.error_payment',
+            return jsonify_redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
 
         request_params = {
@@ -110,7 +117,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             return Response(response=json.dumps(response), status=201,
                             mimetype='application/json')
 
-        return redirect(url_for('payment.error_payment',
+        return jsonify_redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
     def __get_payment_details(self, token, PayerID):
@@ -130,7 +137,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         if response['ACK'] == RESPONSE_OK:
             return self.__capture_payment(response)
 
-        return redirect(url_for('payment.error_payment',
+        return jsonify_redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
     def init_payment(self):
