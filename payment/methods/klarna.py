@@ -40,7 +40,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
                                     price=float(art.price),
                                     vat=19,
                                     discount=0,
-                                    flags=GoodsIs.INC_VAT)
+                                    flags=GoodsIs.NOFLAG)
 
         if self.order_data['delivery_price'] is not None:
             self.klarna.add_article(qty=1,
