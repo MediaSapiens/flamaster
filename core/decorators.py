@@ -107,10 +107,17 @@ def method_wrapper(success_status, error_status=http.BAD_REQUEST):
         def wrapper(*args, **kwargs):
             try:
                 if request.method != 'DELETE':
-                    form_data = request.form and request.form.copy()
-                    json_data = request.json or json.loads(request.data)
-                    g.request_data = json_data or form_data or \
-                        abort(http.BAD_REQUEST)
+                    try:
+                        if request.form:
+                            g.request_data = request.form.copy()
+                        elif request.json:
+                            g.request_data = request.json
+                        elif request.data:
+                            g.request_data = json.loads(request.data)
+                        else:
+                            abort(http.BAD_REQUEST)
+                    except Exception as e:
+                        raise t.DataError({'message': e.message})
                 else:
                     g.request_data = None
                 return jsonify_status_code(meth(*args, **kwargs),
