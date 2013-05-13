@@ -143,16 +143,7 @@ class CartMixin(CRUDMixin):
                                                  kwargs['amount']),
         }
         instance = super(CartMixin, cls).create(**instance_kwargs)
-        cart_created.send(current_app._get_current_object(),
-                     price_option_id=kwargs['price_option'].id,
-                     amount=kwargs['amount'])
         return instance
-
-    def delete(self, commit=True):
-        cart_removed.send(current_app._get_current_object(),
-                          price_option_id=self.price_option_id,
-                          amount=self.amount)
-        return super(CartMixin, self).delete(commit)
 
     @classmethod
     def for_customer(cls, customer, is_ordered=False):

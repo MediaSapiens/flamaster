@@ -40,13 +40,33 @@ def update_on_shelf(price_option):
 
 @price_deleted.connect
 def remove_from_shelf(sender, price_option_id):
-    # Shelf.query.where(price_option_id=str(price_option_id)).delete()
-    db.session.commit()
-
+    shelf = Shelf.query.filter_by(price_option_id=str(price_option_id)).first()
+    if shelf is not None:
+        shelf.delete()
 
 @order_created.connect
 def on_order_created(sender, order):
-    pass
+
+    def update_sold_count(item):
+        price_option_id, amount = item
+        shelves = Shelf.get_by_price_option(price_option_id)
+        if shelves.first() is None:
+            message = 'Item {} is not on shelf or depleeted'.format(price_option_id)
+            current_app.logger.error(message)
+        else:
+            shelves.update({'sold': Shelf.sold + amount})
+
+    def aggregator(accumulator, item):
+        if item.price_option_id in accumulator:
+            accumulator[item.price_option_id] += item.amount
+        else:
+            accumulator[item.price_option_id] = item.amount
+        return accumulator
+
+    aggregate = reduce(aggregator, order.goods, {})
+    map(update_sold_count, aggregate.items())
+
+    db.session.commit()
 
 
 @cart_created.connect
