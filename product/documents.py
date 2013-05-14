@@ -33,6 +33,10 @@ class BasePriceOption(EmbeddedDocument, BaseMixin):
     price = DecimalField(min_value=0, default=Decimal(0))
     quantity = IntField(min_value=0, default=0)
 
+    meta = {
+        'allow_inheritance': True
+    }
+
 
 class BaseProductVariant(Document, DocumentMixin):
     """ Keeps event variants for different venues
