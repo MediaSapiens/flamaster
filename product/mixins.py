@@ -142,7 +142,7 @@ class CartMixin(CRUDMixin):
             'price': kwargs['product'].get_price(kwargs['price_option'].id,
                                                  kwargs['amount']),
         }
-        instance = super(CartMixin, cls).create(**instance_kwargs)
+        instance = super(CartMixin, cls).create(commit, **instance_kwargs)
         return instance
 
     @classmethod
