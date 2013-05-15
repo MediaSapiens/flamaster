@@ -55,9 +55,9 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     else:
         item_url = "{}<{}:{}>".format(collection_url, pk_type, pk)
 
-    bp.add_url_rule(collection_url, view_func=resource,
+    bp.add_url_rule(collection_url, view_func=resource, endpoint=endpoint,
                     methods=collection_methods)
-    bp.add_url_rule(item_url, view_func=resource,
+    bp.add_url_rule(item_url, view_func=resource, endpoint=endpoint,
                     methods=item_methods)
 
 def add_url_rule(blueprint, namespace, path, method, **kwargs):
