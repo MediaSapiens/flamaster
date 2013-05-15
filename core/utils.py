@@ -60,6 +60,11 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     bp.add_url_rule(item_url, view_func=resource,
                     methods=item_methods)
 
+def add_url_rule(blueprint, namespace, path, method, **kwargs):
+    method_path = ".".join([namespace, method])
+    return blueprint.add_url_rule(path, view_func=LazyView(method_path),
+                                  **kwargs)
+
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')
 lazy_cascade = {'lazy': 'dynamic', 'cascade': 'all'}
