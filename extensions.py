@@ -24,10 +24,9 @@ mail = Mail()
 mongo = MongoEngine()
 es = ElasticSearch()
 redis = Redis()
+security = Security()
+social = Social()
 
-from flamaster.account import user_ds, connection_ds
 
-security = Security(datastore=user_ds)
-social = Social(datastore=connection_ds)
 
 

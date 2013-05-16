@@ -1,8 +1,14 @@
 from __future__ import absolute_import
+
 import nose
 
-from flask.ext.script import Command
-from flamaster.extensions import db
+from flask import current_app
+from flask.ext.script import Command, Option
+
+from flamaster.core.indexer import index
+from flamaster.extensions import db, es
+
+from pyelasticsearch import ElasticHttpNotFoundError
 from tests.initial_data import Requirements
 
 __all__ = ['CreateAll', 'DropAll']
@@ -35,3 +41,30 @@ class RunTests(Command):
             reqs('user')
             reqs('categories')
             nose.run(argv=['-xs', 'tests'])
+
+
+class IndexCommand(Command):
+
+    def run(self, drop_index=False):
+        if drop_index:
+            self.drop_indexes()
+        else:
+            self.create_indexes()
+
+    def drop_indexes(self):
+        try:
+            es.delete_index(current_app.config['INDEX_NAME'])
+        except ElasticHttpNotFoundError as error:
+            print error
+
+    def create_indexes(self):
+        index.reindex()
+
+    def get_options(self):
+        return (
+            Option('--drop', action="store_true", dest='drop_index'),
+            # Option('--no-bpython',
+            #     action="store_true",
+            #     dest='no_bpython',
+            #     default=not(self.use_bpython))
+        )

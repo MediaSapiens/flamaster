@@ -13,6 +13,7 @@ from logging.handlers import SMTPHandler
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
 
+from flamaster.account import user_ds, connection_ds
 from flamaster.core import http
 from flamaster.core.session import RedisSessionInterface
 from flamaster.extensions import register_jinja_helpers
@@ -65,7 +66,14 @@ class AppFactory(object):
                 ExtensionLoadError("Extension '{}'' not found".format(ext))
 
             try:
-                ext.init_app(app)
+                # TODO: create workaround for special cases
+                if ext_name == 'security':
+                    ext.init_app(app, datastore=user_ds)
+                elif ext_name == 'social':
+                    ext.init_app(app, datastore=connection_ds)
+                else:
+                    ext.init_app(app)
+
             except AttributeError:
                 ext(app)
 
