@@ -12,3 +12,4 @@ from .utils import lazy_cascade, plural_underscored
 
 import api
 import views
+import indexer

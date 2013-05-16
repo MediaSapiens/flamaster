@@ -12,7 +12,7 @@ EXTENSIONS = [
     'flamaster.extensions.babel',
     'flamaster.extensions.cache',
     'flamaster.extensions.db',
-    'flamaster.extensions.elasticsearch',
+    'flamaster.extensions.es',
     'flamaster.extensions.mail',
     'flamaster.extensions.mongo',
     'flamaster.extensions.security',
