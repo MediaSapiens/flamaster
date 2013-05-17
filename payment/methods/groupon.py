@@ -22,6 +22,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         'deal': t.Int,
         'voucher': t.String,
         'code': t.String,
+        'variant': t.MongoId
     }).ignore_extra('*')
 
     validate_path = 'merchant/redemptions/validate'
@@ -84,6 +85,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         status = http.OK
         try:
             data = self.validation.check(data)
+            variant_id = data.pop('variant')
             order_cls = get_order_class()
             order = order_cls.get_by_payment_details(data)
 
@@ -95,7 +97,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
                 return jsonify_status_code(data, status)
 
             variant = BaseProductVariant.objects(
-                            _price_options__groupon__cda=data['deal']).first()
+                id=variant_id,
+                _price_options__groupon__cda=data['deal']).first()
             if variant is None:
                 raise t.DataError({'deal': _('Invalid deal')})
 
