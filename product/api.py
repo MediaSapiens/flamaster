@@ -205,6 +205,10 @@ class OrderResource(ModelResource):
         'delete': [login_required]
     }
 
+    filters_map = t.Dict({
+        'state': t.Int
+    }).make_optional('*').ignore_extra('*')
+
     def post(self):
         status = http.ACCEPTED
 
