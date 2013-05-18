@@ -19,6 +19,7 @@ price_deleted = signals.signal('price_deleted')
 order_created = signals.signal('order-created')
 cart_created = signals.signal('cart-created')
 cart_removed = signals.signal('cart-removed')
+carts_removed = signals.signal('carts-removed')
 # @user_registered.connect
 # def create_customer_for_newcommer(sender, app):
 #     sender['user'].customer = Customer()
