@@ -10,11 +10,12 @@ class BasePaymentMethod(object):
     """
     method_name = 'base'
 
-    def __init__(self, order=None):
-        my_method = current_app.config['PAYMENT_METHODS'][self.method_name]
-        self.settings = my_method.get('settings')
-        self.sandbox = my_method['SANDBOX']
-        self.order = order
+    def __init__(self, goods=None, order_data=None):
+        self.conf = current_app.config['PAYMENT_METHODS'][self.method_name]
+        self.settings = self.conf.get('settings')
+        self.sandbox = self.conf['SANDBOX']
+        self.goods = goods
+        self.order_data = order_data
 
     def verify(self, data):
         raise NotImplementedError
@@ -26,6 +27,9 @@ class BasePaymentMethod(object):
         raise NotImplementedError
 
     def precess_payment_response(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def check_status(self, transaction):
         raise NotImplementedError
 
 
@@ -56,4 +60,4 @@ def cancel_payment(payment_method):
 
 @payment.route('/<payment_method>/error/')
 def error_payment(payment_method):
-    return render_template('error.html')
+    return render_template('payment/error.html')

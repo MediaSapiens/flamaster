@@ -7,7 +7,6 @@ def upgrade(migrate_engine):
     addresses = Table('addresses', meta, autoload=True)
     gender = Column('gender', String(1), default='')
     gender.create(addresses)
-    pass
 
 
 def downgrade(migrate_engine):

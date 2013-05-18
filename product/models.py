@@ -16,7 +16,7 @@ from bson import ObjectId
 from . import OrderStates
 
 
-__all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf']
+__all__ = ['Cart', 'Category', 'Favorite', 'Order', 'Shelf', 'PaymentTransaction']
 
 
 class Cart(db.Model, CRUDMixin):
@@ -198,6 +198,7 @@ class Order(db.Model, CRUDMixin):
 
     payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
+    payment_fee = db.Column(db.Numeric(precision=18, scale=2))
     state = db.Column(db.Integer, index=True)
     # stored cost for the order delivery
     delivery_method = db.Column(db.String, nullable=False, index=True)
@@ -211,12 +212,12 @@ class Order(db.Model, CRUDMixin):
     goods = db.relationship('Cart', backref='order', **lazy_cascade)
     notes = db.Column(db.UnicodeText, default=u'')
 
-    def resolve_payment(self, method=None):
-        payment_method = self.payment_method or method
-        method = current_app.config['PAYMENT_METHODS'][payment_method]
-        class_string = method['module']
-        PaymentMethod = import_string(class_string)
-        return PaymentMethod(self)
+    @classmethod
+    def resolve_payment(cls, method=None, goods=None, order_data=None):
+        method = method or order_data.get('payment_method')
+        conf = current_app.config['PAYMENT_METHODS'][method]
+        PaymentMethod = import_string(conf['module'])
+        return PaymentMethod(goods, order_data)
 
     @classmethod
     def resolve_payment_fee(cls, method, goods_price):
@@ -247,6 +248,18 @@ class Order(db.Model, CRUDMixin):
     @property
     def delivery_country(self):
         return Country.query.get(self.delivery_country_id)
+
+
+class PaymentTransaction(db.Model, CRUDMixin):
+    ACCEPTED = 1
+    PENDING = 2
+    DENIED = 3
+
+    status = db.Column(db.Integer, index=True, nullable=False)
+    details = db.Column(db.UnicodeText, unique=True, nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), index=True)
+    order = db.relationship('Order',
+                            backref=db.backref('orders', **lazy_cascade))
 
 
 class Shelf(db.Model, CRUDMixin):

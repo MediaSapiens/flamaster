@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-import trafaret as t
-from flask import abort, request, session, json
+
+from flask import abort, request, session, json, current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -11,12 +11,15 @@ from flamaster.core import http, mongo
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource, MongoResource
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product import OrderStates
 
 from . import product as bp
 from . import order_states_i18n
 from .helpers import resolve_parent
-from .models import Cart, Category, Country, Order
+from .models import Cart, Category, Country, Order, PaymentTransaction
 from .datastore import OrderDatastore
+
+import trafaret as t
 
 
 __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
@@ -202,13 +205,26 @@ class OrderResource(ModelResource):
         'delete': [login_required]
     }
 
+    filters_map = t.Dict({
+        'state': t.Int
+    }).make_optional('*').ignore_extra('*')
+
     def post(self):
         status = http.ACCEPTED
 
         try:
-            datastore = OrderDatastore(self.model, Cart, Customer)
-            instance = datastore.create_from_api(**self._request_data)
-            response = self.serialize(instance)
+            datastore = OrderDatastore(self.model, Cart, Customer, PaymentTransaction)
+            data = self._request_data
+
+            if data['payment_method'] in current_app.config['REDIRECTED_PAYMENT_METHODS']:
+                return datastore.create_from_request(**data)
+
+            try:
+                instance = datastore.create_from_api(**data)
+                response = self.serialize(instance)
+            except Exception:
+                raise t.DataError({'payment_method': _('Unknown error')})
+
         except t.DataError as err:
             status, response = http.BAD_REQUEST, err.as_dict()
 
@@ -224,7 +240,8 @@ class OrderResource(ModelResource):
         # TODO: process product owners
 
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query.filter_by(**kwargs)
+        return self.model.query.filter_by(**kwargs)\
+            .filter(~(self.model.state == OrderStates.provider_denied))
 
     @property
     def _request_data(self):

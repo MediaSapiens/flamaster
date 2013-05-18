@@ -3,9 +3,13 @@ from __future__ import absolute_import
 import logging
 from blinker import Namespace
 
-# from flamaster.account.models import User
+from flask.ext.babel import lazy_gettext as _
+
+from flamaster.account.models import User
 from flamaster.core import db
+from flamaster.core.utils import send_email
 from .models import Shelf
+from . import OrderStates
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +44,12 @@ def update_on_shelf(price_option):
 def remove_from_shelf(price_option):
     Shelf.query.delete().where(price_option_id=price_option.id)
     db.session.commit()
+
+
+@order_created.connect
+def on_order_created(order):
+    send_email(_('Your order summary'), order.customer.email,
+               'order_created', **{'order': order, 'customer': order.customer})
 
 
 #def order_creation_sender(mapper, connection, instance):
