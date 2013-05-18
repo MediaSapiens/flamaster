@@ -209,7 +209,7 @@ class ProfileResource(ModelResource):
         exclude = ['password']
         include = ["first_name", "last_name", "created_at", "phone",
                    "current_login_at", "active", "billing_address",
-                   "delivery_address", "logged_at", 'is_superuser']
+                   "delivery_address", "logged_at", 'is_superuser', "birth_date"]
         # include = ['is_superuser']
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
