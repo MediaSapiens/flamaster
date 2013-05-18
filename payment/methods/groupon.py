@@ -95,15 +95,14 @@ class GrouponPaymentMethod(BasePaymentMethod):
                     'order': order.as_dict()
                 })
                 return jsonify_status_code(data, status)
-
-            variant = BaseProductVariant.objects(
-                id=variant_id,
-                _price_options__groupon__cda=data['deal']).first()
+            variant = BaseProductVariant.objects(id=variant_id).first()
             if variant is None:
+                current_app.logger.debug("No variant")
                 raise t.DataError({'deal': _('Invalid deal')})
 
             option, deal = self.__filter_option(variant, data['deal'])
             if option is None:
+                current_app.logger.debug("No option")
                 raise t.DataError({'deal': _('Invalid deal')})
 
             validation = self.__validate(voucher=data['voucher'],
