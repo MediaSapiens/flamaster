@@ -360,7 +360,7 @@ class CustomerResource(ModelResource):
         'fax': t.String(allow_blank=True),
         'company': t.String(allow_blank=True),
         'gender': t.String,
-        'birth_date': t.String
+        'birth_date': t.DateTime
     }).make_optional('phone', 'notes', 'fax', 'company')\
         .ignore_extra('*')
 
