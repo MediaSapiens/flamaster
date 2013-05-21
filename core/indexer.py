@@ -42,7 +42,7 @@ class MongoDocumentIndex(BaseIndex):
     def get_data(self, cls):
         return cls.objects
 
-    def create(self, cls, document=None, in_bulk=True):
+    def create(self, cls, document=None, in_bulk=False):
         self.index = current_app.config['INDEX_NAME']
         if in_bulk:
             documents = document or self.get_data(cls)
@@ -54,7 +54,7 @@ class MongoDocumentIndex(BaseIndex):
             es.index(self.index, self.index_type, iobject, id=iobject['id'],
                      refresh=True, overwrite_existing=True)
 
-    def update(self, cls, document=None, in_bulk=True):
+    def update(self, cls, document=None, in_bulk=False):
         return self.create(cls, document, in_bulk)
 
     def delete(self, cls, document):
