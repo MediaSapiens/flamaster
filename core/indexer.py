@@ -52,7 +52,7 @@ class MongoDocumentIndex(BaseIndex):
         else:
             iobject = document.as_dict()
             es.index(self.index, self.index_type, iobject, id=iobject['id'],
-                     refresh=True, overwrite_existing=True)
+                     refresh=True)
 
     def update(self, cls, document=None, in_bulk=False):
         return self.create(cls, document, in_bulk)
