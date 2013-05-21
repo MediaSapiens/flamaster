@@ -102,7 +102,8 @@ class Index(object):
         self._patch_encoder()
         index_cls = self.registry.get(cls)
         if index_cls is not None:
-            applicator = methodcaller(action, document=doc_or_docs, **kwargs)
+            applicator = methodcaller(action, cls, document=doc_or_docs,
+                                      **kwargs)
             applicator(index_cls)
         else:
             current_app.logger.debug("Model %s not registered", cls)
