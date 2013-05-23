@@ -148,6 +148,7 @@ def modify_headers(response):
 def setup_session():
     g.now = time.mktime(datetime.utcnow().timetuple())
     g.locale = babel_locale().language
+    session['id'] = session.get('id', uuid.uuid4().hex)
 
 
 def show_internal_error(error):
