@@ -9,6 +9,7 @@ from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
 from flask import abort, g, request, send_file
+from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
 from sqlalchemy import or_
@@ -45,6 +46,8 @@ class ImageResource(ModelResource):
             elif request.files.get('image'):
                 response = self.__process_form()
                 mimetype = 'text/html'
+            else:
+                raise t.DataError({'message': _('No data loaded')})
         except t.DataError as e:
             status, response = http.BAD_REQUEST, e.as_dict()
 
