@@ -171,13 +171,16 @@ class ModelResource(Resource):
     def clean(self, data):
         return self.validation.check(data)
 
-    @method_wrapper(http.OK)
     def get(self, id=None):
-        if id is None:
-            response = self.gen_list_response()
-        else:
-            response = self.serialize(self.get_object(id))
-        return response
+        status = http.OK
+        try:
+            if id is None:
+                response = self.gen_list_response()
+            else:
+                response = self.serialize(self.get_object(id))
+        except t.DataError as err:
+            response, status = err.as_dict(), http.BAD_REQUEST
+        return jsonify_status_code(response, status)
 
     @method_wrapper(http.CREATED)
     def post(self):
@@ -190,10 +193,14 @@ class ModelResource(Resource):
         instance = self.get_object(id).update(**data)
         return self.serialize(instance)
 
-    @method_wrapper(http.OK)
     def delete(self, id):
-        self.get_object(id).delete()
-        return {}
+        status = http.OK
+        try:
+            self.get_object(id).delete()
+            response = {}
+        except t.DataError as err:
+            response, status = err.as_dict(), http.BAD_REQUEST
+        return jsonify_status_code(response, status)
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
