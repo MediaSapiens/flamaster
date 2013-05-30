@@ -249,7 +249,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         include, exclude = exclude or [], include or []
         exclude.extend(['password', 'remember_token', 'authentication_token'])
         include.extend(['first_name', 'last_name', 'phone', 'billing_address',
-                        'is_superuser'])
+                        'is_superuser', 'roles'])
         return super(User, self).as_dict(include, exclude)
 
 
