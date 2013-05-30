@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
-from flamaster.account.signals import billing_address_changed
+from flamaster.account.signals import billing_data_changed
 
 from flamaster.core.models import CRUDMixin
 from flamaster.extensions import db
@@ -35,9 +35,8 @@ class Address(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         instance = super(Address, self).save(commit)
-        if (instance.customer and
-                    instance.customer.billing_address.id == instance.id):
-            billing_address_changed.send(instance)
+        if instance.customer and instance.customer.organizer_ready:
+            billing_data_changed.send(self, user=instance.customer.user)
         return instance
 
 
@@ -94,8 +93,8 @@ class Customer(db.Model, CRUDMixin):
             self.addresses.append(value)
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
-        if addr_type == 'billing':
-            billing_address_changed.send(value)
+        if addr_type == 'billing' and self.organizer_ready:
+            billing_data_changed.send(self, user=self.user)
         return self
 
     @hybrid_property
@@ -121,6 +120,13 @@ class Customer(db.Model, CRUDMixin):
         """ setter for delivery_address property
         """
         self.set_address('delivery', value)
+
+    @property
+    def organizer_ready(self):
+        if self.billing_address and self.user and self.user.accounts.count():
+            return True
+        else:
+            return False
 
 
 class Role(db.Model, CRUDMixin, RoleMixin):
@@ -275,6 +281,12 @@ class BankAccount(db.Model, CRUDMixin):
 
     def check_owner(self, user):
         return user.id == self.user_id
+
+    def save(self, commit=True):
+        instance = super(BankAccount, self).save(commit)
+        if instance.user.customer.organizer_ready:
+            billing_data_changed.send(self, user=instance.user)
+        return instance
 
 
 class SocialConnection(db.Model, CRUDMixin):

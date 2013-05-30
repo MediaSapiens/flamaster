@@ -19,7 +19,7 @@ providers = LocalProxy(lambda: social.providers)
 
 signals = Namespace()
 
-billing_address_changed = signals.signal('billing-address-changed')
+billing_data_changed = signals.signal('billing-data-changed')
 
 
 @social_login_failed.connect
@@ -47,9 +47,9 @@ def another_try(app, provider_id, oauth_response):
     # pass
 
 
-@billing_address_changed.connect
-def notify_address_changed(address):
+@billing_data_changed.connect
+def notify_billing_changed(sender, user):
     role = security.datastore.find_role(current_app.config['ADMIN_ROLE'])
     recipients = map(lambda u: u.email, role.users)
-    send_email(_('Billing address changed'), recipients,
-               'billing_address_changed', address=address)
+    send_email(_('Billing data changed'), recipients,
+               'billing_data_changed', user=user)
