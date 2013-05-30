@@ -2,7 +2,11 @@
 from __future__ import absolute_import
 # from bson.errors import InvalidId
 from collections import Mapping
-from mongoengine import Document
+from flask.ext.mail import Message
+from flask.ext.mongoengine import Document
+from flamaster.extensions import mail
+
+from mongoengine import StringField, ListField, EmailField
 
 from .decorators import classproperty
 from .utils import plural_underscored
@@ -75,23 +79,14 @@ class DocumentMixin(BaseMixin):
         }
 
 
+class StoredMail(DocumentMixin, Document):
+    subject = StringField(required=True)
+    recipients = ListField(EmailField())
+    html_body = StringField()
+    text_body = StringField()
 
-
-# class EmbeddedDocument(DocumentMixin):
-#     """ Base Model to keep an instances inside of other mongodb
-#         objects, adds attribute '_ns' into stored instance.
-#         Doesn't need to be registered
-#     """
-#     __abstract__ = True
-
-#     structure = t.Dict().allow_extra('id')
-
-#     def __init__(self, initial=None, **kwargs):
-#         if 'id' not in kwargs:
-#             kwargs['id'] = ObjectId()
-#         # kwargs['_ns'] = self.__collection__
-#         super(EmbeddedDocument, self).__init__(initial, **kwargs)
-
-#     @classmethod
-#     def create(cls, initial=None, **kwargs):
-#         return cls(initial, **kwargs)
+    def send(self):
+        msg = Message(self.subject, recipients=list(self.recipients),
+                      body=self.text_body, html=self.html_body)
+        mail.send(msg)
+        self.delete()

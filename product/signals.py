@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import logging
 from blinker import Namespace
 
-# from flamaster.account.models import User
 from flask import current_app
 from flamaster.extensions import db
 from .models import Shelf

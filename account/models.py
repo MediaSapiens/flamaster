@@ -3,6 +3,7 @@ from datetime import datetime
 
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
+from flamaster.account.signals import billing_address_changed
 
 from flamaster.core.models import CRUDMixin
 from flamaster.extensions import db
@@ -31,6 +32,14 @@ class Address(db.Model, CRUDMixin):
 
     def __repr__(self):
         return "<Address:('%s','%s')>" % (self.city, self.street)
+
+    def save(self, commit=True):
+        instance = super(Address, self).save(commit)
+        if (instance.customer and
+                    instance.customer.billing_address.id == instance.id):
+            billing_address_changed.send(instance)
+        return instance
+
 
 
 user_roles = db.Table('user_roles', db.metadata,
@@ -85,6 +94,8 @@ class Customer(db.Model, CRUDMixin):
             self.addresses.append(value)
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
+        if addr_type == 'billing':
+            billing_address_changed.send(value)
         return self
 
     @hybrid_property

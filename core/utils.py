@@ -6,15 +6,11 @@ from bson import ObjectId
 from datetime import datetime
 
 from flask import current_app, render_template, json
-from flask.ext.mail import Message
-
 from importlib import import_module
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug.utils import import_string, cached_property
-
-from flamaster.extensions import mail
 
 
 class LazyView(object):
@@ -171,7 +167,7 @@ def underscorize(name):
 plural_underscored = lambda s: plural_name(underscorize(s))
 
 
-def send_email(subject, recipient, template, callback=None, **context):
+def send_email(subject, recipient, template, **context):
     """ Send an email via the Flask-Mail extension.
 
     :param subject: Email subject
@@ -179,21 +175,17 @@ def send_email(subject, recipient, template, callback=None, **context):
     :param template: The name of the email template
     :param context: The context to render the template with
     """
-
-    # context.setdefault('security', _security)
-    # context.update(_security._run_ctx_processor('mail'))
-    recipients = isinstance(recipient, basestring) and [recipient] or recipient
-    msg = Message(subject, recipients=recipients)
-
+    from background.tasks import send_message_from_queue
+    from .documents import StoredMail
     ctx = ('email', template)
-    msg.body = render_template('{0}/{1}.txt'.format(*ctx), **context)
-    msg.html = render_template('{0}/{1}.html'.format(*ctx), **context)
-    if hasattr(callback, '__call__'):
-        msg = callback(msg)
-    # if _security._send_mail_task:
-    #     _security._send_mail_task(msg)
-    #     return
-    mail.send(msg)
+    message = StoredMail(
+        subject=subject,
+        text_body=render_template('{0}/{1}.txt'.format(*ctx), **context),
+        html_body=render_template('{0}/{1}.html'.format(*ctx), **context),
+    )
+    message.recipients.extend(isinstance(recipient, basestring) and [recipient] or recipient)
+    message.save()
+    send_message_from_queue.delay(message.id)
 
 
 class AttrDict(dict):
