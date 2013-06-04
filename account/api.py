@@ -121,7 +121,7 @@ class ProfileResource(ModelResource):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
-            'phone': t.String,
+            'phone': t.Or(t.Null, t.String),
             'roles': self._roles_list(id),
             'avatar_id': t.Or(t.Null, t.String),
             te.KeysSubset('password', 'confirmation'): self._cmp_pwd,
@@ -136,18 +136,20 @@ class ProfileResource(ModelResource):
         def wrapper(value):
             trafaret = t.List(t.Int)
             value = trafaret.check(value)
-            roles = Role.query.filter(Role.id.in_(value['roles']))
+            roles = Role.query.filter(Role.id.in_(value)).all()
 
             if len(value) != len(roles):
                 return t.DataError(_("Roles are invalid"))
 
             if current_user.is_superuser():
-                return value
+                return roles
 
             user = self.get_object(id)
 
-            if all(user.roles, lambda r: r in roles):
-                return value
+            if (len(user.roles) == len(roles) and
+                all(user.roles, lambda r: r in roles)):
+
+                return roles
 
             t.DataError(_("Role change not allowed"))
 
