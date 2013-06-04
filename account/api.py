@@ -121,14 +121,39 @@ class ProfileResource(ModelResource):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
-            'phone': t.String,
-            'role_id': t.Int,
+            'phone': t.Or(t.Null, t.String),
+            'roles': self._roles_list(id),
             'avatar_id': t.Or(t.Null, t.String),
             te.KeysSubset('password', 'confirmation'): self._cmp_pwd,
-        }).append(self._change_role(id)).make_optional('role_id', 'avatar_id'). \
-                                                ignore_extra('*')
+        }).make_optional('roles', 'avatar_id').ignore_extra('*')
 
         return super(ProfileResource, self).put(id)
+
+    def _roles_list(self, id):
+        """ Check that roles list is valid and current_user
+            has administrator rights
+        """
+        def wrapper(value):
+            trafaret = t.List(t.Int)
+            value = trafaret.check(value)
+            roles = Role.query.filter(Role.id.in_(value)).all()
+
+            if len(value) != len(roles):
+                return t.DataError(_("Roles are invalid"))
+
+            if current_user.is_superuser():
+                return roles
+
+            user = self.get_object(id)
+
+            if (len(user.roles) == len(roles) and
+                all(user.roles, lambda r: r in roles)):
+
+                return roles
+
+            t.DataError(_("Role change not allowed"))
+
+        return wrapper
 
     def _cmp_pwd(self, value):
         password, confirmation = (value.pop('password', None),
@@ -140,24 +165,6 @@ class ProfileResource(ModelResource):
                 return t.DataError({'confirmation': _("Passwords doesn't match")})
             value['password'] = encrypt_password(password)
         return value
-
-    def _change_role(self, id):
-        """ helper method for changing user role if specified and current_user
-            has administrator rights
-        """
-        def wrapper(value):
-            user = self.get_object(id)
-            if 'role_id' in value:
-                role = Role.query.get_or_404(value['role_id'])
-                if user.has_role(role):
-                    return value
-                elif current_user.is_superuser():
-                    user.roles.append(role)
-                    return value
-                else:
-                    abort(403, _('Role change not allowed'))
-            return value
-        return wrapper
 
     def get_object(self, id):
         """ overriding base get_object flow
