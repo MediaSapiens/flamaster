@@ -81,8 +81,12 @@ class SessionResource(Resource):
     def _authenticate(self, data_dict):
         user = _security.datastore.find_user(email=data_dict['email'])
 
-        if user is not None and verify_password(data_dict.get('password'),
-                                                user.password):
+        if user is None:
+            raise t.DataError({
+                'email': "Can't find anyone with this credentials"
+            })
+
+        if verify_password(data_dict.get('password'), user.password):
             login_user(user)
 
             # Get cart items from anonymous customer
@@ -100,7 +104,7 @@ class SessionResource(Resource):
 
         else:
             raise t.DataError({
-                'email': "Can't find anyone with this credentials"
+                'password': "Wrong password"
             })
 
         return data_dict
