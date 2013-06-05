@@ -27,5 +27,9 @@ class PaymillPaymentMethod(BasePaymentMethod):
 
     def process_payment(self, pno=None):
         data = json.loads(request.data)
-        amount = int(self.order_data.get('total_price', 0) * 100)
+
+        amount = int(self.order_data['total_price'] * 100)
         resp = self.paymill.transact(amount=amount, token=data['token'])
+        return PaymentTransaction.create(status=resp['data']['response_code'],
+                                        details=resp['data']['payment']['id'])
+
