@@ -7,6 +7,7 @@ from flamaster.product.models import Country, PaymentTransaction
 from .base import BasePaymentMethod
 
 import pymill
+import json
 
 
 class PaymillPaymentMethod(BasePaymentMethod):
@@ -25,4 +26,6 @@ class PaymillPaymentMethod(BasePaymentMethod):
         pass
 
     def process_payment(self, pno=None):
-        pass
+        data = json.loads(request.data)
+        amount = int(self.order_data.get('total_price', 0) * 100)
+        resp = self.paymill.transact(amount=amount, token=data['token'])

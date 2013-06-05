@@ -107,7 +107,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             tnx = PaymentTransaction.create(status=PaymentTransaction.ACCEPTED,
                                             details=response['TOKEN'],
                                             order=order)
-            transaction_ds = PaymentTransactionDatastore(Order, Cart)
+            transaction_ds = PaymentTransactionDatastore(PaymentTransaction, Cart)
             goods_ds = CartDatastore(Cart)
             goods = goods_ds.find(customer=order.customer, is_ordered=False)
             transaction_ds.process(tnx, order, goods)

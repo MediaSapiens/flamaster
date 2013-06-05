@@ -198,7 +198,7 @@ class OrderResource(ModelResource):
         'payment_method': t.String,
         'payment_details': t.String,
         'delivery_provider_id': t.MongoId,
-    }).make_optional('next_state',
+    }).make_optional('next_state', 'token',
                      'payment_details').ignore_extra('*')
 
     method_decorators = {
