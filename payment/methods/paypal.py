@@ -114,8 +114,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
             db.session.commit()
             order_created.send(order)
 
-            return Response(response=json.dumps(response), status=201,
-                            mimetype='application/json')
+            # return Response(response=json.dumps(response), status=201,
+            #                 mimetype='application/json')
+            return redirect(url_for('payment.success_payment',
+                                    payment_method=self.method_name))
 
         return jsonify_redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
