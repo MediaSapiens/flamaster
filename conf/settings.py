@@ -19,7 +19,6 @@ EXTENSIONS = [
     'flamaster.extensions.social',
     'flamaster.extensions.redis',
 ]
-
 # Blueprint instances to register
 BLUEPRINTS = [
     'flamaster.account.bp',
@@ -29,6 +28,21 @@ BLUEPRINTS = [
     'flamaster.gallery.bp',
     'flamaster.payment.payment',
     'flamaster.product.product',
+]
+#custom headers to be set with application response
+HEADERS = [
+    ("P3P",
+        "CP='IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR "
+        "IND CNT'"),
+    ('Cache-Control',
+        'public, no-store, max-age=0'),
+    ('Access-Control-Allow-Origin',
+        '*'),
+    ('Access-Control-Allow-Methods',
+        'GET,POST,PUT,DELETE,HEAD,OPTIONS'),
+    ('Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept,'
+        ' X-HTTP-Method-Override'),
 ]
 
 ADMINS = ('admin@example.com',)

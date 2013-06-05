@@ -4,7 +4,8 @@ import time
 import uuid
 
 from datetime import datetime
-from flask import Flask, abort, g, request, session, render_template
+from flask import (Flask, abort, g, request, session, render_template,
+                   current_app)
 from flask.ext.babel import get_locale as babel_locale
 
 import logging
@@ -130,18 +131,7 @@ class AppFactory(object):
             app.logger.addHandler(mail_handler)
 
 def modify_headers(response):
-    headers = [
-        ('Cache-Control',
-            'public, no-store, max-age=0'),
-        ('Access-Control-Allow-Origin',
-            '*'),
-        ('Access-Control-Allow-Methods',
-            'GET,POST,PUT,DELETE,HEAD,OPTIONS'),
-        ('Access-Control-Allow-Headers',
-            'Origin, X-Requested-With, Content-Type, Accept,'
-            ' X-HTTP-Method-Override'),
-    ]
-    map(lambda h: response.headers.add(*h), headers)
+    map(lambda h: response.headers.add(*h), current_app.config['HEADERS'])
     return response
 
 
