@@ -30,6 +30,9 @@ class PaymillPaymentMethod(BasePaymentMethod):
 
         amount = int(self.order_data['total_price'] * 100)
         resp = self.paymill.transact(amount=amount, token=data['token'])
+        if resp['data']['response_code'] != 20000:
+            raise Exception('Invalid transaction. Returned code is %i' % \
+                                            resp['data']['response_code'])
         return PaymentTransaction.create(status=resp['data']['response_code'],
                                         details=resp['data']['payment']['id'])
 
