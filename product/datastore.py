@@ -108,7 +108,8 @@ class CartDatastore(AbstractDatastore):
         return round_decimal(sum(map(attrgetter('price'), carts_query)))
 
     def mark_ordered(self, carts_query, order):
-        return carts_query.update({'is_ordered': True, 'order_id': order.id})
+        carts_query.update({'is_ordered': True, 'order_id': order.id})
+        db.session.commit()
 
 
 class PaymentTransactionDatastore(AbstractDatastore):
