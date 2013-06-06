@@ -88,6 +88,7 @@ class Cart(db.Model, CRUDMixin):
         product = self.product.as_dict()
         data.update({
             'product_name': product['name'],
+            'product_slug': product['slug'],
             'product_images': product.get('images', [])
         })
         return data
