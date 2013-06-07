@@ -10,7 +10,7 @@ from flamaster.account.models import Customer
 from flamaster.core import http, mongo
 from flamaster.core.decorators import api_resource, method_wrapper
 from flamaster.core.resources import ModelResource, MongoResource
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, round_decimal
 from flamaster.product import OrderStates
 
 from . import product as bp
@@ -20,6 +20,7 @@ from .models import Cart, Category, Country, Order, PaymentTransaction
 from .datastore import OrderDatastore
 
 import trafaret as t
+from decimal import Decimal
 
 
 __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
@@ -258,11 +259,19 @@ class OrderResource(ModelResource):
         """ Method to controls model serialization in derived classes
         :rtype : dict
         """
+
+        goods = instance.goods.all()
+        vat_total = Decimal(0)
+        if goods:
+            vats = [c.product.get_vat().calculate(c.product.price) for c in goods]
+            vat_total = round_decimal(Decimal(sum(vats)))
+
         data = instance.as_dict(api_fields=include)
         data.update({
             'state_name': order_states_i18n[str(instance.state)],
             'goods': [obj.as_dict() for obj in instance.goods.all()],
-            'goods_count': instance.goods.count()
+            'goods_count': instance.goods.count(),
+            'vat_total': vat_total
         })
 
         if instance.billing_country_id:
