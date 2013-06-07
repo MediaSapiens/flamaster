@@ -110,8 +110,9 @@ class ProfileResource(ModelResource):
                          'phone': t.String}).ignore_extra('*')
     model = User
 
-    # method_decorators = {
-    #     'get': [login_required, check_permission('profile_owner')]}
+    method_decorators = {
+        'put': [login_required],
+    }
 
     def post(self):
         raise NotImplemented('Method is not implemented')
@@ -143,13 +144,8 @@ class ProfileResource(ModelResource):
 
             if current_user.is_superuser():
                 return roles
-
-            user = self.get_object(id)
-
-            if (len(user.roles) == len(roles) and
-                all(user.roles, lambda r: r in roles)):
-
-                return roles
+            else:
+              return self.get_object(id).roles
 
             t.DataError(_("Role change not allowed"))
 
