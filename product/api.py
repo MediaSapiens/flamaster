@@ -261,17 +261,18 @@ class OrderResource(ModelResource):
         """
 
         goods = instance.goods.all()
-        vat_total = Decimal(0)
         if goods:
             vats = [c.product.get_vat().calculate(c.product.price) for c in goods]
-            vat_total = round_decimal(Decimal(sum(vats)))
+            total_vat = round_decimal(Decimal(sum(vats)))
+        else:
+            total_vat = Decimal(0)
 
         data = instance.as_dict(api_fields=include)
         data.update({
             'state_name': order_states_i18n[str(instance.state)],
-            'goods': [obj.as_dict() for obj in instance.goods.all()],
-            'goods_count': instance.goods.count(),
-            'vat_total': vat_total
+            'goods': [obj.as_dict() for obj in goods],
+            'goods_count': len(goods),
+            'total_vat': total_vat
         })
 
         if instance.billing_country_id:
