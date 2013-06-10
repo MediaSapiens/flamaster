@@ -366,7 +366,7 @@ class CustomerResource(ModelResource):
         'company': t.String(allow_blank=True),
         'gender': t.String,
         'birth_date': t.DateTime
-    }).make_optional('phone', 'notes', 'fax', 'company')\
+    }).make_optional('phone', 'notes', 'fax', 'company', 'birth_date')\
         .ignore_extra('*')
 
     # IE CORS Hack
