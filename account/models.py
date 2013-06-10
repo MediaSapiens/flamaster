@@ -35,8 +35,8 @@ class Address(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         instance = super(Address, self).save(commit)
-        if instance.customer and instance.customer.organizer_ready:
-            billing_data_changed.send(self, user=instance.customer.user)
+        if instance.customer_id is not None:
+            billing_data_changed.send(self, user_id=instance.customer.user_id)
         return instance
 
 
@@ -93,8 +93,8 @@ class Customer(db.Model, CRUDMixin):
             self.addresses.append(value)
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
-        if addr_type == 'billing' and self.organizer_ready:
-            billing_data_changed.send(self, user=self.user)
+        db.session.commit()
+        billing_data_changed.send(self, user_id=self.user_id)
         return self
 
     @hybrid_property
@@ -120,13 +120,6 @@ class Customer(db.Model, CRUDMixin):
         """ setter for delivery_address property
         """
         self.set_address('delivery', value)
-
-    @property
-    def organizer_ready(self):
-        if self.billing_address and self.user and self.user.accounts.count():
-            return True
-        else:
-            return False
 
 
 class Role(db.Model, CRUDMixin, RoleMixin):
@@ -284,8 +277,7 @@ class BankAccount(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         instance = super(BankAccount, self).save(commit)
-        if instance.user.customer.organizer_ready:
-            billing_data_changed.send(self, user=instance.user)
+        billing_data_changed.send(self, user_id=instance.user_id)
         return instance
 
 

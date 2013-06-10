@@ -48,8 +48,11 @@ def another_try(app, provider_id, oauth_response):
 
 
 @billing_data_changed.connect
-def notify_billing_changed(sender, user):
-    role = security.datastore.find_role(current_app.config['ADMIN_ROLE'])
-    recipients = map(lambda u: u.email, role.users)
-    send_email(_('Billing data changed'), recipients,
-               'billing_data_changed', user=user)
+def notify_billing_changed(sender, user_id):
+    user = security.datastore.find_user(id=user_id)
+    current_app.logger.debug("Billing data changed for %s", user.email)
+    if user.billing_address and user.accounts.count():
+        role = security.datastore.find_role(current_app.config['ADMIN_ROLE'])
+        recipients = map(lambda u: u.email, role.users)
+        send_email(_('Billing data changed'), recipients,
+                   'billing_data_changed', user=user)

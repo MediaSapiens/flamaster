@@ -215,7 +215,7 @@ class AddressResource(ModelResource, CustomerMixin):
         data = self.clean(g.request_data)
         address_type = data.pop('type')
         address = self.model.create(**data)
-        self._customer.set_address(address_type, address).save()
+        self._customer.set_address(address_type, address)
         return self.serialize(address)
 
     def get_objects(self, **kwargs):
