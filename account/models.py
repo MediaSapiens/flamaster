@@ -35,7 +35,8 @@ class Address(db.Model, CRUDMixin):
 
     def save(self, commit=True):
         instance = super(Address, self).save(commit)
-        if instance.customer_id is not None:
+        if (instance.customer_id is not None and
+                    instance.id == instance.customer.billing_address_id):
             billing_data_changed.send(self, user_id=instance.customer.user_id)
         return instance
 
@@ -94,7 +95,8 @@ class Customer(db.Model, CRUDMixin):
 
         setattr(self, "{}_address_id".format(addr_type), value.id)
         db.session.commit()
-        billing_data_changed.send(self, user_id=self.user_id)
+        if addr_type == 'billing':
+            billing_data_changed.send(self, user_id=self.user_id)
         return self
 
     @hybrid_property
@@ -121,6 +123,12 @@ class Customer(db.Model, CRUDMixin):
         """
         self.set_address('delivery', value)
 
+    @property
+    def organizer_ready(self):
+        if self.user:
+            return self.billing_address and self.user.accounts.count()
+        else:
+            return False
 
 class Role(db.Model, CRUDMixin, RoleMixin):
     """ User's role representation as datastore persists it.
