@@ -206,12 +206,12 @@ class AddressResource(ModelResource, CustomerMixin):
         'apartment': t.Or(t.String(allow_blank=True), t.Null),
         'city': t.String,
         'street': t.String,
-        'type': t.String(regex="(billing|delivery)"),
         'zip_code': t.String
     }).make_optional('apartment').ignore_extra('*')
 
     @method_wrapper(http.CREATED)
     def post(self):
+        self.validation.keys.append(t.Key('type', trafaret=t.String(regex="(billing|delivery)")))
         data = self.clean(g.request_data)
         address_type = data.pop('type')
         address = self.model.create(**data)
