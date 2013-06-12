@@ -108,6 +108,8 @@ class Category(db.Model, TreeNode, SlugMixin):
     is_deleted = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=True)
     is_visible_in_nav = db.Column(db.Boolean, default=True)
+    show_on_homepage = db.Column(db.Boolean, default=False)
+    shop_id = db.Column(db.Integer)
 
     def __repr__(self):
         return "{1}: <{0.id}, '{0.name}', {0.mp_depth}>".format(self,

@@ -40,6 +40,8 @@ class CategoryResource(ModelResource):
         'order': t.Int,
         'image': t.String(allow_blank=True),
         'slug': t.String,
+        'shop_id': t.Int,
+        t.Key('show_on_homepage', default=False): t.Bool,
         'is_visible': t.Bool,
         'is_visible_in_nav': t.Bool
     }).append(resolve_parent).make_optional('parent_id', 'order', 'image',
