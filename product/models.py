@@ -135,13 +135,6 @@ class Category(db.Model, TreeNode, SlugMixin):
     def is_empty(self):
         return self.products().count() == 0
 
-    @hybrid_property
-    def slug(self):
-        return self._slug
-
-    @slug.setter
-    def slug(self, value):
-        self._slug = value
 
     def save(self, commit=True):
         return super(SlugMixin, self).save(commit)
