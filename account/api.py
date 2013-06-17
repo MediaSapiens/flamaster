@@ -284,8 +284,10 @@ class CustomerResource(ModelResource, CustomerMixin):
         'first_name': t.String,
         'last_name': t.String,
         'email': t.Email,
-        'phone': t.String(allow_blank=True),
+        'phone': t.Or(t.String(allow_blank=True), t.Null),
         'notes': t.Or(t.String(allow_blank=True), t.Null),
+        'sex': t.String,
+        'birthdate': t.DateTime,
     }).make_optional('phone', 'notes').ignore_extra('*')
 
     @method_wrapper(http.ACCEPTED)
