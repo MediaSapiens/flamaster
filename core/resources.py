@@ -59,13 +59,6 @@ class Resource(MethodView):
         raise NotImplemented('Method is not implemented')
 
     def _prepare_pagination(self, **kwargs):
-        if self.filters_map_default:
-            try:
-                self.filter_args = self.clean_args(request.args)
-                kwargs.update(self.filter_args)
-            except t.DataError as err:
-                current_app.logger.info("Error in filters: %s", err.as_dict())
-
         page = kwargs.pop('page', 1)
         args_page_size = kwargs.pop('page_size', 20)
         page_size = self.page_size or args_page_size
@@ -202,12 +195,28 @@ class ModelResource(Resource):
             response, status = err.as_dict(), http.BAD_REQUEST
         return jsonify_status_code(response, status)
 
+    def _filter(self, query_kwargs):
+        """ Add predefined set of straight filters for object set
+
+        :param query_kwargs: kwargs for sqlalchemy query
+        :return: dictionary of filters for sqla filter_by call
+        """
+        if self.filters_map_default:
+            try:
+                self.filter_args = self.clean_args(request.args)
+                query_kwargs.update(self.filter_args)
+            except t.DataError as err:
+                current_app.logger.info("Error in filters: %s", err.as_dict())
+
+        return query_kwargs
+
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
-        return self.model.query.filter_by(**kwargs)
+        query_args = self._filter(kwargs)
+        return self.model.query.filter_by(**query_args)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
@@ -252,7 +261,8 @@ class MongoResource(ModelResource):
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
-        return self.model.objects(**kwargs)
+        query_args = self._filter(kwargs)
+        return self.model.objects(**query_args)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding

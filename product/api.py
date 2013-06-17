@@ -188,6 +188,11 @@ class OrderResource(ModelResource, CustomerMixin):
 
         return jsonify_status_code(response)
 
+
+    def _csv_response(self):
+        pass
+
+
     def post(self):
         status = http.ACCEPTED
 
@@ -207,14 +212,16 @@ class OrderResource(ModelResource, CustomerMixin):
         query = super(OrderResource, self).get_objects(**kwargs)
         return self.filter(query)
 
-    def filter(self, query):
+    def _filter(self, query_kwargs):
         """
         Apply additional filters provided with request args:
         `?from=2013-04-10T09:41:08.658Z&till=2013-04-10T09:41:08.658Z`
+
         :param query: SqlAlchemy BaseQuery bound instance
         :return: SqlAlchemy BaseQuery bound instance
         """
+        query_kwargs = super(OrderResource, self)._filter(query_kwargs)
         request_args = self.filters_map.check(request.args.copy())
         start = request_args.get('from')
         end = request_args.get('till')
-        return self.model.get_bounded(start, end, query)
+        return self.model.get_bounded(start, end, query_kwargs)
