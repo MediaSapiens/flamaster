@@ -17,7 +17,7 @@ class Resource(MethodView):
     method_decorators = None
     filters_map = t.Dict().make_optional('*').ignore_extra('*')
     filters_map_default = True
-    page_size = None
+    page_size = 20
 
     def dispatch_request(self, *args, **kwargs):
         """ Overriding MethodView dispatch call to decorate every
