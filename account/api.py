@@ -147,8 +147,6 @@ class ProfileResource(ModelResource):
             else:
               return self.get_object(id).roles
 
-            t.DataError(_("Role change not allowed"))
-
         return wrapper
 
     def _cmp_pwd(self, value):
@@ -179,14 +177,13 @@ class ProfileResource(ModelResource):
         instance is None and abort(http.NOT_FOUND)
         return instance
 
-    def get_objects(self, *args, **kwargs):
+    def get_objects(self, **kwargs):
         arguments = request.args.to_dict()
-        allowed_args = ('first_name', 'last_name', 'email')
-        filters = list(
-                (getattr(self.model, arg).like(u'%{}%'.format(arguments[arg]))
-                    for arg in arguments.iterkeys() if arg in allowed_args))
-        self.model is None and abort(http.INTERNAL_ERR)
-        return self.model.query.filter(or_(*filters))
+        like_args = ('first_name', 'last_name', 'email')
+        filters = [getattr(self.model, arg).like(u'%{}%'.format(arguments[arg]))
+                   for arg in arguments.keys() if arg in like_args]
+        qs = super(ProfileResource, self).get_objects(**kwargs)
+        return qs.filter(or_(*filters))
 
     def serialize(self, instance, include=None):
         exclude = []
@@ -264,15 +261,13 @@ class BankAccountResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        if self.model is None:
-            abort(http.BAD_REQUEST)
         if 'user_id' in request.args:
             kwargs['user_id'] = request.args['user_id']
 
         if not current_user.is_superuser():
             kwargs['user_id'] = current_user.id
 
-        return self.model.query.filter_by(**kwargs)
+        return super(BankAccountResource, self).get_objects(**kwargs)
 
 
 class CustomerResource(ModelResource, CustomerMixin):

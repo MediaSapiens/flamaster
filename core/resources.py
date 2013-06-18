@@ -59,19 +59,15 @@ class Resource(MethodView):
         raise NotImplemented('Method is not implemented')
 
     def _prepare_pagination(self, **kwargs):
-        page = kwargs.pop('page', 1)
-        args_page_size = kwargs.pop('page_size', 20)
-        page_size = self.page_size or args_page_size
-
         objects = self.get_objects(**kwargs)
         count = objects.count()
-        last_page = int(count / page_size) + (count % page_size and 1)
+        last_page = int(count / self.page_size) + (count % self.page_size and 1)
 
-        page = page if page < last_page else last_page
+        page = self.page if self.page < last_page else last_page
         page = page if page > 0 else 1
 
-        offset = (page - 1) * page_size
-        bound = min(page_size * page, count)
+        offset = (page - 1) * self.page_size
+        bound = min(self.page_size * page, count)
         return {
             'bound': bound,
             'count': count,
@@ -79,7 +75,7 @@ class Resource(MethodView):
             'objects': objects,
             'offset': offset,
             'page': page,
-            'page_size': page_size
+            'page_size': self.page_size
         }
 
     def paginate(self, page, **kwargs):
@@ -152,7 +148,12 @@ class Resource(MethodView):
             page_size.set_trafaret(t.Int(gt=0))
             # filter set processing
             self.filters_map.keys.append(page_size)
-        return self.filters_map.check(request_args.copy())
+        data = self.filters_map.check(request_args.copy())
+
+        self.page = data.pop('page', 1)
+        self.page_size = data.pop('page_size', self.page_size)
+
+        return data
 
 
 class ModelResource(Resource):
