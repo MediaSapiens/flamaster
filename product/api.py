@@ -7,7 +7,7 @@ from cStringIO import StringIO
 from dateutil import parser
 from itertools import imap
 
-from flask import request, session, current_app, json
+from flask import request, session, current_app, json, abort
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.security import login_required, current_user
 
@@ -207,21 +207,28 @@ class OrderResource(ModelResource, CustomerMixin):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
+        if self.model is None:
+            abort(http.BAD_REQUEST)
         if not current_user.is_superuser():
             kwargs['customer_id'] = self._customer.id
-        query = super(OrderResource, self).get_objects(**kwargs)
-        return self.filter(query)
+
+        return self._filter(kwargs)
 
     def _filter(self, query_kwargs):
-        """
+        """ Overrides base _filter method
         Apply additional filters provided with request args:
         `?from=2013-04-10T09:41:08.658Z&till=2013-04-10T09:41:08.658Z`
 
         :param query: SqlAlchemy BaseQuery bound instance
         :return: SqlAlchemy BaseQuery bound instance
         """
-        query_kwargs = super(OrderResource, self)._filter(query_kwargs)
         request_args = self.filters_map.check(request.args.copy())
-        start = request_args.get('from')
-        end = request_args.get('till')
+        start = request_args.pop('from', None)
+        end = request_args.pop('till', None)
+        try:
+            self.filter_args = self.clean_args(request_args)
+            query_kwargs.update(self.filter_args)
+        except t.DataError as err:
+            current_app.logger.info("Error in filters: %s", err.as_dict())
+
         return self.model.get_bounded(start, end, query_kwargs)
