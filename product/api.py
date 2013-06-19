@@ -1,31 +1,16 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-import csv
 import trafaret as t
 
-from cStringIO import StringIO
-from dateutil import parser
-from itertools import imap
-
-from flask import request, session, current_app, json, abort
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.security import login_required, current_user
-
-from flamaster.account.models import Customer
-from flamaster.account.api import CustomerMixin
 from flamaster.core import http
 from flamaster.core.decorators import method_wrapper
 from flamaster.core.resources import ModelResource
-from flamaster.core.utils import jsonify_status_code
 
 from .helpers import resolve_parent
-from .documents import BaseProduct
 from .models import Category, Country
-from .utils import get_order_class, get_cart_class
 
 
-__all__ = ['CategoryResource', 'CountryResource', 'CartResource',
-           'OrderResource']
+__all__ = ['CategoryResource', 'CountryResource']
 
 
 class CategoryResource(ModelResource):
@@ -69,166 +54,3 @@ class CountryResource(ModelResource):
         """
         return instance.as_dict(include=['id', 'short', 'name'])
 
-
-class CartResource(ModelResource, CustomerMixin):
-    model = get_cart_class()
-    page_size = 10000
-
-    validation = t.Dict({
-        'product_id': t.MongoId,
-        'concrete_product_id': t.MongoId,
-        'price_option_id': t.MongoId,
-        'amount': t.Int,
-        'details': t.String
-    }).make_optional('details', 'concrete_product_id').ignore_extra('*')
-
-    filters_map = t.Dict({
-        'product_id': t.MongoId,
-        'product_variant_id': t.MongoId
-    }).make_optional('*').ignore_extra('*')
-
-    def post(self):
-        status = http.CREATED
-        customer = self._customer
-        session['customer_id'] = customer.id
-
-        try:
-            data = self.clean(request.json)
-            # TODO: resolve add to cart method
-            product = BaseProduct.objects(pk=data['product_id']).first()
-            if product is None:
-                raise t.DataError({'product_id': _('Product not fount')})
-
-            cart = product.add_to_cart(customer=customer,
-                                       amount=data['amount'],
-                                       price_option_id=data['price_option_id'])
-            # cart.details = service_data
-
-            response = self.serialize(cart)
-        except t.DataError as err:
-            status, response = http.BAD_REQUEST, err.as_dict()
-
-        return jsonify_status_code(response, status)
-
-    def put(self, id):
-        status = http.ACCEPTED
-
-        try:
-            data = self.clean(request.json)
-            instance = self.get_object(id).update(amount=data['amount'])
-            response = self.serialize(instance)
-        except t.DataError as e:
-            status, response = http.BAD_REQUEST, e.as_dict()
-
-        return jsonify_status_code(response, status)
-
-    def get_objects(self, **kwargs):
-        """ Method for extraction object list query
-        """
-        if not current_user.is_superuser():
-            kwargs['customer_id'] = session.get('customer_id')
-
-        return super(CartResource, self).get_objects(**kwargs)
-
-    @property
-    def _customer(self):
-        if current_user.is_anonymous():
-            customer_id = session.get('customer_id')
-            if customer_id is None:
-                customer = Customer.create()
-            else:
-                customer = Customer.query.get_or_404(customer_id)
-        else:
-            customer = current_user.customer
-
-        return customer
-
-
-class OrderResource(ModelResource, CustomerMixin):
-    model = get_order_class()
-
-    validation = t.Dict({
-        'next_state': t.Int,
-        'payment_method': t.String,
-        'payment_details': t.String
-    }).make_optional('next_state',
-                     'payment_method',
-                     'payment_details').ignore_extra('*')
-
-    method_decorators = {
-        'delete': [login_required]
-    }
-
-    filters_map = t.Dict({
-        'from': t.DateTime,
-        'till': t.DateTime,
-        'format': t.String
-    }).make_optional('*').ignore_extra('*')
-    filters_map_default = False
-
-    def get(self, id=None):
-        request_args = self.filters_map.check(request.args.copy())
-
-        if id is None:
-            response = self.gen_list_response()
-        else:
-            response = self.serialize(self.get_object(id))
-
-        if request_args.get('format') == 'csv':
-            orders = self.get_objects()
-            rows = imap(lambda o: o.as_dict().values(), orders)
-            def data():
-                stream = StringIO()
-                csv_dst = csv.writer(stream)
-                csv_dst.writerows(rows)
-                yield stream.getvalue()
-
-            return current_app.response_class(data(), status=http.OK,
-                                              mimetype='text/csv')
-
-        return jsonify_status_code(response)
-
-
-    def _csv_response(self):
-        pass
-
-
-    def post(self):
-        status = http.ACCEPTED
-
-        try:
-            instance = self.model.create_from_api(**request.json)
-            response = self.serialize(instance)
-        except t.DataError as err:
-            status, response = http.BAD_REQUEST, err.as_dict()
-
-        return jsonify_status_code(response, status)
-
-    def get_objects(self, **kwargs):
-        """ Method for extraction object list query
-        """
-        if self.model is None:
-            abort(http.BAD_REQUEST)
-        if not current_user.is_superuser():
-            kwargs['customer_id'] = self._customer.id
-
-        return self._filter(kwargs)
-
-    def _filter(self, query_kwargs):
-        """ Overrides base _filter method
-        Apply additional filters provided with request args:
-        `?from=2013-04-10T09:41:08.658Z&till=2013-04-10T09:41:08.658Z`
-
-        :param query: SqlAlchemy BaseQuery bound instance
-        :return: SqlAlchemy BaseQuery bound instance
-        """
-        request_args = self.filters_map.check(request.args.copy())
-        start = request_args.pop('from', None)
-        end = request_args.pop('till', None)
-        try:
-            self.filter_args = self.clean_args(request_args)
-            query_kwargs.update(self.filter_args)
-        except t.DataError as err:
-            current_app.logger.info("Error in filters: %s", err.as_dict())
-
-        return self.model.get_bounded(start, end, query_kwargs)

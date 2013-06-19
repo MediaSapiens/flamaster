@@ -5,8 +5,15 @@ from blinker import Namespace
 
 from flask import current_app
 from flamaster.extensions import db
+
 from .models import Shelf
 
+
+__all__ = [
+    'price_created', 'price_updated', 'price_deleted',
+    'order_created',
+    'cart_created', 'carts_removed', 'cart_removed'
+]
 
 logger = logging.getLogger(__name__)
 signals = Namespace()

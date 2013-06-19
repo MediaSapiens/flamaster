@@ -14,7 +14,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.utils import import_string
 
 from . import OrderStates
-from .signals import cart_created, cart_removed
 
 
 class OrderMixin(CRUDMixin):
