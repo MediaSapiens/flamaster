@@ -243,8 +243,22 @@ class OrderResource(ModelResource):
         # TODO: process product owners
 
         self.model is None and abort(http.BAD_REQUEST)
-        return self.model.query.filter_by(**kwargs)\
-            .filter(~(self.model.state == OrderStates.provider_denied))
+
+        self.applied_filter_by = kwargs
+        filter_args = [~(self.model.state == OrderStates.provider_denied)]
+
+        state = request.args.get('state', '')
+
+        if state.isdigit():
+            self.applied_filter_by['state'] = int(request.args['state'])
+        else:
+            self.applied_filter_by.pop('state', None)
+
+        if state == 'not_null':
+            filter_args.append(~(self.model.state == OrderStates.created))
+
+        return self.model.query.filter_by(**self.applied_filter_by)\
+                .filter(*filter_args)
 
     @property
     def _request_data(self):
