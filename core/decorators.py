@@ -5,7 +5,7 @@ import settings
 
 from functools import wraps
 
-from flask import abort, request, g, json
+from flask import abort, request, g, json, current_app
 from flask.ext.babel import get_locale
 
 from flamaster.extensions import db
@@ -120,8 +120,11 @@ def method_wrapper(success_status, error_status=http.BAD_REQUEST):
                         raise t.DataError({'message': e.message})
                 else:
                     g.request_data = None
-                return jsonify_status_code(meth(*args, **kwargs),
-                                           success_status)
+                method_response = meth(*args, **kwargs)
+                if isinstance(method_response, current_app.response_class()):
+                    return method_response
+                else:
+                    return jsonify_status_code(method_response, success_status)
             except t.DataError as e:
                 return jsonify_status_code(e.as_dict(), error_status)
         return wrapper
