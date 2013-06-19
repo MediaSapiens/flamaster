@@ -248,11 +248,11 @@ class OrderResource(ModelResource):
         filter_args = [~(self.model.state == OrderStates.provider_denied)]
 
         if 'state' in request.args:
-            if request.args['state'] == 'all':
+            state = request.args.get('state')
+            if state in ['all', 'not_null']:
                 self.applied_filter_by.pop('state', None)
-            elif request.args['state'] == 'not_null':
-                self.applied_filter_by.pop('state', None)
-                filter_args.append(~(self.model.state == OrderStates.created))
+                if state == 'not_null':
+                    filter_args.append(~(self.model.state == OrderStates.created))
             else:
                 self.applied_filter_by['state'] = int(request.args['state'])
 
