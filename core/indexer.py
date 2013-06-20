@@ -25,6 +25,7 @@ class BaseIndex(object):
 
     def __init__(self):
         if self.index_type is None:
+            # pass
             raise RuntimeError('Index type is not defined')
 
     def get_data(self, cls):
@@ -106,7 +107,8 @@ class Index(object):
                                       **kwargs)
             applicator(index_cls)
         else:
-            current_app.logger.debug("Model %s not registered", cls)
+            pass
+            # current_app.logger.debug("Model %s not registered", cls)
 
     def reindex(self):
         """
