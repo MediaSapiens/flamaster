@@ -216,13 +216,32 @@ class ProfileResource(ModelResource):
                    "delivery_address", "logged_at", 'is_superuser', "birth_date",
                    "fax", "company", "gender"]
         # include = ['is_superuser']
+
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
+
         if g.user.id != instance.id and g.user.is_superuser() is False:
             exclude.append('email')
         else:
             include.append('email')
-        return instance.as_dict(include, exclude)
+
+        response = instance.as_dict(include, exclude)
+
+        billing_address = instance.billing_address
+        if billing_address:
+            billing_address = billing_address.as_dict()
+            billing_address = dict(('billing_{key}'.format(key=i),
+                                billing_address[i]) for i in billing_address)
+            response.update(billing_address)
+
+        delivery_address = instance.delivery_address
+        if delivery_address:
+            delivery_address = delivery_address.as_dict()
+            delivery_address = dict(('delivery_{key}'.format(key=i),
+                                delivery_address[i]) for i in delivery_address)
+            response.update(delivery_address)
+
+        return response
 
 
 @api_resource(bp, 'addresses', {'id': int})
