@@ -13,11 +13,12 @@ from flamaster.product.utils import get_order_class
 
 from requests.auth import HTTPBasicAuth
 
+from . import GROUPON
 from .base import BasePaymentMethod
 
 
 class GrouponPaymentMethod(BasePaymentMethod):
-    method_name = 'groupon'
+    method_name = GROUPON
     validation = t.Dict({
         'deal': t.Int,
         'voucher': t.String,

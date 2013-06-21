@@ -80,12 +80,12 @@ class OrderMixin(CRUDMixin):
         PaymentMethod = import_string(class_string)
         return PaymentMethod(self)
 
-    def set_payment_details(self, payment_details):
-        raise NotImplementedError()
+    def set_payment_details(self, **kwargs):
+        raise NotImplementedError("Payment Details: %s", kwargs)
 
     @classmethod
-    def get_by_payment_details(cls, payment_details):
-        raise NotImplementedError("Payment Details: %s", payment_details)
+    def get_by_payment_details(cls, **kwargs):
+        raise NotImplementedError("Payment Details: %s", kwargs)
 
     @classmethod
     def _prepare_address(cls, addr_type, address_instance):

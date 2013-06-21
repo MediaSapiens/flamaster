@@ -7,6 +7,7 @@ from urlparse import parse_qsl
 
 from flamaster.product.utils import get_order_class
 
+from . import PAYPAL
 from .base import BasePaymentMethod
 
 
@@ -30,7 +31,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Obtaining authorized payment details.
             Capturing the payment.
     """
-    method_name = 'paypal'
+    method_name = PAYPAL
 
     def __do_request(self, request_params):
         """ Directly request
@@ -63,7 +64,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         response = self.__do_request(request_params)
 
         if response['ACK'] == RESPONSE_OK:
-            self.order.set_payment_details(response['TOKEN'])
+            self.order.set_payment_details(token=response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
             return redirect(webface_url)
 
@@ -77,7 +78,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             DoExpressCheckoutPayment call.
         """
         order_cls = get_order_class()
-        self.order = order_cls.get_by_payment_details(response['TOKEN'])
+        self.order = order_cls.get_by_payment_details(token=response['TOKEN'])
         if self.order is None:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
