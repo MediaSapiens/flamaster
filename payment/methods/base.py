@@ -22,7 +22,7 @@ class BasePaymentMethod(object):
     def process_payment(self):
         raise NotImplementedError
 
-    def init_payment(self):  # amount, currency, description):
+    def init_payment(self, payment_details=None):  # amount, currency, description):
         raise NotImplementedError
 
     def precess_payment_response(self, *args, **kwargs):

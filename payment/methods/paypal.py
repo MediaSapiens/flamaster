@@ -39,7 +39,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         resp = requests.get(self.endpoint, params=request_params)
         return dict(parse_qsl(resp.text))
 
-    def __set_checkout(self, amount):
+    def __set_checkout(self, amount, payment_details):
         """ When a customer is ready to check out, use the SetExpressCheckout
             call to specify the amount of payment, return URL, and cancel
             URL. The SetExpressCheckout response contains a token for use in
@@ -66,6 +66,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
             self.order.set_payment_details(response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
             return redirect(webface_url)
+
+        #
 
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
@@ -119,10 +121,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
-    def init_payment(self):
+    def init_payment(self, payment_details):
         """ Initialization payment process.
         """
-        return self.__set_checkout(self.order.total_price)
+        return self.__set_checkout(self.order.total_price, payment_details)
 
     def process_payment(self):
         return self.__get_payment_details(**dict(request.args))

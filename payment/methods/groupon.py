@@ -35,6 +35,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
                     deal_id="{deal}" part1_provider_only="{security}"
                     part2_provider_customer="{voucher}" />"""
 
+
+
     def __do_request(self, endpoint, **kwargs):
         login, passwd = self.settings['name'], self.settings['password']
         data = self.data_template.format(**kwargs).encode('utf-8')
@@ -54,6 +56,10 @@ class GrouponPaymentMethod(BasePaymentMethod):
         endpoint_tpl = self.settings['endpoint']
         endpoint = endpoint_tpl.format(path=self.redeem_path)
         return self.__do_request(endpoint, **kwargs)
+
+    def init_payment(self, payment_details):
+        self.order.details = self.validation.check(payment_details)
+        self.process_payment()
 
     def process_payment(self):
         status = http.OK
