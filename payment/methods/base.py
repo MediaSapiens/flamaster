@@ -42,7 +42,6 @@ def resolve_payment_method(payment_method):
 @payment.route('/<payment_method>/verify/', methods=['POST'])
 def verify_payment(payment_method):
     PaymentMethod = resolve_payment_method(payment_method)
-    print request.json, request.form, request.data
     data = request.json or request.form or json.loads(request.data)
     return PaymentMethod().verify(data)
 

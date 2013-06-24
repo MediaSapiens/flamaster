@@ -28,11 +28,14 @@ class Cart(db.Model, CRUDMixin):
     service = db.Column(db.String)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
+    unit_price = db.Column(db.Numeric(precision=18, scale=2))
+    vat = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
                             nullable=False)
     customer = db.relationship('Customer',
                                backref=db.backref('carts', **lazy_cascade))
+
 
     @classmethod
     def create(cls, amount, customer, product, product_variant=None, service=''):
@@ -45,6 +48,8 @@ class Cart(db.Model, CRUDMixin):
         instance_kwargs = {
             'product_id': str(product.id),
             'price': product.get_price(product_variant, amount),
+            'vat': product.get_vat()['percent'],
+            'unit_price': product.get_price(),
             'customer': customer,
             'amount': amount,
             'service': service
@@ -195,10 +200,12 @@ class Order(db.Model, CRUDMixin):
     payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
     payment_fee = db.Column(db.Numeric(precision=18, scale=2))
+    payment_vat = db.Column(db.Numeric(precision=18, scale=2), default=current_app.config['PAYMENT_VAT'])
     state = db.Column(db.Integer, index=True)
     # stored cost for the order delivery
     delivery_method = db.Column(db.String, nullable=False, index=True)
     delivery_price = db.Column(db.Numeric(precision=18, scale=2))
+    delivery_vat = db.Column(db.Numeric(precision=18, scale=2), default=current_app.config['DELIVERY_VAT'])
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
                             nullable=False, index=True)
