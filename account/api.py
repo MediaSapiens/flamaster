@@ -209,6 +209,14 @@ class ProfileResource(ModelResource):
         self.model is None and abort(http.INTERNAL_ERR)
         return self.model.query.filter(or_(*filters))
 
+    def __add_address_prefix(self, address, prefix):
+        if address is None:
+            return {}
+        else:
+            address_dict = dict(('{}_{}'.format(prefix, key), value) 
+                                  for key, value in address.as_dict().items())
+        return address_dict
+
     def serialize(self, instance, include=None):
         exclude = ['password']
         include = ["first_name", "last_name", "created_at", "phone",
@@ -216,13 +224,22 @@ class ProfileResource(ModelResource):
                    "delivery_address", "logged_at", 'is_superuser', "birth_date",
                    "fax", "company", "gender"]
         # include = ['is_superuser']
+
         if g.user.is_anonymous() or instance.is_anonymous():
             return instance.as_dict(include, exclude)
+
         if g.user.id != instance.id and g.user.is_superuser() is False:
             exclude.append('email')
         else:
             include.append('email')
-        return instance.as_dict(include, exclude)
+
+        response = instance.as_dict(include, exclude)
+        response.update(self.__add_address_prefix(instance.billing_address,
+                                                                'billing'))
+        response.update(self.__add_address_prefix(instance.delivery_address,
+                                                                'delivery'))
+
+        return response
 
 
 @api_resource(bp, 'addresses', {'id': int})
