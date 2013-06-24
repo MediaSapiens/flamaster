@@ -61,7 +61,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
 
     def init_payment(self, payment_details):
         self.order.details = self.validation.check(payment_details)
-        self.process_payment()
+        return self.process_payment()
 
     def process_payment(self):
         status = http.OK
@@ -74,7 +74,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
                 raise t.DataError({'voucher': _('Invalid voucher')})
             else:
                 self.order.mark_paid()
-
+                data.update(self.order.as_dict())
         except t.DataError as e:
             status = http.BAD_REQUEST
             data.update({
