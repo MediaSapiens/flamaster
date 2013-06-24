@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from flask import current_app, render_template, request, json
-from werkzeug.utils import import_string
+from flask import current_app, render_template, request, json, session
+from werkzeug.utils import import_string, redirect
 
 from .. import payment
 
@@ -50,9 +50,18 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
-    return render_template('cancel.html')
+    origin = session.get('origin')
+    if origin is None:
+        return render_template('payment/cancel.html')
+    else:
+        return redirect(origin)
+
+
+@payment.route('/<payment_method>/success/')
+def success_payment(payment_method):
+    return render_template('payment/success.html')
 
 
 @payment.route('/<payment_method>/error/')
 def error_payment(payment_method):
-    return render_template('error.html')
+    return render_template('payment/error.html')

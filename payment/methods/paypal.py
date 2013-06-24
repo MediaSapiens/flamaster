@@ -4,6 +4,8 @@ import logging
 import requests
 from flask import redirect, url_for, request, json, Response, session
 from urlparse import parse_qsl
+from flamaster.core import http
+from flamaster.core.utils import jsonify_status_code
 
 from flamaster.product.utils import get_order_class
 
@@ -11,7 +13,7 @@ from . import PAYPAL
 from .base import BasePaymentMethod
 
 
-CURRENCY = 'USD'
+CURRENCY = 'EUR'
 ACTION = 'SALE'
 SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
@@ -61,24 +63,33 @@ class PayPalPaymentMethod(BasePaymentMethod):
                                             'payment.cancel_payment',
                                             payment_method=self.method_name)
         }
+        print "set params", request_params
         response = self.__do_request(request_params)
         print "Paypal response", response
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
-            return redirect(webface_url)
+            response = self.order.as_dict()
+            response.update({
+                'action': 'redirect',
+                'target': webface_url
+            })
+            return response
 
-        #
-
-        return redirect(url_for('payment.error_payment',
-                                payment_method=self.method_name))
+        return {
+            'action': 'redirect',
+            'target': url_for('payment.error_payment',
+                              payment_method=self.method_name)
+        }
 
     def __capture_payment(self, response):
         """ Final step. The payment can be captured (collected) using the
             DoExpressCheckoutPayment call.
         """
         order_cls = get_order_class()
-        self.order = order_cls.get_by_payment_details(token=response['TOKEN'])
+        self.order = order_cls.get_by_payment_details(
+            {'token': response['TOKEN']}
+        )
         if self.order is None:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
@@ -93,12 +104,16 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
 
         response = self.__do_request(request_params)
+        print "Capture response", response
         if response['ACK'] == RESPONSE_OK:
-            self.order.details = unicode(response)
+            self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
-
-            return Response(response=json.dumps(response), status=201,
-                    mimetype='application/json')
+            origin = session.get('origin')
+            if origin is None:
+                return redirect(url_for('payment.success_payment',
+                                        payment_method=self.method_name))
+            else:
+                return redirect(origin + '#-findevent_success-token-')
 
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name,
