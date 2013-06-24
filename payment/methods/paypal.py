@@ -63,9 +63,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                                             'payment.cancel_payment',
                                             payment_method=self.method_name)
         }
-        print "set params", request_params
         response = self.__do_request(request_params)
-        print "Paypal response", response
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
@@ -74,7 +72,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'action': 'redirect',
                 'target': webface_url
             })
-            return response
+            return jsonify_status_code(response)
 
         return {
             'action': 'redirect',
@@ -104,7 +102,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
 
         response = self.__do_request(request_params)
-        print "Capture response", response
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
@@ -113,7 +110,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 return redirect(url_for('payment.success_payment',
                                         payment_method=self.method_name))
             else:
-                return redirect(origin + '#-findevent_success-token-')
+                return redirect(origin)
 
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name,
