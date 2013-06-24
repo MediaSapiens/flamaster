@@ -292,6 +292,6 @@ class CustomerResource(ModelResource, CustomerMixin):
         return self.serialize(instance)
 
     def get_objects(self, **kwargs):
-        if not current_user.is_superuser():
+        if current_user.is_anonymous() or not current_user.is_superuser():
             kwargs['id'] = self._customer.id
         return super(CustomerResource, self).get_objects(**kwargs)

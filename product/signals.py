@@ -11,7 +11,7 @@ from .models import Shelf
 
 __all__ = [
     'price_created', 'price_updated', 'price_deleted',
-    'order_created',
+    'order_created', 'order_paid',
     'cart_created', 'carts_removed', 'cart_removed'
 ]
 
@@ -23,6 +23,7 @@ price_updated = signals.signal('price_updated')
 price_deleted = signals.signal('price_deleted')
 
 order_created = signals.signal('order-created')
+order_paid = signals.signal('order-paid')
 cart_created = signals.signal('cart-created')
 cart_removed = signals.signal('cart-removed')
 carts_removed = signals.signal('carts-removed')
@@ -51,7 +52,7 @@ def remove_from_shelf(sender, price_option_id):
     if shelf is not None:
         shelf.delete()
 
-@order_created.connect
+@order_paid.connect
 def on_order_created(sender, order):
 
     def update_sold_count(item):

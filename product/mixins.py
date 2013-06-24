@@ -13,8 +13,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from werkzeug.utils import import_string
 
-from . import OrderStates
-
+from . import OrderStates, order_paid
 
 class OrderMixin(CRUDMixin):
     shop_id = db.Column(db.String(128), default=SHOP_ID)
@@ -71,6 +70,7 @@ class OrderMixin(CRUDMixin):
         raise NotImplementedError()
 
     def mark_paid(self):
+        order_paid.send(current_app._get_current_object(), order=self)
         return self.update(state=OrderStates.paid)
 
     def resolve_payment(self, method=None):

@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import logging
 import requests
-from flask import redirect, url_for, request, json, Response
+from flask import redirect, url_for, request, json, Response, session
 from urlparse import parse_qsl
 
 from flamaster.product.utils import get_order_class
@@ -62,7 +62,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                                             payment_method=self.method_name)
         }
         response = self.__do_request(request_params)
-
+        print "Paypal response", response
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
@@ -91,6 +91,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
         }
+
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.details = unicode(response)
@@ -125,6 +126,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def init_payment(self, payment_details):
         """ Initialization payment process.
         """
+        session.update(payment_details)
         return self.__set_checkout(self.order.total_price, payment_details)
 
     def process_payment(self):

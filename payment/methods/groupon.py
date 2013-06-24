@@ -8,6 +8,7 @@ from flask.ext.babel import gettext as _
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product import order_paid
 from flamaster.product.documents import BaseProductVariant
 from flamaster.product.utils import get_order_class
 
@@ -71,6 +72,8 @@ class GrouponPaymentMethod(BasePaymentMethod):
                                        deal=data['deal'])
             if redemption.status_code != http.OK:
                 raise t.DataError({'voucher': _('Invalid voucher')})
+            else:
+                self.order.mark_paid()
 
         except t.DataError as e:
             status = http.BAD_REQUEST
