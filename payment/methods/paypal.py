@@ -80,8 +80,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             order.set_payment_details(response['TOKEN'])
             return jsonify_redirect(webface_url)
 
-        return jsonify_redirect(url_for('payment.error_payment',
-                                payment_method=self.method_name))
+        return redirect('/?redirect_from=%s&status=error' % self.method_name)
 
     def __capture_payment(self, response):
         """ Final step. The payment can be captured (collected) using the
@@ -90,8 +89,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         order = Order.get_by_payment_details(response['TOKEN'])
 
         if order is None:
-            return jsonify_redirect(url_for('payment.error_payment',
-                                    payment_method=self.method_name))
+            return redirect('/?redirect_from=%s&status=error' % self.method_name)
 
         request_params = {
             'METHOD': DO_PAYMENT,
@@ -116,11 +114,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
             # return Response(response=json.dumps(response), status=201,
             #                 mimetype='application/json')
-            return redirect(url_for('payment.success_payment',
-                                    payment_method=self.method_name))
+            return redirect('/?redirect_from=%s&status=success' % self.method_name)
 
-        return jsonify_redirect(url_for('payment.error_payment',
-                                payment_method=self.method_name))
+        return redirect('/?redirect_from=%s&status=error' % self.method_name)
 
     def __get_payment_details(self, token, PayerID):
         """ If the customer authorizes the payment, the customer is redirected
@@ -139,8 +135,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         if response['ACK'] == RESPONSE_OK:
             return self.__capture_payment(response)
 
-        return jsonify_redirect(url_for('payment.error_payment',
-                                payment_method=self.method_name))
+        return redirect('/?redirect_from=%s&status=error' % self.method_name)
 
     def init_payment(self):
         """ Initialization payment process.
