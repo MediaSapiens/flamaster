@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import logging
 import requests
+from decimal import Decimal
 
 from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
@@ -59,12 +60,31 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Step 2 contained. Redirect the Customer to PayPal for
             Authorization.
         """
+
+        cards_ds = CartDatastore(Cart)
+        cards = cards_ds.find(customer=self.order_data['customer'],
+                              is_ordered=False)
+
+        counter = 0
+        products_params = {}
+        for item in cards:
+            products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.unit_price
+            products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = item.amount
+            #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
+
+            counter += 1
+
         request_params = {
             'METHOD': SET_CHECKOUT,
+            'BRANDNAME': 'WIMOTO',
             'PAYMENTREQUEST_0_AMT': amount,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
-            # FIXME: BuildError
+            'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
+            'PAYMENTREQUEST_0_ITEMAMT': self.order_data['goods_price'],
+            #'PAYMENTREQUEST_0_DESC': "Text with order description",
+
             'RETURNURL': request.url_root.rstrip('/') + url_for(
                                             'payment.process_payment',
                                             payment_method=self.method_name),
@@ -72,6 +92,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
                                             'payment.cancel_payment',
                                             payment_method=self.method_name)
         }
+
+        request_params.update(products_params)
         response = self.__do_request(request_params)
 
         if response['ACK'] == RESPONSE_OK:
