@@ -54,7 +54,8 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
-    return render_template('payment/cancel.html')
+    PaymentMethod = resolve_payment_method(payment_method)
+    return PaymentMethod().process_cancel()
 
 
 @payment.route('/<payment_method>/error/')

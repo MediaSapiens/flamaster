@@ -167,6 +167,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def process_payment(self):
         return self.__get_payment_details(**dict(request.args))
 
+    def process_cancel(self):
+        return redirect('/?redirect_from=%s&status=cancel' % self.method_name)
+
     def __get_redirect_url(self, response):
         face = "https://www.{}paypal.com/webscr?cmd=_express-checkout&token={}"
         return face.format(self.sandbox and 'sandbox.' or '',
