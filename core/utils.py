@@ -7,7 +7,7 @@ from bson import ObjectId
 from datetime import datetime, date
 from decimal import Decimal, ROUND_HALF_UP
 
-from flask import current_app, render_template
+from flask import current_app, render_template, request
 from flask.ext.mail import Message
 from flask.helpers import json
 
@@ -182,6 +182,11 @@ def send_email(subject, recipient, template, callback=None, **context):
     # context.update(_security._run_ctx_processor('mail'))
     recipients = isinstance(recipient, basestring) and [recipient] or recipient
     msg = Message(subject, recipients=recipients)
+    site_url = '{scheme}://{route}'.format(
+                scheme=request.scheme,
+                route=current_app.config['SERVER_HOST']
+            )
+    context.update({'site_url': site_url})
 
     ctx = ('email', template)
     msg.body = render_template('{0}/{1}.txt'.format(*ctx), **context)
