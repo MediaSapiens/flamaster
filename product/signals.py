@@ -41,7 +41,7 @@ def put_on_shelf(sender, price_option_id, quantity):
 
 @price_updated.connect
 def update_on_shelf(price_option):
-    Shelf.query.filter_by(price_option_id=str(price_option.id))\
+    Shelf.query.filter_by(price_option_id=str(price_option.id)) \
         .update({'quantity': price_option.quantity})
     db.session.commit()
 
@@ -52,14 +52,15 @@ def remove_from_shelf(sender, price_option_id):
     if shelf is not None:
         shelf.delete()
 
-@order_paid.connect
-def on_order_created(sender, order):
 
+@order_paid.connect
+def update_sold_on_shelf(sender, order):
     def update_sold_count(item):
         price_option_id, amount = item
         shelves = Shelf.get_by_price_option(price_option_id)
         if shelves.first() is None:
-            message = 'Item {} is not on shelf or depleeted'.format(price_option_id)
+            message = 'Item {} is not on shelf or depleeted'.format(
+                price_option_id)
             current_app.logger.error(message)
         else:
             shelves.update({'sold': Shelf.sold + amount})
@@ -82,7 +83,8 @@ def on_cart_created(sender, price_option_id, amount):
     """ Synchronizing shelf state with amount added to cart
 
     :param sender: current app
-    :param cart: Cart instance to be recorded
+    :param price_option_id: Price option to search shelf with
+    :param amount: Amount of items to record
     """
     shelves = Shelf.get_by_price_option(price_option_id)
     if shelves.count() == 0:
@@ -101,6 +103,7 @@ def on_cart_removed(sender, price_option_id, amount):
         current_app.logger.error(message)
     else:
         shelves.update({'sold': Shelf.sold - amount})
+
 #def order_creation_sender(mapper, connection, instance):
 #    owners = list(set(map(attrgetter('product.created_by'), instance.goods)))
 
