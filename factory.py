@@ -2,15 +2,13 @@ from __future__ import absolute_import
 import os
 import time
 import uuid
-
 from datetime import datetime
-from flask import (Flask, abort, g, request, session, render_template,
-                   current_app)
-from flask.ext.babel import get_locale as babel_locale
-
 import logging
 from logging.handlers import SMTPHandler
 
+from flask import (Flask, abort, g, request, session, render_template,
+                   current_app)
+from flask.ext.babel import get_locale as babel_locale
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
 
@@ -33,6 +31,7 @@ class AppFactory(object):
         Usage:
             app = AppFactory('settings').init_app(__name__)
     """
+
     def __init__(self, config, envvar='PROJECT_SETTINGS', bind_db_object=True):
         self.app_config = config
         self.app_envvar = os.environ.get(envvar, False)
@@ -130,6 +129,7 @@ class AppFactory(object):
         if not app.debug:
             app.logger.addHandler(mail_handler)
 
+
 def modify_headers(response):
     map(lambda h: response.headers.add(*h), current_app.config['HEADERS'])
     return response
@@ -153,7 +153,6 @@ def show_page_not_found(error):
 
 
 def get_locale(app):
-
     def closure():
         languages = app.config['ACCEPT_LANGUAGES']
         matched = request.accept_languages.best_match(languages)
