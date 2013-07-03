@@ -1,19 +1,16 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+
 import trafaret as t
 import requests
-
 from flask import current_app
 from flask.ext.babel import gettext as _
+from requests.auth import HTTPBasicAuth
 
 from flamaster.core import http
 from flamaster.core.utils import jsonify_status_code
-from flamaster.product import order_paid
 from flamaster.product.documents import BaseProductVariant
 from flamaster.product.utils import get_order_class
-
-from requests.auth import HTTPBasicAuth
-
 from . import GROUPON
 from .base import BasePaymentMethod
 
@@ -38,7 +35,6 @@ class GrouponPaymentMethod(BasePaymentMethod):
                     part2_provider_customer="{voucher}" />"""
 
 
-
     def __do_request(self, endpoint, **kwargs):
         login, passwd = self.settings['name'], self.settings['password']
         data = self.data_template.format(**kwargs).encode('utf-8')
@@ -59,7 +55,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         endpoint = endpoint_tpl.format(path=self.redeem_path)
         return self.__do_request(endpoint, **kwargs)
 
-    def init_payment(self, payment_details):
+    def init_payment(self, payment_details=None):
         self.order.details = self.validation.check(payment_details)
         return self.process_payment()
 
