@@ -62,6 +62,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
     def process_payment(self):
         status = http.OK
         data = self.order.details
+        data['status'] = 'OK'
         try:
             redemption = self.__redeem(voucher=data['voucher'],
                                        security=data['code'],
@@ -76,6 +77,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
             data.update({
                 'message': 'ERROR',
                 'errors': e.as_dict(),
+                'status': 'ERR'
             })
 
         return jsonify_status_code(data, status)
