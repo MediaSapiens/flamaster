@@ -105,12 +105,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
-            origin = session.get('origin')
-            if origin is None:
-                return redirect(url_for('payment.success_payment',
+
+            return redirect(url_for('payment.success_payment',
                                         payment_method=self.method_name))
-            else:
-                return redirect(origin)
 
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name,
