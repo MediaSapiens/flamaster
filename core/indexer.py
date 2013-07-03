@@ -1,10 +1,16 @@
+import logging
 from itertools import imap
-from operator import methodcaller
 from flask import current_app
+from mongoengine import signals
+from operator import methodcaller
+from requests.exceptions import ConnectionError
+
 from flamaster.core.utils import CustomEncoder
 from flamaster.extensions import es
-from mongoengine import signals
 
+
+
+logger = logging.getLogger('indexer')
 
 @signals.post_save.connect
 def put_on_index(cls, document, created):
@@ -105,7 +111,11 @@ class Index(object):
         if index_cls is not None:
             applicator = methodcaller(action, cls, document=doc_or_docs,
                                       **kwargs)
-            applicator(index_cls)
+            try:
+                applicator(index_cls)
+            except ConnectionError as err:
+                logger.critical('ElasticSearch node unreachable')
+
         else:
             pass
             # current_app.logger.debug("Model %s not registered", cls)
