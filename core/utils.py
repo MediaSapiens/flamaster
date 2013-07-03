@@ -167,7 +167,7 @@ def underscorize(name):
 plural_underscored = lambda s: plural_name(underscorize(s))
 
 
-def send_email(subject, recipient, template, **context):
+def send_email(subject, recipient, template, attachments=None, **context):
     """ Send an email via the Flask-Mail extension.
 
     :param subject: Email subject
@@ -184,6 +184,7 @@ def send_email(subject, recipient, template, **context):
         html_body=render_template('{0}/{1}.html'.format(*ctx), **context),
     )
     message.recipients.extend(isinstance(recipient, basestring) and [recipient] or recipient)
+    message.attachments.extend(attachments)
     message.save()
     send_message_from_queue.delay(message.id)
 
