@@ -10,7 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 #  import class_mapper, object_mapper
 from flamaster.extensions import db
-from .utils import slugify, plural_name, underscorize
+from .utils import slugify, plural_underscored
 
 
 def raise_value(text):
@@ -26,7 +26,7 @@ class BaseMixin(object):
     def __tablename__(cls):
         """ We want our app to be more English for pluralization cases
         """
-        return plural_name(underscorize(cls.__name__))
+        return plural_underscored(cls.__name__)
 
     def as_dict(self, include=None, exclude=None):
         """ method for building dictionary for model value-properties filled
@@ -147,7 +147,7 @@ class TreeNode(CRUDMixin):
 
     @declared_attr
     def parent_id(cls):
-        table_name = plural_name(underscorize(cls.__name__))
+        table_name = plural_underscored(cls.__name__)
         return db.Column(db.Integer,
                          db.ForeignKey("{}.id".format(table_name),
                                        ondelete="CASCADE",
