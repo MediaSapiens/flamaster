@@ -46,7 +46,7 @@ class OrderDatastore(AbstractDatastore):
 
         kwargs.update({
             'reference': str(uuid.uuid4().node),
-            'delivery_method': 'DHL',
+            'delivery_method': 'dhl',
             'customer': customer,
             'goods_price': goods_price,
             'payment_fee': payment_fee,
