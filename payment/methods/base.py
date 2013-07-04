@@ -50,21 +50,12 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
-    origin = session.get('origin')
-    if origin is None:
-        return render_template('payment/cancel.html')
-    else:
-        return redirect(origin)
+    return render_template('payment/cancel.html')
 
 
 @payment.route('/<payment_method>/success/')
 def success_payment(payment_method):
-    origin = session.get('origin')
-    if origin is None:
-        return render_template('payment/success.html')
-    else:
-        return redirect(origin)
-
+    return render_template('payment/success.html')
 
 
 @payment.route('/<payment_method>/error/')
