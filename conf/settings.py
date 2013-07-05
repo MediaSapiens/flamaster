@@ -176,7 +176,8 @@ DELIVERY_OPTIONS = {
 SHOPS = [
     {
         'cart': 'findevent.vending.models.Cart',
-        'order': 'findevent.vending.models.Order'
+        'order': 'findevent.vending.models.Order',
+        'tax': "0.00",
     }
 ]
 
