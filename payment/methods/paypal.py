@@ -2,17 +2,15 @@
 from __future__ import absolute_import
 from collections import Mapping
 import logging
-import requests
-
 from decimal import Decimal
+from urlparse import parse_qsl
+
+import requests
 from flask import redirect, url_for, request, session, current_app
 
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product.documents import BaseProduct
 from flamaster.product.utils import get_order_class
-
-from urlparse import parse_qsl
-
 from . import PAYPAL
 from .base import BasePaymentMethod
 
