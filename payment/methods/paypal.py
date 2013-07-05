@@ -1,13 +1,17 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+from collections import Mapping
 import logging
 import requests
-from flask import redirect, url_for, request, json, Response, session
-from urlparse import parse_qsl
-from flamaster.core import http
-from flamaster.core.utils import jsonify_status_code
 
+from decimal import Decimal
+from flask import redirect, url_for, request, session, current_app
+
+from flamaster.core.utils import jsonify_status_code
+from flamaster.product.documents import BaseProduct
 from flamaster.product.utils import get_order_class
+
+from urlparse import parse_qsl
 
 from . import PAYPAL
 from .base import BasePaymentMethod
@@ -57,12 +61,14 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             # FIXME: BuildError
             'RETURNURL': request.url_root.rstrip('/') + url_for(
-                                            'payment.process_payment',
-                                            payment_method=self.method_name),
+                'payment.process_payment',
+                payment_method=self.method_name),
             'CANCELURL': request.url_root.rstrip('/') + url_for(
-                                            'payment.cancel_payment',
-                                            payment_method=self.method_name)
+                'payment.cancel_payment',
+                payment_method=self.method_name)
         }
+        # include description for items added to cart
+        request_params.update(self.__prepare_cart_items())
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
@@ -79,6 +85,21 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'target': url_for('payment.error_payment',
                               payment_method=self.method_name)
         }
+
+    def __prepare_cart_items(self):
+        cart_items_request_params = {}
+        tax = current_app.config['SHOPS'][current_app.config['SHOP_id']]['tax']
+        for idx, item in enumerate(self.order.goods):
+            product = BaseProduct.objects(pk=item.product_id).first()
+            cart_items_request_params.update({
+                'L_PAYMENTREQUEST_0_ITEMCATEGORY{idx}': 'Digital',
+                'L_PAYMENTREQUEST_0_TAXAMT{idx}': Decimal(tax),
+                'L_PAYMENTREQUEST_0_QTY{idx}': item.amount,
+                'L_PAYMENTREQUEST_0_AMT{idx}': item.price,
+                'L_PAYMENTREQUEST_0_NAME{idx}': item.details_verbose,
+                'L_PAYMENTREQUEST_0_DESC{idx}': product.name,
+            })
+        return cart_items_request_params
 
     def __capture_payment(self, response):
         """ Final step. The payment can be captured (collected) using the
@@ -107,7 +128,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             self.order.mark_paid()
 
             return redirect(url_for('payment.success_payment',
-                                        payment_method=self.method_name))
+                                    payment_method=self.method_name))
 
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name,
@@ -118,6 +139,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             to the return URL that you specified in the SetExpressCheckout
             call. The return URL is appended with the same token as the token
             used above.
+        :type PayerID: basestring
         """
         request_params = {
             'METHOD': GET_CHECKOUT,
@@ -132,9 +154,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
         return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
-    def init_payment(self, payment_details):
+    def init_payment(self, payment_details=None):
         """ Initialization payment process.
         """
+        assert isinstance(payment_details, Mapping)
         session.update(payment_details)
         return self.__set_checkout(self.order.total_price, payment_details)
 
