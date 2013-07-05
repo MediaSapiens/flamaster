@@ -9,7 +9,8 @@ from flamaster.account.models import Customer
 
 from flamaster.core import http, mongo
 from flamaster.core.decorators import api_resource, method_wrapper
-from flamaster.core.resources import ModelResource, MongoResource
+from flamaster.core.resources import (ModelResource, MongoResource,
+                                      SlugResource)
 from flamaster.core.utils import jsonify_status_code, round_decimal
 from flamaster.product import OrderStates
 
@@ -28,7 +29,7 @@ __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
 
 
 @api_resource(bp, 'categories', {'id': int})
-class CategoryResource(ModelResource):
+class CategoryResource(SlugResource):
 
     model = Category
 
