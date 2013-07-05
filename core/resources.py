@@ -247,7 +247,7 @@ class MongoResource(ModelResource):
         return items, paging['count'], paging['last_page'], page_size
 
 
-class SlugMixinResource(ModelResource):
+class SlugResource(ModelResource):
     def post(self):
         status = http.CREATED
         data = request.json or abort(http.BAD_REQUEST)
