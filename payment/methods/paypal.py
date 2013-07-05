@@ -67,7 +67,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         # include description for items added to cart
         request_params.update(self.__prepare_cart_items())
-        print "Paypal request params", request_params
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
