@@ -67,6 +67,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         # include description for items added to cart
         request_params.update(self.__prepare_cart_items())
+        print "Paypal request params", request_params
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
@@ -86,16 +87,16 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
     def __prepare_cart_items(self):
         cart_items_request_params = {}
-        tax = current_app.config['SHOPS'][current_app.config['SHOP_id']]['tax']
+        tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
         for idx, item in enumerate(self.order.goods):
             product = BaseProduct.objects(pk=item.product_id).first()
             cart_items_request_params.update({
-                'L_PAYMENTREQUEST_0_ITEMCATEGORY{idx}': 'Digital',
-                'L_PAYMENTREQUEST_0_TAXAMT{idx}': Decimal(tax),
-                'L_PAYMENTREQUEST_0_QTY{idx}': item.amount,
-                'L_PAYMENTREQUEST_0_AMT{idx}': item.price,
-                'L_PAYMENTREQUEST_0_NAME{idx}': item.details_verbose,
-                'L_PAYMENTREQUEST_0_DESC{idx}': product.name,
+                'L_PAYMENTREQUEST_0_ITEMCATEGORY{}'.format(idx): 'Digital',
+                'L_PAYMENTREQUEST_0_TAXAMT{}'.format(idx): Decimal(tax),
+                'L_PAYMENTREQUEST_0_QTY{}'.format(idx): item.amount,
+                'L_PAYMENTREQUEST_0_AMT{}'.format(idx): item.price,
+                'L_PAYMENTREQUEST_0_NAME{}'.format(idx): item.details_verbose,
+                'L_PAYMENTREQUEST_0_DESC{}'.format(idx): product.name,
             })
         return cart_items_request_params
 
