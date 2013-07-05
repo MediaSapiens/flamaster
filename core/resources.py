@@ -7,7 +7,9 @@ from flask.views import MethodView
 
 
 from . import http
-from .utils import jsonify_status_code
+from .utils import jsonify_status_code, slugify
+
+import re
 
 
 class Resource(MethodView):
@@ -243,3 +245,66 @@ class MongoResource(ModelResource):
         paging = self._prepare_pagination(page, page_size, **kwargs)
         items = paging['objects'].limit(page_size).skip(paging['offset'])
         return items, paging['count'], paging['last_page'], page_size
+
+
+class SlugMixinResource(ModelResource):
+    def post(self):
+        status = http.CREATED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.validation.check(data)
+            if 'name' in data:
+                data.update({'slug': slugify(data['name'])})
+            elif 'title' in data:
+                data.update({'slug': slugify(data['title'])})
+            instance = self.model.create(**data)
+            response = self.serialize(instance)
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
+    def put(self, id):
+        status = http.ACCEPTED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.clean(data)
+            instance = self.get_object(id)
+
+            if 'slug' in data:
+                error = self.slug_validator(instance, data['slug'])
+                if error is not None:
+                    return error
+
+            instance.update(with_reload=True, **data)
+            response = self.serialize(instance)
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
+    def slug_is_unique(self, instance, slug):
+        result = self.model.query.filter(self.model._slug == slug,
+                                         self.model.id != instance.id)
+        if result.all():
+            return False
+        else:
+            return True
+
+    def slug_validator(self, instance, slug):
+        response = None
+        if not self.slug_is_unique(instance, slug):
+            response = {'slug': 'Slug is not unique'}
+
+        prog = re.compile('^[a-z,0-9,-]*$', flags=re.I)
+
+        if not prog.match(slug):
+            response = {'slug': 'Slug contains invalid characters'}
+
+        if response is not None:
+            status = http.BAD_REQUEST
+            return jsonify_status_code(response, status)
+        else:
+            return None
