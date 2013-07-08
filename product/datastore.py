@@ -86,6 +86,18 @@ class OrderDatastore(AbstractDatastore):
         method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
         return method.init_payment()
 
+    def create_without_payment(self, customer_id, **kwargs):
+        goods, kwargs = self.__collect_data(customer_id, **kwargs)
+
+        order = self.order_model.create(**kwargs)
+
+        # Commit manipulation on goods
+        db.session.commit()
+
+        # Send signal on order creation
+        order_created.send(order)
+        return order
+
     def __prepare_address(self, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']
         address_dict = address_instance.as_dict(exclude=exclude_fields)
