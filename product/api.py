@@ -14,6 +14,8 @@ from flamaster.core.resources import (ModelResource, MongoResource,
 from flamaster.core.utils import jsonify_status_code, round_decimal
 from flamaster.product import OrderStates
 
+from werkzeug.exceptions import BadRequest
+
 from . import product as bp
 from . import order_states_i18n
 from .helpers import resolve_parent
@@ -257,6 +259,24 @@ class OrderResource(ModelResource):
 
         if state == 'not_null':
             filter_args.append(~(self.model.state == OrderStates.created))
+
+
+        if 'o' in request.args:
+
+            order_map = {'created_at': Order.created_at,
+                         'id': Order.id}
+
+            try:
+                order_field = order_map[request.args['o']]
+            except KeyError, e:
+                raise BadRequest(u"Unsupported attribute value: o=%s" % e)
+
+            ot = request.args.get('ot', 'asc')
+            if ot == 'desc':
+                order_field = order_field.desc()
+
+            return self.model.query.filter_by(**self.applied_filter_by)\
+                .filter(*filter_args).order_by(order_field)
 
         return self.model.query.filter_by(**self.applied_filter_by)\
                 .filter(*filter_args)
