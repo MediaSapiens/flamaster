@@ -279,10 +279,9 @@ class OrderResource(ModelResource):
 
         goods = instance.goods.all()
         if goods:
-            vats = [c.product.get_vat().calculate(c.product.price) for c in goods]
+            vats = [g.product.get_vat().calculate(g.product.price, g.amount) for g in goods]
             total_vat = round_decimal(Decimal(sum(vats)))
-            total_price = round_decimal(Decimal(sum([g.product.price for g in goods])))
-            total_price_net = round_decimal(Decimal(sum([g.product.price * g.amount for g in goods])))
+            total_net = round_decimal(Decimal(sum([g.product.price * g.amount for g in goods])))
         else:
             total_vat = Decimal(0)
 
@@ -301,8 +300,7 @@ class OrderResource(ModelResource):
             'goods': goods,
             'goods_count': len(goods),
             'total_vat': total_vat,
-            'total_price_gross': total_price,
-            'total_price_net': total_price_net
+            'total_net': total_net
         })
 
         if instance.billing_country_id:
