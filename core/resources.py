@@ -253,11 +253,11 @@ class SlugResource(ModelResource):
         data = request.json or abort(http.BAD_REQUEST)
 
         try:
-            data = self.validation.check(data)
             if 'name' in data:
                 data.update({'slug': slugify(data['name'])})
             elif 'title' in data:
                 data.update({'slug': slugify(data['title'])})
+            data = self.validation.check(data)
             instance = self.model.create(**data)
             response = self.serialize(instance)
         except t.DataError as e:
