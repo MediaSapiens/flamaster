@@ -42,7 +42,7 @@ class CategoryResource(SlugResource):
         'parent_id': t.Int | t.Null,
         'order': t.Int,
         'image': t.String(allow_blank=True),
-        'slug': t.String(allow_blank=True),
+        'slug': t.String,
         'shop_id': t.Int,
         t.Key('show_on_homepage', default=False): t.Bool,
         'is_visible': t.Bool,
