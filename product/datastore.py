@@ -90,7 +90,7 @@ class OrderDatastore(AbstractDatastore):
         state = kwargs.get('state')
         goods, kwargs = self.__collect_data(customer_id, **kwargs)
         if state:
-            kwargs.update({'state': state})
+            kwargs['state'] = state
 
         order = self.order_model.create(**kwargs)
 
