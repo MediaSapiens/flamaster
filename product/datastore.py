@@ -87,7 +87,10 @@ class OrderDatastore(AbstractDatastore):
         return method.init_payment()
 
     def create_without_payment(self, customer_id, **kwargs):
+        state = kwargs.get('state')
         goods, kwargs = self.__collect_data(customer_id, **kwargs)
+        if state:
+            kwargs.update({'state': state})
 
         order = self.order_model.create(**kwargs)
 
