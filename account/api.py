@@ -234,6 +234,10 @@ class ProfileResource(ModelResource):
             include.append('email')
 
         response = instance.as_dict(include, exclude)
+
+        if instance.customer:
+            response['shop_id'] = instance.customer.shop_id
+
         response.update(self.__add_address_prefix(instance.billing_address,
                                                                 'billing'))
         response.update(self.__add_address_prefix(instance.delivery_address,
