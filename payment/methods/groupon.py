@@ -21,7 +21,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         'deal': t.Int,
         'voucher': t.String,
         'code': t.String,
-        'variant': t.MongoId
+        'variant': t.MongoId >> (lambda v: str(v))
     }).ignore_extra('*')
 
     validate_path = 'merchant/redemptions/validate'
