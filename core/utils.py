@@ -2,14 +2,17 @@
 import re
 import types
 import uuid
+
 from bson import ObjectId
 from datetime import datetime
-
 from flask import current_app, render_template, json
 from importlib import import_module
+from time import time
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
+
+from werkzeug.datastructures import Headers
 from werkzeug.utils import import_string, cached_property
 
 
@@ -211,3 +214,26 @@ class AttrDict(dict):
 
         else:
             dict.__setattr__(self, key, value)
+
+
+def x_accel_gridfs(file_field):
+    headers = Headers()
+    headers['X-Accel-Redirect'] = "/img/{}".format(file_field.grid_id)
+    mimetype = file_field.contentType
+
+    rv = current_app.response_class(None, mimetype=mimetype, headers=headers,
+                                    direct_passthrough=True)
+    cache_timeout = current_app.current_app.config['SEND_FILE_MAX_AGE_DEFAULT']
+
+    rv.cache_control.max_age = cache_timeout
+    rv.cache_control.public = True
+    rv.expires = int(time() + cache_timeout)
+    rv.last_modified = file_field.uploadDate
+
+    rv.set_etag('flamaster-{}-{}-{}'.format(
+        file_field.uploadDate,
+        file_field.length,
+        file_field.grid_id
+    ))
+
+    return rv
