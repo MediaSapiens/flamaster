@@ -91,7 +91,7 @@ class Thumbnail(object):
         """
         size = source_image.size
         ratio = float(size[0]) / size[1]
-        geometry = self.get_geometry(geometry_string, ratio)
+        geometry = self.__parse_geometry(geometry_string, ratio)
 
         thumbnail = self.transform(source_image, geometry)
         return self.save(thumbnail, thumbnail_name)
