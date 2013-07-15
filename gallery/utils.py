@@ -56,10 +56,9 @@ class SizeParseError(Exception):
 class Thumbnail(object):
 
     def __init__(self, img_name, fp, geometry_string, options_string):
-        """
-        Returns fullpath for thumbnail with geometry and
-        options given. First it will try to find the thumbnail
-        in filesystem, secondly it will create it.
+        """ Returns fullpath for thumbnail with geometry and
+            options given. First it will try to find the thumbnail
+            in filesystem, secondly it will create it.
         """
         self.options = self.configure_options(options_string)
         self.image_name = img_name
@@ -70,8 +69,8 @@ class Thumbnail(object):
             self.thumbnail = self.create(image, geometry_string, thumbnail_name)
 
     def get_name(self, geometry_string):
-        """Generates the thumbnail fullpath from a source image name,
-           a geometry string and options that passed into request
+        """ Generates the thumbnail fullpath from a source image name,
+            a geometry string and options that passed into request
         """
         salt = '|'.join((self.image_name, geometry_string,
                          json.dumps(sorted(self.options.items()))))
@@ -97,8 +96,7 @@ class Thumbnail(object):
         return self.save(thumbnail, thumbnail_name)
 
     def transform(self, image, geometry):
-        """
-        Sets all options for the thumbnail
+        """ Sets all options for the thumbnail
         """
         image = self.set_orientation(image, self.options['ORIENTATION'])
         image = self.set_colorspace(image, self.options['COLORSPACE'])
@@ -107,10 +105,9 @@ class Thumbnail(object):
 
         return image
 
-
     def save(self, thumbnail, thumbnail_name):
         """ Saves the thumbnail with format and quality options.
-           Returns thumbnail fullpath
+            Returns thumbnail fullpath
         """
         params = {
             'FORMAT': self.options['FORMAT'],
@@ -132,8 +129,7 @@ class Thumbnail(object):
         return thumbnail_name
 
     def __parse_geometry(self, geometry_string, ratio=None):
-        """
-        Parses a size string syntax and returns a (width, height) tuple
+        """ Parses a size string syntax and returns a (width, height) tuple
         """
         try:
             width = height = int(geometry_string)
@@ -205,9 +201,9 @@ class Thumbnail(object):
         return map(self.__parse_offset, img_crop, img_size, size)
 
     def __parse_options(self, options_string):
-        """Parses custom options string,
-           like 'format=JPEG, colorspace=GRAY'
-           into options dictionary.
+        """ Parses custom options string,
+            like 'format=JPEG, colorspace=GRAY'
+            into options dictionary.
         """
         options = re.findall(kw_pattern, options_string)
         noresolve = {u'True': True, u'False': False, u'None': None}
@@ -217,7 +213,7 @@ class Thumbnail(object):
         return options
 
     def configure_options(self, options_string):
-        """Configures options and default options
+        """ Configures options and default options
         """
         custom_options = self.__parse_options(options_string)
         options = default_options.copy()
@@ -227,8 +223,8 @@ class Thumbnail(object):
         return options
 
     def set_orientation(self, image, orientation):
-        """Sets the thumbnail orientation witch depends on
-           image metadata
+        """ Sets the thumbnail orientation witch depends on
+            image metadata
         """
         if orientation:
             try:
@@ -254,8 +250,8 @@ class Thumbnail(object):
         return image
 
     def set_colorspace(self, image, colorspace):
-        """Translates the thumbnail colorspace, supports only
-           'RGB' and 'Grayscale' formats
+        """ Translates the thumbnail colorspace, supports only
+            'RGB' and 'Grayscale' formats
         """
         if colorspace == 'RGB':
             if image.mode == 'RGBA':
@@ -271,8 +267,8 @@ class Thumbnail(object):
         return image
 
     def set_scale(self, image, geometry, options):
-        """Resizes thumbnail by an upscale option and
-           a crop value
+        """ Resizes thumbnail by an upscale option and
+            a crop value
         """
         img_size = map(float, image.size)
         # calculate scaling factor
@@ -282,14 +278,13 @@ class Thumbnail(object):
         image = image.resize(image_size, resample=Image.ANTIALIAS)
         return image
 
-
     def set_crop(self, image, geometry, crop):
-        """Returns a rectangular region from the current image
+        """ Returns a rectangular region from the current image
         """
         if not crop or crop == 'noop':
             return image
         img_size = image.size
         x_offset, y_offset = self.__parse_crop(img_size, crop, geometry)
 
-        return image.crop((x_offset, y_offset,
-                               geometry[0] + x_offset, geometry[0] + y_offset))
+        return image.crop((x_offset, y_offset, geometry[0] + x_offset,
+                           geometry[0] + y_offset))
