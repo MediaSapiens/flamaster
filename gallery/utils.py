@@ -8,8 +8,11 @@ from flask import current_app
 from PIL import Image
 
 from . import settings
+import sys
+from .models import Image as ImageModel
 
 
+PY3 = sys.version_info[0] == 3
 EXTENSIONS = settings.EXTENSIONS
 DESTINATION = current_app.config.get('THUMBNAIL_DEST', settings.THUMBNAIL_DEST)
 
@@ -17,6 +20,15 @@ DESTINATION = current_app.config.get('THUMBNAIL_DEST', settings.THUMBNAIL_DEST)
 size_pattern = re.compile(r'^(\d+)?(?:x(\d+))?$')
 crop_pattern = re.compile(r'^(?P<value>\d+)(?P<unit>%|px)$')
 kw_pattern = re.compile(r'(?P<key>[\w]+)=(?P<value>[^,]+)')
+
+
+if PY3:
+    from io import BytesIO as StringIO
+else:
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
 
 
 def to_int(number):
@@ -62,11 +74,14 @@ class Thumbnail(object):
         """
         self.options = self.configure_options(options_string)
         self.image_name = img_name
+        self.image_type = fp.content_type
         thumbnail_name = self.get_name(geometry_string)
-        self.thumbnail = os.path.isfile(thumbnail_name) and thumbnail_name
-        if not self.thumbnail:
-            image = Image.open(fp)
+        image = Image.open(fp)
+
+        self.thumbnail = ImageModel.objects(name=thumbnail_name).first()
+        if self.thumbnail is None:
             self.thumbnail = self.create(image, geometry_string, thumbnail_name)
+
 
     def get_name(self, geometry_string):
         """ Generates the thumbnail fullpath from a source image name,
@@ -75,10 +90,11 @@ class Thumbnail(object):
         salt = '|'.join((self.image_name, geometry_string,
                          json.dumps(sorted(self.options.items()))))
         key = hashlib.md5(salt).hexdigest()
-        prefix = DESTINATION
+        # prefix = DESTINATION
         name = "{}.{}".format(key, EXTENSIONS[self.options['FORMAT']])
 
-        return os.path.join(prefix, key[:2], key[2:4], name)
+        # return os.path.join(prefix, key[:2], key[2:4], name)
+        return name
 
     def __to_int(self, number):
         if isinstance(number, float):
@@ -110,23 +126,21 @@ class Thumbnail(object):
             Returns thumbnail fullpath
         """
         params = {
-            'FORMAT': self.options['FORMAT'],
-            'QUALITY': self.options['QUALITY'],
-            'OPTIMIZE': 1
+            'format': self.options['FORMAT'],
+            'quality': self.options['QUALITY'],
+            'optimize': 1
         }
-        params['PROGRESSIVE'] = (params['FORMAT'] == 'JPEG')
-        path = os.path.dirname(thumbnail_name)
+        params['progressive'] = (params['format'] == 'JPEG')
 
-        if not os.path.exists(path):
-            os.makedirs(path)
 
+        io = StringIO()
         try:
-            thumbnail.save(thumbnail_name, **params)
+            thumbnail.save(io, **params)
         except IOError:
-            params.pop('OPTIMIZE')
-            thumbnail.save(thumbnail_name, **params)
-
-        return thumbnail_name
+            params.pop('optimize')
+            thumbnail.save(io, **params)
+        io.seek(0)
+        return ImageModel.create(io, self.image_type, name=thumbnail_name)
 
     def __parse_geometry(self, geometry_string, ratio=None):
         """ Parses a size string syntax and returns a (width, height) tuple

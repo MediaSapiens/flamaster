@@ -2,7 +2,7 @@
 import gridfs
 from bson import ObjectId
 
-from mongoengine.fields import FileField
+from mongoengine.fields import FileField, StringField
 
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -98,17 +98,18 @@ class Image(mongo.Document, DocumentMixin):
         actions
     """
     image = FileField(required=True)
+    name = StringField()
 
     @classmethod
-    def store(cls, image, content_type):
-        instance = cls()
+    def store(cls, image, content_type, **kwargs):
+        instance = cls(name=kwargs.get('name'))
         instance.image.put(image, content_type=content_type)
         instance.save()
         return instance
 
     @classmethod
     def create(cls, image, content_type, **kwargs):
-        return cls.store(image, content_type)
+        return cls.store(image, content_type, **kwargs)
 
     @classmethod
     def get(cls, id):
