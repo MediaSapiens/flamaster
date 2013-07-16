@@ -223,7 +223,7 @@ def x_accel_gridfs(file_field):
 
     rv = current_app.response_class(None, mimetype=mimetype, headers=headers,
                                     direct_passthrough=True)
-    cache_timeout = current_app.current_app.config['SEND_FILE_MAX_AGE_DEFAULT']
+    cache_timeout = current_app.config['SEND_FILE_MAX_AGE_DEFAULT']
 
     rv.cache_control.max_age = cache_timeout
     rv.cache_control.public = True
