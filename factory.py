@@ -136,9 +136,9 @@ def modify_headers(response):
     return response
 
 def close_session(response):
-    db = current_app.extensions.get('sqlalchemy')
-    if db is not None:
-        db.session.commit()
+    state = current_app.extensions.get('sqlalchemy')
+    if state is not None:
+        state.db.session.commit()
     return response
 
 def setup_session():
