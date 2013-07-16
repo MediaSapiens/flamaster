@@ -94,10 +94,15 @@ class SessionResource(Resource):
         return data_dict
 
     def _get_response(self, **kwargs):
+        if current_user.is_anonymous():
+            cuid = session.get('customer_id')
+        else:
+            cuid = current_user.customer.id
         response = {
             'id': session['id'],
             'is_anonymous': current_user.is_anonymous(),
-            'uid': session.get('user_id')
+            'uid': session.get('user_id'),
+            'cuid': cuid
         }
         response.update(kwargs)
         return response
