@@ -9,6 +9,7 @@ from mongoengine.base import ValidationError
 
 from . import http
 from flamaster.core.decorators import method_wrapper
+from flamaster.extensions import db
 from .utils import jsonify_status_code
 
 
@@ -191,6 +192,7 @@ class ModelResource(Resource):
         status = http.OK
         try:
             self.get_object(id).delete()
+            db.session.commit()
             response = {}
         except t.DataError as err:
             response, status = err.as_dict(), http.BAD_REQUEST
