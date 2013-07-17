@@ -11,6 +11,8 @@ from .signals import order_created
 
 import uuid
 
+from decimal import Decimal
+
 
 class OrderDatastore(AbstractDatastore):
     """ Class for manipulations with order model state
@@ -120,7 +122,7 @@ class CartDatastore(AbstractDatastore):
         return self.cart_model.query.filter_by(**kwargs)
 
     def get_price(self, carts_query):
-        return round_decimal(sum(map(lambda c: c.price * c.amount, carts_query)))
+        return round_decimal(Decimal(sum(map(lambda c: c.price * c.amount, carts_query))))
 
     def mark_ordered(self, carts_query, order):
         goods = self.find(customer=order.customer, is_ordered=False)
