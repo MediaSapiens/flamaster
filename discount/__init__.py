@@ -7,6 +7,5 @@ CATEGORY_CHOICE ='category'
 discount = Blueprint('discount', __name__, url_prefix='/discount')
 
 
-
 import api
 # import views

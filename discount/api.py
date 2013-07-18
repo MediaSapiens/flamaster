@@ -27,5 +27,3 @@ class DiscountResource(ModelResource):
         "discount": t.Int,
         "group_type":t.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE)
         }).ignore_extra('*')
-
-
