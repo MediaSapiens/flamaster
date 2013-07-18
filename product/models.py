@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from flask import current_app
 
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects import postgresql
 
 from flamaster.core import COUNTRY_CHOICES, lazy_cascade, db
 from flamaster.core.decorators import multilingual
@@ -110,6 +111,7 @@ class Category(db.Model, TreeNode, SlugMixin):
     category_type = db.Column(db.String, nullable=False, default='catalog')
     order = db.Column(db.Integer, default=0)
     image = db.Column(db.String(256), default='')
+    images = db.Column(postgresql.ARRAY(db.String(256)))
     is_deleted = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=True)
     is_visible_in_nav = db.Column(db.Boolean, default=True)
