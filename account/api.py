@@ -137,7 +137,9 @@ class ProfileResource(ModelResource):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
-            'phone': t.String,
+            'phone': t.String(allow_blank=True),
+            'fax': t.String(allow_blank=True),
+            'company': t.String(allow_blank=True),
             'role_id': t.Int,
             te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
             }).append(self._change_role(id)).make_optional('role_id'). \
@@ -149,7 +151,25 @@ class ProfileResource(ModelResource):
         """
         self.set_put_validation_dict(id)
 
-        return super(ProfileResource, self).put(id)
+        status = http.ACCEPTED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        if data.get('phone', '') is None:
+            data.pop('phone')
+        if data.get('fax', '') is None:
+            data.pop('fax')
+        if data.get('company', '') is None:
+            data.pop('company')
+
+        try:
+            data = self.clean(data)
+            instance = self.get_object(id).update(with_reload=True, **data)
+            response = self.serialize(instance)
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
 
     def _cmp_pwds(self, value):
         """ Password changing for user
