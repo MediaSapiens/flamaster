@@ -154,12 +154,8 @@ class ProfileResource(ModelResource):
         status = http.ACCEPTED
         data = request.json or abort(http.BAD_REQUEST)
 
-        if data.get('phone', '') is None:
-            data.pop('phone')
-        if data.get('fax', '') is None:
-            data.pop('fax')
-        if data.get('company', '') is None:
-            data.pop('company')
+        NULL_FIELDS = ['phone', 'fax', 'company']
+        data = self.__null_filter(NULL_FIELDS, data)
 
         try:
             data = self.clean(data)
@@ -170,6 +166,15 @@ class ProfileResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
+    def __null_filter(self, fields=[], data=None):
+        if data is None:
+            return None
+
+        _isnull = lambda field: data.get(field, '') is None
+        exclude = filter(_isnull, fields)
+        [data.pop(field) for field in exclude]
+
+        return data
 
     def _cmp_pwds(self, value):
         """ Password changing for user
