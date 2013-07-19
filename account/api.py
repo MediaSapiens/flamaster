@@ -6,7 +6,7 @@ from trafaret import extras as te
 from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, null_fields_filter
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
@@ -155,7 +155,7 @@ class ProfileResource(ModelResource):
         data = request.json or abort(http.BAD_REQUEST)
 
         NULL_FIELDS = ['phone', 'fax', 'company']
-        data = self.__null_filter(NULL_FIELDS, data)
+        data = null_fields_filter(NULL_FIELDS, data)
 
         try:
             data = self.clean(data)
@@ -166,15 +166,6 @@ class ProfileResource(ModelResource):
 
         return jsonify_status_code(response, status)
 
-    def __null_filter(self, fields=[], data=None):
-        if data is None:
-            return None
-
-        _isnull = lambda field: data.get(field, '') is None
-        exclude = filter(_isnull, fields)
-        [data.pop(field) for field in exclude]
-
-        return data
 
     def _cmp_pwds(self, value):
         """ Password changing for user
