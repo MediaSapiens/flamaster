@@ -17,7 +17,7 @@ class Discount(db.Model, CRUDMixin):
     group_type = db.Column(db.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, BASKET_CHOICE))
     date_from = db.Column(db.Date)
     date_to = db.Column(db.Date)
-    free_delivery = db.Cloumn(db.Boolean, default=False)
+    free_delivery = db.Column(db.Boolean, default=False)
     min_value = db.Column(db.Numeric(precision=18, scale=2))
 
 
