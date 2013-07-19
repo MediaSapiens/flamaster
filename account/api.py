@@ -6,7 +6,7 @@ from trafaret import extras as te
 from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, null_fields_filter
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
@@ -154,12 +154,8 @@ class ProfileResource(ModelResource):
         status = http.ACCEPTED
         data = request.json or abort(http.BAD_REQUEST)
 
-        if data.get('phone', '') is None:
-            data.pop('phone')
-        if data.get('fax', '') is None:
-            data.pop('fax')
-        if data.get('company', '') is None:
-            data.pop('company')
+        NULL_FIELDS = ['phone', 'fax', 'company']
+        data = null_fields_filter(NULL_FIELDS, data)
 
         try:
             data = self.clean(data)

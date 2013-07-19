@@ -207,3 +207,14 @@ def round_decimal(dec_value):
         raise Exception('Expected a decimal value')
     return dec_value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
+
+def null_fields_filter(fields=[], data=None):
+    if data is None:
+        return None
+
+    for field in fields:
+        if data.get(field, '') is None:
+            data.pop(field)
+
+    return data
+
