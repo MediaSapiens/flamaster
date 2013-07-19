@@ -9,7 +9,7 @@ from wimoto.utils.api import admin_role
 
 import trafaret as t
 
-from . import CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, discount
+from . import CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, BASKET_CHOICE, discount
 
 
 @api_resource(discount, 'groups', {'id': None})
@@ -25,5 +25,5 @@ class DiscountResource(ModelResource):
     validation = t.Dict({
         "group_name": t.String,
         "discount": t.Int,
-        "group_type":t.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE)
+        "group_type":t.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, BASKET_CHOICE)
         }).ignore_extra('*')
