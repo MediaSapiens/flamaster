@@ -19,3 +19,12 @@ class Discount(db.Model, CRUDMixin):
     date_to = db.Column(db.Date)
     free_delivery = db.Cloumn(db.Boolean, default=False)
     min_value = db.Column(db.Numeric(precision=18, scale=2))
+
+
+class Discount_x_Object(db.Model, CRUDMixin):
+    """
+    model m-m between discount and user, product, category
+    """
+    discount_id = db.Column(db.Integer())
+    object_id = db.Column(db.Integer())
+
