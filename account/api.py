@@ -137,7 +137,6 @@ class ProfileResource(ModelResource):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
-            'phone': t.String,
             'phone': t.String(allow_blank=True),
             'fax': t.String(allow_blank=True),
             'company': t.String(allow_blank=True),
