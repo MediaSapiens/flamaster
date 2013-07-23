@@ -302,7 +302,7 @@ class OrderResource(ModelResource):
         if goods:
             vats = [g.product.get_vat().calculate(g.product.price, g.amount) for g in goods]
             total_vat = round_decimal(Decimal(sum(vats)))
-            total_net = round_decimal(Decimal(sum([g.product.price * g.amount for g in goods])))
+            total_net = round_decimal(instance.goods_price - total_vat)
         else:
             total_vat = Decimal(0)
 
