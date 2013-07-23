@@ -2,14 +2,13 @@ from __future__ import absolute_import
 import re
 import json
 import hashlib
-import os
 
 from flask import current_app
 from PIL import Image
 
 from . import settings
 import sys
-from .models import Image as ImageModel
+from .models import FileModel as ImageModel
 
 
 PY3 = sys.version_info[0] == 3

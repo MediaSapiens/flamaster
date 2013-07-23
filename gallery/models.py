@@ -12,7 +12,7 @@ from flamaster.core.models import CRUDMixin
 from flamaster.core.documents import DocumentMixin
 from flamaster.extensions import db, mongo
 
-__all__ = ['Image', 'Album']
+__all__ = ['FileModel', 'Album']
 
 
 class GalleryMixin(CRUDMixin):
@@ -93,7 +93,7 @@ class Album(db.Model, GalleryMixin):
         #     kwargs['album_id'] = default_album
 
 
-class Image(mongo.Document, DocumentMixin):
+class FileModel(mongo.Document, DocumentMixin):
     """ Wrapper around MongoDB gridfs session and file storage/retrieve
         actions
     """

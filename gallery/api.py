@@ -14,7 +14,7 @@ from flask.ext.security import login_required, current_user
 
 from sqlalchemy import or_
 
-from .models import Image, Album
+from .models import FileModel, Album
 
 
 def get_access_type(data_dict):
@@ -25,7 +25,7 @@ def get_access_type(data_dict):
 
 
 class ImageResource(ModelResource):
-    model = Image
+    model = FileModel
     mime_re = re.compile('data\:(\w+\/\w+)')
     validation = t.Dict({
         'image': t.String,
