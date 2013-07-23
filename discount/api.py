@@ -17,7 +17,7 @@ from . import (CATEGORY_CHOICE,
                CURRENCY_CHOICE,
                discount)
 
-
+from flask import request
 @api_resource(discount, 'groups', {'id': None})
 class DiscountResource(ModelResource):
     model = Discount
@@ -54,3 +54,11 @@ class DiscountUserResource(ModelResource):
     validation = t.Dict({
         "discount_id": t.Int,
         "user_id":t.Int})
+
+    def get_objects(self, **kwargs):
+        if 'discount_id' in request.args:
+            kwargs['discount_id'] = request.args['discount_id']
+        if 'user_id' in request.args:
+            kwargs['user_id'] = request.args['user_id']
+        return self.model.query.filter_by(**kwargs)
+
