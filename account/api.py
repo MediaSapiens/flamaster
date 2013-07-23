@@ -6,7 +6,7 @@ from trafaret import extras as te
 from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, null_fields_filter
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
@@ -137,7 +137,9 @@ class ProfileResource(ModelResource):
         self.validation = t.Dict({
             'first_name': t.String,
             'last_name': t.String,
-            'phone': t.String,
+            'phone': t.String(allow_blank=True),
+            'fax': t.String(allow_blank=True),
+            'company': t.String(allow_blank=True),
             'role_id': t.Int,
             te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
             }).append(self._change_role(id)).make_optional('role_id'). \
@@ -149,7 +151,21 @@ class ProfileResource(ModelResource):
         """
         self.set_put_validation_dict(id)
 
-        return super(ProfileResource, self).put(id)
+        status = http.ACCEPTED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        NULL_FIELDS = ['phone', 'fax', 'company']
+        data = null_fields_filter(NULL_FIELDS, data)
+
+        try:
+            data = self.clean(data)
+            instance = self.get_object(id).update(with_reload=True, **data)
+            response = self.serialize(instance)
+        except t.DataError as e:
+            status, response = http.BAD_REQUEST, e.as_dict()
+
+        return jsonify_status_code(response, status)
+
 
     def _cmp_pwds(self, value):
         """ Password changing for user
