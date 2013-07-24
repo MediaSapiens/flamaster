@@ -1,6 +1,8 @@
 from flask.ext.security import roles_required
 from flask import current_app
 
+from sqlalchemy import or_
+
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
@@ -49,10 +51,19 @@ class DiscountResource(ModelResource):
         """
         query = self.model.query.filter_by(**kwargs)
 
+        if 'q' in request.args and request.args['q']:
+            q = request.args['q']
+
+            search_filters = Discount.group_name.like(q)
+
+            query = query.filter(search_filters)
+
         if 'o' in request.args:
 
             order_map = {'group_name': Discount.group_name,
-                         'group_type': Discount.group_type}
+                         'group_type': Discount.group_type,
+                         'amount': Discount.amount,
+                         'discount_type':Discount.discount_type}
 
             try:
                 order_field = order_map[request.args['o']]
@@ -111,7 +122,37 @@ class DiscountCustomerResource(ModelResource):
             kwargs['discount_id'] = request.args['discount_id']
         if 'customer_id' in request.args:
             kwargs['customer_id'] = request.args['customer_id']
-        res = self.model.query.filter_by(**kwargs)
 
-        return res
+        query = self.model.query.filter_by(**kwargs)
+
+        query = query.join(Customer)
+
+        if 'q' in request.args and request.args['q']:
+            q = request.args['q']
+
+            search_filters = (Customer.email.like(q),
+                              Customer.first_name.like(q),
+                              Customer.last_name.like(q))
+
+            query = query.filter(or_(*search_filters))
+
+        if 'o' in request.args:
+
+            order_map = {'first_name': Customer.first_name,
+                         'last_name': Customer.last_name,
+                         'email': Customer.email}
+
+            try:
+                order_field = order_map[request.args['o']]
+            except KeyError, e:
+                raise BadRequest(u"Unsupported attribute value: o=%s" % e)
+
+            ot = request.args.get('ot', 'asc')
+            if ot == 'desc':
+                order_field = order_field.desc()
+
+            query = query.order_by(order_field)
+
+        return query
+
 
