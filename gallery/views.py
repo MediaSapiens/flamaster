@@ -5,7 +5,7 @@ from flask import abort
 
 from flamaster.core import http
 from flamaster.core.utils import x_accel_gridfs
-from flamaster.gallery.models import FileModel
+from flamaster.core.documents import FileModel
 
 from .utils import Thumbnail
 

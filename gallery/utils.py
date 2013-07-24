@@ -8,7 +8,7 @@ from PIL import Image
 
 from . import settings
 import sys
-from .models import FileModel as ImageModel
+from flamaster.core.documents import FileModel
 
 
 PY3 = sys.version_info[0] == 3
@@ -77,7 +77,7 @@ class Thumbnail(object):
         thumbnail_name = self.get_name(geometry_string)
         image = Image.open(fp)
 
-        self.thumbnail = ImageModel.objects(name=thumbnail_name).first()
+        self.thumbnail = FileModel.find_one(name=thumbnail_name)
         if self.thumbnail is None:
             self.thumbnail = self.create(image, geometry_string, thumbnail_name)
 
@@ -139,7 +139,7 @@ class Thumbnail(object):
             params.pop('optimize')
             thumbnail.save(io, **params)
         io.seek(0)
-        return ImageModel.create(io, self.image_type, name=thumbnail_name)
+        return FileModel.create(io, self.image_type, name=thumbnail_name)
 
     def __parse_geometry(self, geometry_string, ratio=None):
         """ Parses a size string syntax and returns a (width, height) tuple
