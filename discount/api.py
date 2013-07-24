@@ -47,7 +47,7 @@ class DiscountResource(ModelResource):
         "shop_id": t.Int,
         t.Key('free_delivery', default=False): t.Bool,
         "min_value": t.Float
-        }).ignore_extra('*').make_optional("date_from", "date_to")
+        }).ignore_extra('*').make_optional("date_from", "date_to", "min_value")
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
