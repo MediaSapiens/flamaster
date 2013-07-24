@@ -5,6 +5,7 @@ import re
 import trafaret as t
 
 from flamaster.core import http
+from flamaster.core.documents import FileModel
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 
@@ -14,7 +15,7 @@ from flask.ext.security import login_required, current_user
 
 from sqlalchemy import or_
 
-from .models import FileModel, Album
+from .models import Album
 
 
 def get_access_type(data_dict):
