@@ -1,13 +1,11 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
-# from bson.errors import InvalidId
 from collections import Mapping
-from flask import current_app
 from flask.ext.mail import Message
-from flask.ext.mongoengine import Document
-from flamaster.extensions import mail
 
-from mongoengine import StringField, ListField, EmailField
+from flamaster.extensions import mail, mongo
+
+from mongoengine import StringField, ListField, EmailField, FileField
 
 from .decorators import classproperty
 from .utils import plural_underscored
@@ -44,7 +42,7 @@ class BaseMixin(object):
 
     def update(self, **kwargs):
         instance = self._setattrs(**kwargs)
-        if isinstance(self, Document):
+        if isinstance(self, mongo.Document):
             return instance.save()
         else:
             return instance
@@ -84,7 +82,7 @@ class DocumentMixin(BaseMixin):
         }
 
 
-class StoredMail(DocumentMixin, Document):
+class StoredMail(DocumentMixin, mongo.Document):
     subject = StringField(required=True)
     recipients = ListField(EmailField())
     attachments = ListField()
@@ -95,8 +93,50 @@ class StoredMail(DocumentMixin, Document):
         msg = Message(self.subject, recipients=list(self.recipients),
                       body=self.text_body, html=self.html_body)
         if self.attachments:
-            for file_name, file_type, file_path in self.attachments:
-                with current_app.open_resource(file_path) as fp:
-                    msg.attach(file_name, file_type, fp.read())
+            for file_id in self.attachments:
+                file_instance = FileModel.find_one(id=file_id)
+                msg.attach(file_instance.name,
+                           file_instance.image.contentType,
+                           file_instance.image.read()
+                )
+
         mail.send(msg)
         self.delete()
+
+
+class FileModel(mongo.Document, DocumentMixin):
+    """ Wrapper around MongoDB gridfs session and file storage/retrieve
+        actions
+    """
+    image = FileField(required=True)
+    name = StringField(unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+    @classmethod
+    def store(cls, image, content_type, **kwargs):
+        instance = cls(name=kwargs.get('name'))
+        instance.image.put(image, content_type=content_type)
+        instance.save()
+        return instance
+
+    @classmethod
+    def create(cls, image, content_type, **kwargs):
+        return cls.store(image, content_type, **kwargs)
+
+    @classmethod
+    def get(cls, id):
+        """ Get mognodb stored file by its unique identifier
+        """
+        instance = cls.objects(pk=id).get_or_404()
+        return instance.image
+
+    @classmethod
+    def find_one(cls, **kwargs):
+        return cls.objects(**kwargs).first()
+
+    def get_file(self):
+        """ Return file-like object bound to this class from the gridfs storage
+        """
+        return self.image

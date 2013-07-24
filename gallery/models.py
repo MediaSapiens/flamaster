@@ -1,16 +1,10 @@
 # encoding: utf-8
-import gridfs
-from bson import ObjectId
-
-from mongoengine.fields import FileField, StringField
-
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
 from flamaster.core.models import CRUDMixin
-from flamaster.core.documents import DocumentMixin
-from flamaster.extensions import db, mongo
+from flamaster.extensions import db
 
 __all__ = ['FileModel', 'Album']
 
@@ -93,39 +87,3 @@ class Album(db.Model, GalleryMixin):
         #     kwargs['album_id'] = default_album
 
 
-class FileModel(mongo.Document, DocumentMixin):
-    """ Wrapper around MongoDB gridfs session and file storage/retrieve
-        actions
-    """
-    image = FileField(required=True)
-    name = StringField(unique=True)
-
-    def __unicode__(self):
-        return self.name
-
-    @classmethod
-    def store(cls, image, content_type, **kwargs):
-        instance = cls(name=kwargs.get('name'))
-        instance.image.put(image, content_type=content_type)
-        instance.save()
-        return instance
-
-    @classmethod
-    def create(cls, image, content_type, **kwargs):
-        return cls.store(image, content_type, **kwargs)
-
-    @classmethod
-    def get(cls, id):
-        """ Get mognodb stored file by its unique identifier
-        """
-        instance = cls.objects(pk=id).get_or_404()
-        return instance.image
-
-    @classmethod
-    def find_one(cls, **kwargs):
-        return cls.objects(**kwargs).first()
-
-    def get_file(self):
-        """ Return file-like object bound to this class from the gridfs storage
-        """
-        return self.image
