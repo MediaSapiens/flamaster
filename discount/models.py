@@ -3,7 +3,7 @@ from flamaster.core.models import CRUDMixin
 from . import(CATEGORY_CHOICE,
               USER_CHOICE,
               PRODUCT_CHOICE,
-              BASKET_CHOICE,
+              CART_CHOICE,
               PERCENT_CHOICE,
               CURRENCY_CHOICE)
 
@@ -23,18 +23,19 @@ class Discount(db.Model, CRUDMixin):
     group_name = db.Column(db.String(255))
     discount_type = db.Column(db.Enum(PERCENT_CHOICE, CURRENCY_CHOICE))
     amount = db.Column(db.Numeric(precision=18, scale=2))
-    group_type = db.Column(db.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, BASKET_CHOICE))
+    group_type = db.Column(db.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, CART_CHOICE))
     date_from = db.Column(db.Date)
     date_to = db.Column(db.Date)
-    shop_id = db.Column(db.Integer())
+    shop_id = db.Column(db.Integer(), db.ForeignKey('shops.id'))
     free_delivery = db.Column(db.Boolean, default=False)
     min_value = db.Column(db.Numeric(precision=18, scale=2))
 
 
-class Discount_x_User(db.Model, CRUDMixin):
+class Discount_x_Customer(db.Model, CRUDMixin):
     """
-    model m-m between discount and user, product, category
+    model m-m between discount and customer
     """
-    discount_id = db.Column(db.Integer())
-    user_id = db.Column(db.Integer())
+    discount_id = db.Column(db.Integer(), db.ForeignKey('discounts.id'))
+    customer_id = db.Column(db.Integer(), db.ForeignKey('customers.id'))
+
 

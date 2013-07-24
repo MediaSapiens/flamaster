@@ -1,18 +1,22 @@
 from flask.ext.security import roles_required
+from flask import current_app
 
 from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
-
-from flamaster.discount.models import Discount, Discount_x_User
+from flamaster.core.utils import jsonify_status_code
+from flamaster.account.models import Customer
+from flamaster.account.api import CustomerResource
+from flamaster.discount.models import Discount, Discount_x_Customer
 
 from wimoto.utils.api import admin_role
+from werkzeug.exceptions import BadRequest
 
 import trafaret as t
 
 from . import (CATEGORY_CHOICE,
                USER_CHOICE,
                PRODUCT_CHOICE,
-               BASKET_CHOICE,
+               CART_CHOICE,
                PERCENT_CHOICE,
                CURRENCY_CHOICE,
                discount)
@@ -32,7 +36,7 @@ class DiscountResource(ModelResource):
         "group_name": t.String,
         "discount_type": t.Enum(CURRENCY_CHOICE, PERCENT_CHOICE),
         "amount":t.Float,
-        "group_type": t.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, BASKET_CHOICE),
+        "group_type": t.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, CART_CHOICE),
         "date_from": t.DateTime,
         "date_to": t.DateTime,
         "shop_id": t.Int,
@@ -40,10 +44,33 @@ class DiscountResource(ModelResource):
         "min_value": t.Float
         }).ignore_extra('*')
 
+    def get_objects(self, **kwargs):
+        """ Method for extraction object list query
+        """
+        query = self.model.query.filter_by(**kwargs)
 
-@api_resource(discount, 'user', {'id': None})
-class DiscountUserResource(ModelResource):
-    model = Discount_x_User
+        if 'o' in request.args:
+
+            order_map = {'group_name': Discount.group_name,
+                         'group_type': Discount.group_type}
+
+            try:
+                order_field = order_map[request.args['o']]
+            except KeyError, e:
+                raise BadRequest(u"Unsupported attribute value: o=%s" % e)
+
+            ot = request.args.get('ot', 'asc')
+            if ot == 'desc':
+                order_field = order_field.desc()
+
+            query = query.order_by(order_field)
+
+        return query
+
+
+@api_resource(discount, 'customer', {'id': None})
+class DiscountCustomerResource(ModelResource):
+    model = Discount_x_Customer
 
     method_decorators = {
         'post': [roles_required(admin_role)],
@@ -53,12 +80,38 @@ class DiscountUserResource(ModelResource):
 
     validation = t.Dict({
         "discount_id": t.Int,
-        "user_id":t.Int})
+        "customer_id":t.Int})
+
+    def get(self, id=None):
+        if id is None:
+            response = self.gen_list_response()
+            response = self.make_response(response)
+        else:
+            response = self.serialize(self.get_object(id))
+            if response:
+                response.update(self.get_params(response['customer_id']))
+        return jsonify_status_code(response)
+
+    def make_response(self, response):
+        for object in response["objects"]:
+            object.update(self.get_params(object['customer_id']))
+        return response
+
+    def get_params(self, customer_id):
+        result = dict()
+        customer = Customer.query.filter_by(id=customer_id).first().as_dict()
+        if customer:
+            result['first_name'] = customer['first_name']
+            result['last_name'] = customer['last_name']
+            result['email'] = customer['email']
+        return result
 
     def get_objects(self, **kwargs):
         if 'discount_id' in request.args:
             kwargs['discount_id'] = request.args['discount_id']
-        if 'user_id' in request.args:
-            kwargs['user_id'] = request.args['user_id']
-        return self.model.query.filter_by(**kwargs)
+        if 'customer_id' in request.args:
+            kwargs['customer_id'] = request.args['customer_id']
+        res = self.model.query.filter_by(**kwargs)
+
+        return res
 
