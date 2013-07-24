@@ -94,6 +94,7 @@ class AppFactory(object):
         app.errorhandler(http.NOT_FOUND)(show_page_not_found)
         app.errorhandler(http.INTERNAL_ERR)(show_internal_error)
         app.after_request(modify_headers)
+        app.after_request(close_session)
         app.extensions['babel'].localeselector(get_locale(app))
 
     def _add_logger(self, app):
@@ -134,6 +135,11 @@ def modify_headers(response):
     map(lambda h: response.headers.add(*h), current_app.config['HEADERS'])
     return response
 
+def close_session(response):
+    state = current_app.extensions.get('sqlalchemy')
+    if state is not None:
+        state.db.session.commit()
+    return response
 
 def setup_session():
     g.now = time.mktime(datetime.utcnow().timetuple())
