@@ -36,5 +36,6 @@ def change_type(enums=[], migrate_engine=None):
     group_type.create(discounts)
 
     # Insert data
+    data = filter(lambda row: row['group_type'] in enums, data)
     if data:
         migrate_engine.execute(discounts.insert(), data)
