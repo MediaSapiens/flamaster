@@ -100,6 +100,9 @@ class FileModel(mongo.Document, DocumentMixin):
     image = FileField(required=True)
     name = StringField(unique=True)
 
+    def __unicode__(self):
+        return self.name
+
     @classmethod
     def store(cls, image, content_type, **kwargs):
         instance = cls(name=kwargs.get('name'))
