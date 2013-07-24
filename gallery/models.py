@@ -118,6 +118,10 @@ class FileModel(mongo.Document, DocumentMixin):
         instance = cls.objects(pk=id).get_or_404()
         return instance.image
 
+    @classmethod
+    def find_one(cls, **kwargs):
+        return cls.objects(**kwargs).first()
+
     def get_file(self):
         """ Return file-like object bound to this class from the gridfs storage
         """
