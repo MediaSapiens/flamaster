@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from flask.ext.security import roles_required
 from flask import current_app
+from flask.ext.babel import lazy_gettext as _
 
 from sqlalchemy import or_
 
@@ -44,7 +47,7 @@ class DiscountResource(ModelResource):
         "shop_id": t.Int,
         t.Key('free_delivery', default=False): t.Bool,
         "min_value": t.Float
-        }).ignore_extra('*')
+        }).ignore_extra('*').make_optional("date_from", "date_to")
 
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
@@ -77,6 +80,31 @@ class DiscountResource(ModelResource):
             query = query.order_by(order_field)
 
         return query
+
+    def clean(self, data):
+        if 'date_from' in data:
+            date = data['date_from'].split('-')
+            count_date = len([x for x in date if x!=''])
+            if (count_date != 0 and count_date != 3):
+                raise t.DataError({'date_from': _('incorrect format')})
+            if (count_date == 0):
+                data.pop('date_from')
+
+        if 'date_to' in data:
+            date = data['date_to'].split('-')
+            count_date = len([x for x in date if x!=''])
+            if (count_date != 0 and count_date != 3):
+                raise t.DataError({'date_to': _('incorrect format')})
+            if (count_date == 0):
+                data.pop('date_to')
+
+        if ('date_from' in data) and ('date_to' in data):
+            if (datetime.strptime(data["date_from"], "%Y-%m-%d") >
+                    datetime.strptime(data["date_to"], "%Y-%m-%d")):
+                raise t.DataError({'date_to': _('range is incorrect')})
+        data = super(DiscountResource, self).clean(data)
+
+        return data
 
 
 @api_resource(discount, 'customer', {'id': None})
