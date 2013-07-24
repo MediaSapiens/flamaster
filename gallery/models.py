@@ -98,7 +98,7 @@ class FileModel(mongo.Document, DocumentMixin):
         actions
     """
     image = FileField(required=True)
-    name = StringField()
+    name = StringField(unique=True)
 
     @classmethod
     def store(cls, image, content_type, **kwargs):
