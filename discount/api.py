@@ -55,8 +55,9 @@ class DiscountResource(ModelResource):
         query = self.model.query.filter_by(**kwargs)
 
         if 'q' in request.args and request.args['q']:
-            q = request.args['q']
 
+            q = request.args['q']
+            q = "%"+q+"%"
             search_filters = Discount.group_name.like(q)
 
             query = query.filter(search_filters)
@@ -98,6 +99,7 @@ class DiscountResource(ModelResource):
             if (count_date == 0):
                 data.pop('date_to')
 
+        # TODO: change comparison
         if ('date_from' in data) and ('date_to' in data):
             if (datetime.strptime(data["date_from"], "%Y-%m-%d") >
                     datetime.strptime(data["date_to"], "%Y-%m-%d")):
@@ -157,7 +159,7 @@ class DiscountCustomerResource(ModelResource):
 
         if 'q' in request.args and request.args['q']:
             q = request.args['q']
-
+            q = "%"+q+"%"
             search_filters = (Customer.email.like(q),
                               Customer.first_name.like(q),
                               Customer.last_name.like(q))
