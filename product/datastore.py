@@ -36,7 +36,13 @@ class OrderDatastore(AbstractDatastore):
     def find(self, **kwargs):
         return self.order_model.query.filter_by(**kwargs)
 
-    def get_customer_discount(self, customer_id, **kwargs):
+    def __get_discount(self, item):
+        if item[0] == 'percent':
+            return self.__goods_price * (item[1] / 100)
+        else:
+            return item[1]
+
+    def get_customer_discount(self, customer_id, goods_price=0, **kwargs):
         now = datetime.now()
         items = db.session.query(Discount.discount_type, Discount.amount, Discount.free_delivery)\
             .filter(and_(self.customer_model.id == Discount_x_Customer.customer_id,
@@ -46,23 +52,23 @@ class OrderDatastore(AbstractDatastore):
                          Discount.date_to>=now)).all()
 
         if items:
-            for item in items:
-                res = 0
-                #select max value of the discount
-                #return res format (value, free_delivery)
-                pass
-            return res
+            items.sort(key=self.__get_discount)
+            max_discount = items[-1]
+            return (self.__get_discount(max_discount), max_discount[2])
         return (None, False)
 
-    def get_cart_discount(self):
+    def get_cart_discount(self, goods_price=0):
         now = datetime.now()
         items = db.session.query(Discount.discount_type, Discount.amount,
                                  Discount.free_delivery, Discount.min_value) \
             .filter(and_(Discount.date_from<=now,
                          Discount.date_to>=now,
                          Discount.group_type==CART_CHOICE,
+                         Discount.min_value<=goods_price,
                          )).all()
-    #     find minimal
+        if items:
+            return True
+        return False
 
     def __collect_data(self, customer_id, **kwargs):
         """ Create order instance from data came from the API
@@ -73,12 +79,20 @@ class OrderDatastore(AbstractDatastore):
 
         goods = self.goods_ds.find(customer=customer, is_ordered=False)
         goods_price = self.goods_ds.get_price(goods)
-        total_discount, delivery_free = self.get_customer_discount(customer_id, **kwargs)
         delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
         payment_fee = self.order_model.resolve_payment_fee(kwargs['payment_method'],
                                                            goods_price)
+        self.__goods_price = goods_price
+        total_discount, delivery_free = self.get_customer_discount(customer_id, goods_price, **kwargs)
+        if total_discount:
+            goods_price = round_decimal(goods_price - total_discount)
+
+        delivery_free = self.get_cart_discount(goods_price)
+        if delivery_free:
+            delivery_price = Decimal(0)
+
         total_price = round_decimal(goods_price + delivery_price + payment_fee)
 
         kwargs.update({
