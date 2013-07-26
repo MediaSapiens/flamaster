@@ -109,7 +109,7 @@ class FileModel(mongo.Document, DocumentMixin):
         actions
     """
     image = FileField(required=True)
-    name = StringField(unique=True)
+    name = StringField()
 
     def __unicode__(self):
         return self.name
