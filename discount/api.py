@@ -31,11 +31,11 @@ from flask import request
 class DiscountResource(ModelResource):
     model = Discount
 
-    # method_decorators = {
-    #     'post': [roles_required(admin_role)],
-    #     'put': [roles_required(admin_role)],
-    #     'delete': [roles_required(admin_role)]
-    # }
+    method_decorators = {
+        'post': [roles_required(admin_role)],
+        'put': [roles_required(admin_role)],
+        'delete': [roles_required(admin_role)]
+    }
 
     validation = t.Dict({
         "group_name": t.String,
@@ -113,11 +113,11 @@ class DiscountResource(ModelResource):
 class DiscountCustomerResource(ModelResource):
     model = Discount_x_Customer
 
-    # method_decorators = {
-    #     'post': [roles_required(admin_role)],
-    #     'put': [roles_required(admin_role)],
-    #     'delete': [roles_required(admin_role)]
-    # }
+    method_decorators = {
+        'post': [roles_required(admin_role)],
+        'put': [roles_required(admin_role)],
+        'delete': [roles_required(admin_role)]
+    }
 
     validation = t.Dict({
         "discount_id": t.Int,
