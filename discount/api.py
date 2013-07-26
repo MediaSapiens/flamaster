@@ -108,6 +108,10 @@ class DiscountResource(ModelResource):
 
         return data
 
+    def delete(self, id):
+        Discount_x_Customer.query.filter_by(discount_id=id).delete()
+        return super(DiscountResource, self).delete(id)
+
 
 @api_resource(discount, 'customer', {'id': None})
 class DiscountCustomerResource(ModelResource):
