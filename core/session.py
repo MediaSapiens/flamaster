@@ -55,8 +55,8 @@ class RedisSessionInterface(SessionInterface):
         redis_exp = self.get_redis_expiration_time(app, session)
         cookie_exp = self.get_expiration_time(app, session)
         val = self.serializer.dumps(dict(session))
-        redis.setex(self.prefix + session.sid, val,
-                         int(redis_exp.total_seconds()))
+        redis.setex(self.prefix + session.sid, int(redis_exp.total_seconds()),
+                    val)
         response.set_cookie(app.session_cookie_name, session.sid,
                             expires=cookie_exp, httponly=True,
                             domain=domain)
