@@ -1,8 +1,14 @@
 from __future__ import absolute_import
 
+from datetime import datetime
+
+from sqlalchemy import func, desc, or_, and_
+
 from flamaster.core import db
 from flamaster.core.datastore import AbstractDatastore
 from flamaster.core.utils import round_decimal
+from flamaster.discount.models import Discount_x_Customer, Discount
+from flamaster.discount import CART_CHOICE
 
 from operator import attrgetter
 
@@ -30,6 +36,34 @@ class OrderDatastore(AbstractDatastore):
     def find(self, **kwargs):
         return self.order_model.query.filter_by(**kwargs)
 
+    def get_customer_discount(self, customer_id, **kwargs):
+        now = datetime.now()
+        items = db.session.query(Discount.discount_type, Discount.amount, Discount.free_delivery)\
+            .filter(and_(self.customer_model.id == Discount_x_Customer.customer_id,
+                         Discount_x_Customer.discount_id == Discount.id,
+                         self.customer_model.id==customer_id,
+                         Discount.date_from<=now,
+                         Discount.date_to>=now)).all()
+
+        if items:
+            for item in items:
+                res = 0
+                #select max value of the discount
+                #return res format (value, free_delivery)
+                pass
+            return res
+        return (None, False)
+
+    def get_cart_discount(self):
+        now = datetime.now()
+        items = db.session.query(Discount.discount_type, Discount.amount,
+                                 Discount.free_delivery, Discount.min_value) \
+            .filter(and_(Discount.date_from<=now,
+                         Discount.date_to>=now,
+                         Discount.group_type==CART_CHOICE,
+                         )).all()
+    #     find minimal
+
     def __collect_data(self, customer_id, **kwargs):
         """ Create order instance from data came from the API
         """
@@ -39,6 +73,7 @@ class OrderDatastore(AbstractDatastore):
 
         goods = self.goods_ds.find(customer=customer, is_ordered=False)
         goods_price = self.goods_ds.get_price(goods)
+        total_discount, delivery_free = self.get_customer_discount(customer_id, **kwargs)
         delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
@@ -53,9 +88,10 @@ class OrderDatastore(AbstractDatastore):
             'goods_price': goods_price,
             'payment_fee': payment_fee,
             'total_price': total_price,
+            'total_discount': total_discount,
+            'delivery_free': delivery_free,
             'delivery_price': delivery_price,
-            'state': OrderStates.created
-        })
+            'state': OrderStates.created})
 
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))

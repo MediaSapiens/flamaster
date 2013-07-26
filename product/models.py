@@ -205,6 +205,7 @@ class Order(db.Model, CRUDMixin):
 
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_price = db.Column(db.Numeric(precision=18, scale=2))
+    total_discount = db.Column(db.Numeric(precision=18, scale=2))
 
     payment_details = db.Column(db.UnicodeText, unique=True)
     payment_method = db.Column(db.String, nullable=False, index=True)
@@ -215,6 +216,7 @@ class Order(db.Model, CRUDMixin):
     delivery_method = db.Column(db.String, nullable=False, index=True)
     delivery_price = db.Column(db.Numeric(precision=18, scale=2))
     delivery_vat = db.Column(db.Numeric(precision=18, scale=2), default=current_app.config['DELIVERY_VAT'])
+    delivery_free = db.Column(db.Boolean, default=False)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
                             nullable=False, index=True)
