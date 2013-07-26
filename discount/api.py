@@ -101,8 +101,16 @@ class DiscountResource(ModelResource):
 
         # TODO: change comparison
         if ('date_from' in data) and ('date_to' in data):
-            if (datetime.strptime(data["date_from"], "%Y-%m-%d") >
-                    datetime.strptime(data["date_to"], "%Y-%m-%d")):
+            try:
+                date_from = datetime.strptime(data["date_from"], "%Y-%m-%d")
+            except ValueError, err:
+                raise t.DataError({'date_from': err})
+            try:
+                date_to = datetime.strptime(data["date_to"], "%Y-%m-%d")
+            except ValueError, err:
+                raise t.DataError({'date_to': err})
+
+            if date_from > date_to:
                 raise t.DataError({'date_to': _('range is incorrect')})
         data = super(DiscountResource, self).clean(data)
 
