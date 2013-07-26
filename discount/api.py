@@ -10,7 +10,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import jsonify_status_code
 from flamaster.account.models import Customer
-from flamaster.account.api import CustomerResource
+# from flamaster.account.api import CustomerResource
 from flamaster.discount.models import Discount, Discount_x_Customer
 
 from wimoto.utils.api import admin_role
@@ -31,11 +31,11 @@ from flask import request
 class DiscountResource(ModelResource):
     model = Discount
 
-    method_decorators = {
-        'post': [roles_required(admin_role)],
-        'put': [roles_required(admin_role)],
-        'delete': [roles_required(admin_role)]
-    }
+    # method_decorators = {
+    #     'post': [roles_required(admin_role)],
+    #     'put': [roles_required(admin_role)],
+    #     'delete': [roles_required(admin_role)]
+    # }
 
     validation = t.Dict({
         "group_name": t.String,
@@ -113,11 +113,11 @@ class DiscountResource(ModelResource):
 class DiscountCustomerResource(ModelResource):
     model = Discount_x_Customer
 
-    method_decorators = {
-        'post': [roles_required(admin_role)],
-        'put': [roles_required(admin_role)],
-        'delete': [roles_required(admin_role)]
-    }
+    # method_decorators = {
+    #     'post': [roles_required(admin_role)],
+    #     'put': [roles_required(admin_role)],
+    #     'delete': [roles_required(admin_role)]
+    # }
 
     validation = t.Dict({
         "discount_id": t.Int,
