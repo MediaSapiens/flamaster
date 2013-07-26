@@ -104,11 +104,11 @@ class DiscountResource(ModelResource):
             try:
                 date_from = datetime.strptime(data["date_from"], "%Y-%m-%d")
             except ValueError, err:
-                raise t.DataError({'date_from': err})
+                raise t.DataError({'date_from': err.message})
             try:
                 date_to = datetime.strptime(data["date_to"], "%Y-%m-%d")
             except ValueError, err:
-                raise t.DataError({'date_to': err})
+                raise t.DataError({'date_to': err.message})
 
             if date_from > date_to:
                 raise t.DataError({'date_to': _('range is incorrect')})
