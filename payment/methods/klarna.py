@@ -58,7 +58,7 @@ class KlarnaPaymentMethod(BasePaymentMethod):
 
     def __get_address(self, addr_type):
         _get = lambda k: self.order_data.get('{0}_{1}'.format(addr_type, k), '')
-        return Address(email=self.customer.email,
+        return Address(email=self.__fix_email(self.customer.email),
                        telno=_get('phone').replace(' ', '').replace('+', ''),
                        fname=_get('first_name'),
                        lname=_get('last_name'),
@@ -89,3 +89,8 @@ class KlarnaPaymentMethod(BasePaymentMethod):
         }
         result = self.klarna.check_order_status(transaction.details)
         return statuses[str(result)]
+
+    def __fix_email(self, email):
+        email = email.split('@')
+        prefix = email[0].split('+')[0]
+        return '%s@%s' % (prefix, email[1])
