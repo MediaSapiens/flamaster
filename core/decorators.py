@@ -18,7 +18,7 @@ from .utils import jsonify_status_code, plural_underscored
 
 
 def api_resource(bp, endpoint, pk_def):
-    pk = pk_def.keys()[0]
+    pk = list(pk_def.keys())[0]
     pk_type = pk_def[pk] and pk_def[pk].__name__ or None
     # building url from the endpoint
     url = "/{}/".format(endpoint)

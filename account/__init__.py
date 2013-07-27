@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from flask import Blueprint
 from flask.ext.security import SQLAlchemyUserDatastore
-from flask.ext.social import SQLAlchemyConnectionDatastore
 
 from flamaster.core.utils import add_api_rule
 from flamaster.extensions import db
@@ -10,7 +9,12 @@ from .models import User, Role, SocialConnection
 
 
 user_ds = SQLAlchemyUserDatastore(db, User, Role)
-connection_ds = SQLAlchemyConnectionDatastore(db, SocialConnection)
+
+try:
+    from flask.ext.social import SQLAlchemyConnectionDatastore
+    connection_ds = SQLAlchemyConnectionDatastore(db, SocialConnection)
+except ImportError:
+    print("flask.social not installed")
 
 bp = Blueprint('account', __name__, url_prefix='/account')
 
@@ -27,4 +31,4 @@ add_resource('profiles', {'id': int}, 'ProfileResource')
 add_resource('roles', {'id': int}, 'RoleResource')
 add_resource('sessions', {'id': None}, 'SessionResource')
 
-from flamaster.account import signals
+import signals

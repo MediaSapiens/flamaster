@@ -53,7 +53,7 @@ class IndexCommand(Command):
         try:
             es.delete_index(current_app.config['INDEX_NAME'])
         except ElasticHttpNotFoundError as error:
-            print error
+            print(error)
 
     def create_indexes(self):
         index.reindex()

@@ -10,6 +10,6 @@ from .decorators import api_resource
 from .utils import lazy_cascade, plural_underscored
 # import template_ext
 
-import api
-import views
-import indexer
+from .api import *
+from .views import *
+from .indexer import *

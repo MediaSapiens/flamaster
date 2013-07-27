@@ -1,5 +1,4 @@
 import logging
-from itertools import imap
 from flask import current_app
 from mongoengine import signals
 from operator import methodcaller
@@ -8,6 +7,8 @@ from requests.exceptions import ConnectionError
 from flamaster.core.utils import CustomEncoder
 from flamaster.extensions import es
 
+
+__all__ = ['BaseIndex', 'MongoDocumentIndex', 'Index', 'index']
 
 
 logger = logging.getLogger('indexer')
@@ -53,7 +54,7 @@ class MongoDocumentIndex(BaseIndex):
         self.index = current_app.config['INDEX_NAME']
         if in_bulk:
             documents = document or self.get_data(cls)
-            iobjects = imap(lambda d: d.as_dict(), documents)
+            iobjects = map(lambda d: d.as_dict(), documents)
             es.bulk_index(self.index, self.index_type, iobjects,
                           refresh=True)
         else:

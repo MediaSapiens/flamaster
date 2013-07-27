@@ -187,4 +187,4 @@ try:
         if '__' not in attr:
             setattr(sys.modules[__name__], attr, getattr(ls, attr))
 except ImportError:
-    print "local_settings undefined"
+    print("local_settings undefined")

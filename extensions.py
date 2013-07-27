@@ -1,13 +1,12 @@
 from __future__ import absolute_import
 from flask.ext.babel import Babel, gettext, ngettext
-from flask.ext.cache import Cache
+
 from flask.ext.mail import Mail
 from flask.ext.mongoengine import MongoEngine
-from flask.ext.redis import Redis
+
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security
-from flask.ext.social import Social
-from flask.ext.elasticsearch import ElasticSearch
+
 
 
 def register_jinja_helpers(app):
@@ -18,15 +17,37 @@ def register_jinja_helpers(app):
 
 
 babel = Babel()
-cache = Cache()
+
+try:
+    from flask.ext.cache import Cache
+    cache = Cache()
+except ImportError:
+    cache = None
+
 db = SQLAlchemy()
 mail = Mail()
 mongo = MongoEngine()
-es = ElasticSearch()
-redis = Redis()
-security = Security()
-social = Social()
 
+
+try:
+    from flask.ext.redis import Redis
+    redis = Redis()
+except ImportError:
+    redis = None
+
+security = Security()
+
+try:
+    from flask.ext.social import Social
+    social = Social()
+except ImportError:
+    social = None
+
+try:
+    from flask.ext.elasticsearch import ElasticSearch
+    es = ElasticSearch()
+except ImportError:
+    es = None
 
 
 

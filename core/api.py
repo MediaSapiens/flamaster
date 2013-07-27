@@ -7,6 +7,8 @@ from .resources import Resource
 from .utils import jsonify_status_code
 
 
+__all__ = ['LocaleResource']
+
 @api_resource(core, 'locale', {'short': None})
 class LocaleResource(Resource):
 
