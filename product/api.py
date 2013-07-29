@@ -305,6 +305,7 @@ class OrderResource(ModelResource):
             total_net = round_decimal(instance.goods_price - total_vat)
         else:
             total_vat = Decimal(0)
+            total_net = Decimal(0)
 
         data = instance.as_dict(api_fields=include)
         good_exclude = ['vat']
