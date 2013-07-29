@@ -56,7 +56,7 @@ class OrderDatastore(AbstractDatastore):
             max_discount = items[-1]
             return (self.__get_discount(max_discount), max_discount[2])
 
-        return (0, False)
+        return (Decimal(0), False)
 
     def get_cart_discount(self, goods_price=0):
         now = datetime.now()
