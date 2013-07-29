@@ -83,7 +83,12 @@ class SessionResource(Resource):
 
         if user is None:
             raise t.DataError({
-                'email': "Can't find anyone with this credentials"
+                'email': _("Can't find anyone with this credentials")
+            })
+
+        if not user.active:
+            raise t.DataError({
+                'email': _("You must confirm the email")
             })
 
         if verify_password(data_dict.get('password'), user.password):
@@ -104,7 +109,7 @@ class SessionResource(Resource):
 
         else:
             raise t.DataError({
-                'password': "Wrong password"
+                'password': _("Wrong password")
             })
 
         return data_dict
