@@ -46,15 +46,7 @@ class BaseProductVariant(Document, DocumentMixin):
         'collection': 'product_variants'
     }
 
-    _price_options = ListField(EmbeddedDocumentField(BasePriceOption))
-
-    def _get_price_options(self):
-        return self._price_options
-
-    def _set_price_options(self, value):
-        self._price_options = map(BasePriceOption.convert, value)
-
-    price_options = property(_get_price_options, _set_price_options)
+    price_options = ListField(EmbeddedDocumentField(BasePriceOption))
 
     def __get_prices(self):
         prices = [Decimal(0)]
