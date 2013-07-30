@@ -74,9 +74,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
 
             counter += 1
-
-        products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
-        products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] =  "%.2f" % (-self.order_data['total_discount'])
+        if self.order_data['total_discount']:
+            products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] =  "%.2f" % (-self.order_data['total_discount'])
 
         request_params = {
             'METHOD': SET_CHECKOUT,
