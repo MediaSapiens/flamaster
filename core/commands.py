@@ -4,7 +4,7 @@ from flask import current_app
 from flask.ext.script import Command, Option
 
 from flamaster.core.indexer import index
-from flamaster.extensions import db, es
+from flamaster.extensions import db, es, mongo
 
 from pyelasticsearch import ElasticHttpNotFoundError
 # from tests.initial_data import Requirements
@@ -23,6 +23,22 @@ class DropAll(Command):
     def run(self):
         db.drop_all()
 
+
+class MigratePriceOptions(Command):
+
+    def get_collection(self, collection):
+        return mongo.connection[current_app.config['MONGODB_DB']][collection]
+
+    def reassign_price(self, item):
+        collection = self.get_collection('product_variants')
+        collection.update(
+            {'_id': item['id']},
+            {'$set': {'price_options': item['_price_options']}}
+        )
+
+    def run(self):
+        collection = self.get_collection('product_variants')
+        map(self.reassign_price, collection.find())
 
 # class RunTests(Command):
 
