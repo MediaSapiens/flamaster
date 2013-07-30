@@ -52,7 +52,7 @@ class DiscountResource(ModelResource):
     def get_objects(self, **kwargs):
         """ Method for extraction object list query
         """
-        enums = [
+        enum = [
             CATEGORY_CHOICE,
             USER_CHOICE,
             PRODUCT_CHOICE,
@@ -61,7 +61,7 @@ class DiscountResource(ModelResource):
             CURRENCY_CHOICE
         ]
         group_type = request.args.get('group_type')
-        if group_type is not None and group_type in enums:
+        if group_type is not None and group_type in enum:
             kwargs['group_type'] = group_type
 
         query = self.model.query.filter_by(**kwargs)
