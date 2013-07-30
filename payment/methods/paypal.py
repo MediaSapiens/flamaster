@@ -75,6 +75,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
             counter += 1
 
+        products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
+        products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] =  "%.2f" % (-self.order_data['total_discount'])
+
         request_params = {
             'METHOD': SET_CHECKOUT,
             'BRANDNAME': 'WIMOTO',
