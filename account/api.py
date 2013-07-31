@@ -16,7 +16,7 @@ from flask.ext.security import (logout_user, login_user, current_user,
                                 roles_required)
 from flask.ext.security.utils import verify_password, encrypt_password
 from flask.ext.security.confirmable import (confirm_email_token_status,
-                                            confirm_user)
+                                            confirm_user, requires_confirmation)
 from flask.ext.security.registerable import register_user
 
 from sqlalchemy import or_
@@ -86,7 +86,7 @@ class SessionResource(Resource):
                 'email': _("Can't find anyone with this credentials")
             })
 
-        if not user.active:
+        if requires_confirmation(user):
             raise t.DataError({
                 'email': _("You must confirm the email")
             })
