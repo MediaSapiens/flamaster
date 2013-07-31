@@ -299,13 +299,12 @@ class OrderResource(ModelResource):
         """
 
         goods = instance.goods.all()
-        if goods:
-            vats = [g.product.get_vat().calculate(g.product.price, g.amount) for g in goods]
-            total_vat = round_decimal(Decimal(sum(vats)))
-            total_net = round_decimal(instance.goods_price - total_vat)
+        if instance.goods_price_net:
+            total_net = round_decimal(instance.goods_price_net)
         else:
-            total_vat = Decimal(0)
             total_net = Decimal(0)
+
+        total_vat = round_decimal(instance.goods_price - total_net)
 
         data = instance.as_dict(api_fields=include)
         good_exclude = ['vat']

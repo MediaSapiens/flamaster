@@ -39,18 +39,19 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
         delivery_address = customer.delivery_address
         billing_address = customer.billing_address or delivery_address
 
-        goods = self.goods_ds.find(customer=customer, is_ordered=False)
+        goods = kwargs.pop('goods', None)
+        if goods is None:
+            goods = self.goods_ds.find(customer=customer, is_ordered=False)
+
         goods_price = self.goods_ds.get_price(goods)
         delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
 
-        total_discount = self.get_customer_discount(customer_id,
-                                                        goods_price, **kwargs)
-        if total_discount:
-            goods_price = round_decimal(goods_price - total_discount)
+        goods_price_net, goods_price, total_discount = \
+            self.get_customer_discount(customer_id, goods, **kwargs)
 
-        delivery_free = self.get_cart_discount(goods_price)
+        delivery_free = self.get_cart_discount(goods_price_net)
         if delivery_free:
             delivery_price = Decimal(0)
 
@@ -64,6 +65,7 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
             'delivery_method': 'dhl',
             'customer': customer,
             'goods_price': goods_price,
+            'goods_price_net': goods_price_net,
             'payment_fee': payment_fee,
             'total_price': total_price,
             'total_discount': total_discount,
@@ -116,6 +118,12 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
         # Send signal on order creation
         order_created.send(order)
         return order
+
+    def update(self, customer_id, order, **kwargs):
+        goods, kwargs = self.__collect_data(customer_id, **kwargs)
+        kwargs.pop('reference', None)
+        kwargs.pop('state', None)
+        return order.update(with_reload=True, **kwargs)
 
     def __prepare_address(self, addr_type, address_instance):
         exclude_fields = ['customer_id', 'created_at', 'id']
