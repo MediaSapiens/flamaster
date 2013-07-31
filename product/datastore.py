@@ -83,8 +83,7 @@ class OrderDatastore(AbstractDatastore):
         delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
-        payment_fee = self.order_model.resolve_payment_fee(kwargs['payment_method'],
-                                                           goods_price)
+
         self.__goods_price = goods_price
         total_discount, delivery_free = self.get_customer_discount(customer_id, goods_price, **kwargs)
         if total_discount:
@@ -93,6 +92,9 @@ class OrderDatastore(AbstractDatastore):
         delivery_free = self.get_cart_discount(goods_price)
         if delivery_free:
             delivery_price = Decimal(0)
+
+        payment_fee = self.order_model.resolve_payment_fee(kwargs['payment_method'],
+                                                           goods_price)
 
         total_price = round_decimal(goods_price + delivery_price + payment_fee)
 
