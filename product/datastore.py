@@ -45,12 +45,10 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
                                                            goods,
                                                            delivery_address)
 
-        total_discount = self.get_customer_discount(customer_id,
-                                                        goods_price, **kwargs)
-        if total_discount:
-            goods_price = round_decimal(goods_price - total_discount)
+        goods_price_net, goods_price, total_discount = \
+            self.get_customer_discount(customer_id, goods, **kwargs)
 
-        delivery_free = self.get_cart_discount(goods_price)
+        delivery_free = self.get_cart_discount(goods_price_net)
         if delivery_free:
             delivery_price = Decimal(0)
 
@@ -64,6 +62,7 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
             'delivery_method': 'dhl',
             'customer': customer,
             'goods_price': goods_price,
+            'goods_price_net': goods_price_net,
             'payment_fee': payment_fee,
             'total_price': total_price,
             'total_discount': total_discount,
