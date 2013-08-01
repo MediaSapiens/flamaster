@@ -10,7 +10,7 @@ from flamaster.core.utils import jsonify_status_code, null_fields_filter
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import lazy_gettext as _, get_locale
 from flask.ext.principal import AnonymousIdentity, identity_changed
 from flask.ext.security import (logout_user, login_user, current_user,
                                 roles_required)
@@ -118,8 +118,12 @@ class SessionResource(Resource):
         response = {
             'id': session['id'],
             'is_anonymous': current_user.is_anonymous(),
-            'uid': session.get('user_id')
+            'uid': session.get('user_id'),
+            'system_language': session.get('system_language') or get_locale().language
         }
+
+        if not current_user.is_anonymous() and current_user.is_superuser():
+            response['data_language'] = session.get('data_language') or get_locale().language
         response.update(kwargs)
         return response
 
