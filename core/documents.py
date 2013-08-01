@@ -5,8 +5,9 @@ import trafaret as t
 from bson import ObjectId, DBRef
 # from bson.errors import InvalidId
 
-from flask import current_app
+from flask import current_app,request
 from flask.ext.mongoset import Model
+from flask.ext.babel import get_locale
 from operator import attrgetter
 
 from .decorators import classproperty
@@ -17,6 +18,13 @@ class DocumentMixin(Model):
     """ Base mixin for all mongodb models
     """
     __abstract__ = True
+
+    def __init__(self, initial=None, **kwargs):
+        if '_lang' in request.args:
+            kwargs['_lang'] = request.args['_lang']
+        else:
+            kwargs['_lang'] = str(get_locale())
+        return super(DocumentMixin, self).__init__(initial, **kwargs)
 
     @classproperty
     def __collection__(cls):
