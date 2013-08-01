@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+from datetime import datetime
 import trafaret as t
 
 from flask import abort, request, current_app, g
@@ -122,11 +123,15 @@ class Resource(MethodView):
         # Processing fiters passed through the request.args
 
         items, total, pages, quantity = self.paginate(**kwargs)
-        response = {'meta': {
-                        'total': total,
-                        'pages': pages,
-                        'quantity': quantity},
-                    'objects': [self.serialize(item) for item in items]}
+        response = {
+            'meta': {
+                'total': total,
+                'pages': pages,
+                'quantity': quantity,
+                'current_time': datetime.now().ctime(),
+            },
+            'objects': [self.serialize(item) for item in items]
+        }
         return response
 
     def clean(self, data):

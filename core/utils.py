@@ -5,7 +5,7 @@ import uuid
 
 from bson import ObjectId
 from datetime import datetime
-from flask import current_app, render_template, json
+from flask import current_app, render_template, json, Blueprint
 from importlib import import_module
 from time import time
 from os.path import abspath, dirname, join
@@ -237,3 +237,7 @@ def x_accel_gridfs(file_field):
     ))
 
     return rv
+
+
+class ResourceBlueprint(Blueprint):
+    pass
