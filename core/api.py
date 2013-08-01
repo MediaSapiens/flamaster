@@ -20,7 +20,7 @@ class LocaleResource(Resource):
                 'is_set': locale == short
             })
 
-        return jsonify_status_code({objects: objects})
+        return jsonify_status_code({'objects': objects})
 
     def put(self, short=None):
         session[current_app.config['LOCALE_KEY']] = short
