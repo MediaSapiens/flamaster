@@ -13,20 +13,20 @@ class LocaleResource(Resource):
         locale = session.get(current_app.config['LOCALE_KEY'],
                              current_app.config['BABEL_DEFAULT_LOCALE'])
         objects = []
-        for short, name in current_app.config['LANGUAES'].items():
+        for short, name in current_app.config['LANGUAGES'].items():
             objects.append({
                 'name': name,
                 'short': short,
                 'is_set': locale == short
             })
 
-        return jsonify_status_code({objects: objects})
+        return jsonify_status_code({'objects': objects})
 
     def put(self, short=None):
         session[current_app.config['LOCALE_KEY']] = short
         locale_obj = {
             'short': short,
             'is_set': True,
-            'name': current_app.config['LANGUAES'][short]
+            'name': current_app.config['LANGUAGES'][short]
         }
         return jsonify_status_code(locale_obj, http.ACCEPTED)

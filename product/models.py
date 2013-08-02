@@ -202,6 +202,7 @@ class Order(db.Model, CRUDMixin):
     delivery_gender = db.Column(db.String(1), default='')
     # summary cost of all cart items linked with this order
     goods_price = db.Column(db.Numeric(precision=18, scale=2))
+    goods_price_net = db.Column(db.Numeric(precision=18, scale=2))
 
     vat = db.Column(db.Numeric(precision=18, scale=2))
     total_price = db.Column(db.Numeric(precision=18, scale=2))
