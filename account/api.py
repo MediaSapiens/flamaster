@@ -91,7 +91,22 @@ class SessionResource(Resource):
                 'email': _("You must confirm the email")
             })
 
+        if not user.active:
+            raise t.DataError({
+                'email': _("You are blocked by the administrator")
+            })
+
         if verify_password(data_dict.get('password'), user.password):
+            if requires_confirmation(user):
+                raise t.DataError({
+                    'email': _("You must confirm the email")
+                })
+
+            if not user.active:
+                raise t.DataError({
+                    'email': _("You are blocked by the administrator")
+                })
+
             login_user(user)
 
             # Get cart items from anonymous customer
