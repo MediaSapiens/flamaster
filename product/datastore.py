@@ -120,9 +120,11 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
         return order
 
     def update(self, customer_id, order, **kwargs):
+        state = kwargs.get('state')
         goods, kwargs = self.__collect_data(customer_id, **kwargs)
         kwargs.pop('reference', None)
-        kwargs.pop('state', None)
+        if state is not None:
+            kwargs['state'] = state
         return order.update(with_reload=True, **kwargs)
 
     def __prepare_address(self, addr_type, address_instance):
