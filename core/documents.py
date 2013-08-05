@@ -20,10 +20,13 @@ class DocumentMixin(Model):
     __abstract__ = True
 
     def __init__(self, initial=None, **kwargs):
-        if '_lang' in request.args:
-            kwargs['_lang'] = request.args['_lang']
-        else:
-            kwargs['_lang'] = str(get_locale())
+        try:
+            if '_lang' in request.args:
+                kwargs['_lang'] = request.args['_lang']
+            else:
+                kwargs['_lang'] = str(get_locale())
+        except RuntimeError:
+            pass
         return super(DocumentMixin, self).__init__(initial, **kwargs)
 
     @classproperty
