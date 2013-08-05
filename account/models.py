@@ -41,7 +41,6 @@ class Address(db.Model, CRUDMixin):
         return instance
 
 
-
 user_roles = db.Table('user_roles', db.metadata,
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'),
               primary_key=True),

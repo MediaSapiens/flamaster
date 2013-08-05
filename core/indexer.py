@@ -74,6 +74,7 @@ class MongoDocumentIndex(BaseIndex):
         # {'query': {'match': {'name': 'some place'}}}
         return es.search(query, index=self.index, doc_type=self.index_type)
 
+
 class Index(object):
 
     CREATE = 'create'

@@ -31,6 +31,7 @@ class CategoryResource(ModelResource):
     }).make_optional('parent_id').ignore_extra('*')
 
 
+
 class CountryResource(ModelResource):
     model = Country
     page_size = 1000
