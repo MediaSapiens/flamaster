@@ -253,7 +253,7 @@ class ProfileResource(ModelResource):
         if address is None:
             return {}
         else:
-            address_dict = dict(('{}_{}'.format(prefix, key), value) 
+            address_dict = dict(('{}_{}'.format(prefix, key), value)
                                   for key, value in address.as_dict().items())
         return address_dict
 

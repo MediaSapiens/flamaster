@@ -1,5 +1,5 @@
 from flask import session, current_app
-
+from flask.ext.babel import get_locale
 from . import core, http
 from .decorators import api_resource
 from .resources import Resource
@@ -10,9 +10,10 @@ from .utils import jsonify_status_code
 class LocaleResource(Resource):
 
     def get(self, short=None):
-        locale = session.get(current_app.config['LOCALE_KEY'],
-                             current_app.config['BABEL_DEFAULT_LOCALE'])
+        locale = get_locale()
+
         objects = []
+
         for short, name in current_app.config['LANGUAGES'].items():
             objects.append({
                 'name': name,
@@ -24,6 +25,7 @@ class LocaleResource(Resource):
 
     def put(self, short=None):
         session[current_app.config['LOCALE_KEY']] = short
+
         locale_obj = {
             'id': short,
             'is_set': True,
