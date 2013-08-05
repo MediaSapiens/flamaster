@@ -1,3 +1,8 @@
+"""
+    .. py:module:: account
+
+    Account `flask.Blueprint` holds everything about accounting, profiles, etc.
+"""
 from __future__ import absolute_import
 from flask import Blueprint
 from flask.ext.security import SQLAlchemyUserDatastore
@@ -8,6 +13,8 @@ from flamaster.extensions import db
 
 from .models import User, Role, SocialConnection
 
+
+__all__ = ['models', 'signals']
 
 user_ds = SQLAlchemyUserDatastore(db, User, Role)
 connection_ds = SQLAlchemyConnectionDatastore(db, SocialConnection)
