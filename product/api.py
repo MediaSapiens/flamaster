@@ -8,7 +8,7 @@ from flask.ext.security import login_required, current_user
 from flamaster.account.models import Customer
 
 from flamaster.core import http, mongo
-from flamaster.core.decorators import api_resource, method_wrapper
+from flamaster.core.decorators import api_resource, method_wrapper, crm_language
 from flamaster.core.resources import (ModelResource, MongoResource,
                                       SlugResource)
 from flamaster.core.utils import jsonify_status_code, round_decimal
@@ -59,6 +59,10 @@ class CategoryResource(SlugResource):
     def gen_list_response(self, **kwargs):
         return super(CategoryResource, self) \
             .gen_list_response(page_size=10000, **kwargs)
+
+    @crm_language
+    def serialize(self, instance, include=None):
+        return super(CategoryResource, self).serialize(instance, include)
 
 
 @api_resource(bp, 'countries', {'id': int})
