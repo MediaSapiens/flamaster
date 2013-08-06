@@ -3,8 +3,10 @@ from flask import current_app
 
 from flamaster.core import db
 from flamaster.core.models import CRUDMixin
+from flamaster.core.decorators import multilingual
 
 
+@multilingual
 class FlatPage(db.Model, CRUDMixin):
     """ A flatpage representation model
     """
