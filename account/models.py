@@ -263,7 +263,7 @@ class User(db.Model, CRUDMixin, UserMixin):
         return full_name.strip() or self.email
 
     def as_dict(self, include=None, exclude=None):
-        include, exclude = exclude or [], include or []
+        include, exclude = include or [], exclude or []
         exclude.extend(['password', 'remember_token', 'authentication_token'])
         include.extend(['first_name', 'last_name', 'phone', 'billing_address',
                         'is_superuser', 'roles'])
