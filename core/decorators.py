@@ -138,10 +138,14 @@ def crm_language(serialize):
             i18n = filter(lambda field: field in data, obj.model.i18n)
             for field in i18n:
                 field_val = instance.get(field)
-                if field_val is None:
-                    field_val = data[field]
-                if type(field_val[instance._lang]) not in (unicode, str):
+                if field_val is not None \
+                    and type(field_val[instance._lang]) not in (unicode, str):
                     data[field] = ''
+                else:
+                    field_val = data[field]
+                    if type(field_val) not in (unicode, str) and \
+                        instance._lang not in field_val:
+                        data[field] = ''
 
         return data
 
