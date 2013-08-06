@@ -8,6 +8,8 @@ from flamaster.account.signals import billing_data_changed
 from flamaster.core.models import CRUDMixin
 from flamaster.extensions import db
 
+from flamaster.product.documents import BaseProduct
+
 from operator import attrgetter
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -262,12 +264,21 @@ class User(db.Model, CRUDMixin, UserMixin):
         full_name = " ".join([self.first_name or '', self.last_name or ''])
         return full_name.strip() or self.email
 
+    @property
+    def product_count(self):
+        return BaseProduct.objects(created_by=self.id).count()
+
     def as_dict(self, include=None, exclude=None):
         include, exclude = exclude or [], include or []
         exclude.extend(['password', 'remember_token', 'authentication_token'])
         include.extend(['first_name', 'last_name', 'phone', 'billing_address',
                         'is_superuser', 'roles'])
-        return super(User, self).as_dict(include, exclude)
+
+        result = super(User, self).as_dict(include, exclude)
+
+        result['products'] = {'created': self.product_count}
+
+        return result
 
 
 class BankAccount(db.Model, CRUDMixin):
