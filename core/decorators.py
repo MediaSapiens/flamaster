@@ -46,15 +46,25 @@ def multilingual(cls):
     from sqlalchemy.ext.hybrid import hybrid_property
     from flamaster.core.models import CRUDMixin
 
-    locale = get_locale()
-    if locale is None:
-        lang = unicode(current_app.config['BABEL_DEFAULT_LOCALE'])
-    else:
-        lang = unicode(locale.language)
+    def _get_locale():
+        try:
+            if '_lang' in request.args:
+                lang = unicode(request.args['_lang'])
+            elif request.json and '_lang' in request.json:
+                lang = unicode(request.json['_lang'])
+            else:
+                lang = unicode(get_locale())
+        except RuntimeError:
+            lang = unicode(get_locale())
+
+        return lang
+
+    lang = _get_locale()
 
     def create_property(cls, localized, columns, field):
 
         def getter(self):
+            lang = _get_locale()
             instance = localized.query.filter_by(id=self.id,
                                                  locale=lang).first()
             return instance and getattr(instance, field) or None
