@@ -23,6 +23,8 @@ class DocumentMixin(Model):
         try:
             if '_lang' in request.args:
                 kwargs['_lang'] = request.args['_lang']
+            elif request.json and '_lang' in request.json:
+                kwargs['_lang'] = request.json['_lang']
             else:
                 kwargs['_lang'] = str(get_locale())
         except RuntimeError:
