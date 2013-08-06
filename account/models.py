@@ -40,6 +40,21 @@ class Address(db.Model, CRUDMixin):
             billing_data_changed.send(self, user_id=instance.customer.user_id)
         return instance
 
+    @property
+    def type(self):
+        if self.id == self.customer.billing_address_id:
+            return 'billing'
+        elif self.id == self.customer.delivery_address_id:
+            return 'delivery'
+        else:
+            return None
+
+    def as_dict(self, include=None, exclude=None):
+        include = include or []
+        include.extend(['type'])
+
+        return super(Address, self).as_dict(include, exclude)
+
 
 user_roles = db.Table('user_roles', db.metadata,
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'),
