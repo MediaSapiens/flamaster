@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from flask import current_app
 
-from flamaster.core.decorators import api_resource, crm_language
+from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flask.ext.security import roles_required
 
@@ -32,6 +32,3 @@ class FlatPageResource(ModelResource):
                          'put': roles_required('admin'),
                          'delete': roles_required('admin')}
 
-    @crm_language
-    def serialize(self, instance, include=None):
-        return super(FlatPageResource, self).serialize(instance, include)
