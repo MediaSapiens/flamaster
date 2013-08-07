@@ -128,7 +128,7 @@ class Resource(MethodView):
                 'total': total,
                 'pages': pages,
                 'quantity': quantity,
-                'current_time': datetime.now().ctime(),
+                'current_time': datetime.utcnow().ctime(),
             },
             'objects': [self.serialize(item) for item in items]
         }
