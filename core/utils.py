@@ -213,7 +213,7 @@ def null_fields_filter(fields=[], data=None):
         return None
 
     for field in fields:
-        if data.get(field, '') is None:
+        if data.get(field, '') in (None, 'null'):
             data.pop(field)
 
     return data

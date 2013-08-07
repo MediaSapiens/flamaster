@@ -43,34 +43,35 @@ def login_required(fn):
 
 
 def multilingual(cls):
-    from sqlalchemy.ext.hybrid import hybrid_property
+    from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
     from flamaster.core.models import CRUDMixin
 
     def _get_locale():
+        lang = unicode(get_locale())
         try:
             if '_lang' in request.args:
                 lang = unicode(request.args['_lang'])
             elif request.json and '_lang' in request.json:
                 lang = unicode(request.json['_lang'])
-            else:
-                lang = unicode(get_locale())
         except RuntimeError:
-            lang = unicode(get_locale())
+            pass
+
+        if lang is None:
+            lang = unicode(current_app.conf['BABEL_DEFAULT_LOCALE'])
 
         return lang
-
-    lang = _get_locale()
 
     def create_property(cls, localized, columns, field):
 
         def getter(self):
             lang = _get_locale()
-            instance = localized.query.filter_by(id=self.id,
+            instance = localized.query.filter_by(parent_id=self.id,
                                                  locale=lang).first()
             return instance and getattr(instance, field) or None
 
         def setter(self, value):
-            from_db = localized.query.filter_by(id=self.id,
+            lang = _get_locale()
+            from_db = localized.query.filter_by(parent_id=self.id,
                                                 locale=lang).first()
 
             instance = from_db or localized(parent=self, locale=lang)
@@ -78,13 +79,16 @@ def multilingual(cls):
             instance.save()
 
         def expression(self):
+            lang = _get_locale()
             return db.Query(columns[field]) \
                 .filter(localized.parent_id == self.id,
                         localized.locale == lang).as_scalar()
 
         setattr(cls, field, hybrid_property(getter, setter, expr=expression))
 
+
     def closure(cls):
+        lang = _get_locale()
         class_name = cls.__name__ + 'Localized'
         tablename = plural_underscored(class_name)
 
@@ -109,6 +113,19 @@ def multilingual(cls):
 
         for field in localized_names:
             create_property(cls, cls_localized, columns, field)
+
+        def create(self, **kwargs):
+            lang = _get_locale()
+
+            obj = db.session.execute(cls.__table__.insert(), kwargs)
+            obj_id = obj.inserted_primary_key[-1]
+
+            cols = [c.key for c in cls_localized.__table__._columns]
+            kwargs = dict(filter(lambda col: col[0] in cols, kwargs.items()))
+            instance = cls_localized.create(parent_id=obj_id, locale=lang, **kwargs)
+            return instance
+
+        cls.create = hybrid_method(create)
 
         return cls
 
