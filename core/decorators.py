@@ -43,7 +43,7 @@ def login_required(fn):
 
 
 def multilingual(cls):
-    from sqlalchemy.ext.hybrid import hybrid_property
+    from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
     from flamaster.core.models import CRUDMixin
 
     def _get_locale():
@@ -86,6 +86,7 @@ def multilingual(cls):
 
         setattr(cls, field, hybrid_property(getter, setter, expr=expression))
 
+
     def closure(cls):
         lang = _get_locale()
         class_name = cls.__name__ + 'Localized'
@@ -112,6 +113,19 @@ def multilingual(cls):
 
         for field in localized_names:
             create_property(cls, cls_localized, columns, field)
+
+        def create(self, **kwargs):
+            lang = _get_locale()
+
+            obj = db.session.execute(cls.__table__.insert(), kwargs)
+            obj_id = obj.inserted_primary_key[-1]
+
+            cols = [c.key for c in cls_localized.__table__._columns]
+            kwargs = dict(filter(lambda col: col[0] in cols, kwargs.items()))
+            instance = cls_localized.create(parent_id=obj_id, locale=lang, **kwargs)
+            return instance
+
+        cls.create = hybrid_method(create)
 
         return cls
 
@@ -141,25 +155,3 @@ class ClassProperty(property):
 
 
 classproperty = ClassProperty
-
-
-def crm_language(serialize):
-    def wrapper(obj, instance, include=None):
-        data = serialize(obj, instance, include)
-
-        if 'i18n' in obj.model.__dict__:
-            i18n = filter(lambda field: field in data, obj.model.i18n)
-            for field in i18n:
-                field_val = instance.get(field)
-                if field_val is not None \
-                    and type(field_val[instance._lang]) not in (unicode, str):
-                    data[field] = ''
-                else:
-                    field_val = data[field]
-                    if type(field_val) not in (unicode, str) and \
-                        instance._lang not in field_val:
-                        data[field] = ''
-
-        return data
-
-    return wrapper

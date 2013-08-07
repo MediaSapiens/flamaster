@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from flask import current_app
 
-from flamaster.core.decorators import api_resource, crm_language
+from flamaster.core.decorators import api_resource
 from flamaster.core.resources import ModelResource
 from flamaster.core.utils import null_fields_filter, jsonify_status_code
 from flamaster.core import http
@@ -35,10 +35,6 @@ class FlatPageResource(ModelResource):
     method_decorators = {'post': roles_required('admin'),
                          'put': roles_required('admin'),
                          'delete': roles_required('admin')}
-
-    @crm_language
-    def serialize(self, instance, include=None):
-        return super(FlatPageResource, self).serialize(instance, include)
 
     def put(self, id):
         status = http.ACCEPTED
