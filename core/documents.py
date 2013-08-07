@@ -31,6 +31,32 @@ class DocumentMixin(Model):
             pass
         return super(DocumentMixin, self).__init__(initial, **kwargs)
 
+    def __getattr__(self, attr):
+        """
+        If we have param '_lang' in request - we give response with exectly that information,
+        wich is stored in nessecery locale. If there is no information - we give an empty string back.
+        If we don`t have param '_lang' in request - we return value of users locale.
+        If there is no information in nessecery locale - we return information of the fallback locale
+        :param attr: attribute of the mongo document
+        :return: value of the input attribute
+        """
+        #TODO: try to solve thr problem of inheritance in other way
+        value = super(Model, self).__getattr__(attr)
+
+        if attr in self.i18n:
+            value_dict = value
+            value = value_dict.get(self._lang)
+            if '_lang' in request.args:
+                if type(value) not in (unicode, str):
+                    value=""
+            else:
+                if (type(value) not in (unicode, str)
+                    or value is None
+                    or value==""
+                    and self._lang!=self._fallback_lang):
+                    value = value_dict.get(self._fallback_lang)
+        return value
+
     @classproperty
     def __collection__(cls):
         return plural_underscored(cls.__name__)
