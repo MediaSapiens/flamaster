@@ -3,7 +3,11 @@ from flask import current_app
 
 from flamaster.core.decorators import api_resource, crm_language
 from flamaster.core.resources import ModelResource
+from flamaster.core.utils import null_fields_filter, jsonify_status_code
+from flamaster.core import http
 from flask.ext.security import roles_required
+from flask import request
+
 
 from . import bp
 from .models import FlatPage
@@ -35,3 +39,17 @@ class FlatPageResource(ModelResource):
     @crm_language
     def serialize(self, instance, include=None):
         return super(FlatPageResource, self).serialize(instance, include)
+
+    def put(self, id):
+        status = http.ACCEPTED
+        data = request.json or abort(http.BAD_REQUEST)
+
+        try:
+            data = self.clean(data)
+            data = null_fields_filter(['template_name', 'shop_id'], data)
+        except t.DataError as e:
+            return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
+
+        instance = self.get_object(id).update(with_reload=True, **data)
+        response = self.serialize(instance)
+        return jsonify_status_code(response, status)
