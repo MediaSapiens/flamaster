@@ -42,14 +42,15 @@ class Address(db.Model, CRUDMixin):
             billing_data_changed.send(self, user_id=instance.customer.user_id)
         return instance
 
-    @property
-    def type(self):
+    def _type_get(self):
         if self.id == self.customer.billing_address_id:
             return 'billing'
         elif self.id == self.customer.delivery_address_id:
             return 'delivery'
         else:
             return None
+
+    type = property(_type_get, lambda x, y: None)
 
     def as_dict(self, include=None, exclude=None):
         include = include or []
