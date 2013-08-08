@@ -61,7 +61,7 @@ def multilingual(cls):
 
         return lang
 
-    def create_property(cls, localized, columns, field):
+    def create_property(cls, localized, columns, field, def_setter=False):
 
         def getter(self):
             lang = _get_locale()
@@ -78,13 +78,19 @@ def multilingual(cls):
             setattr(instance, field, value)
             instance.save()
 
+        def default_setter(self, value):
+            self.__dict__[field] = value
+
         def expression(self):
             lang = _get_locale()
             return db.Query(columns[field]) \
                 .filter(localized.parent_id == self.id,
                         localized.locale == lang).as_scalar()
 
-        setattr(cls, field, hybrid_property(getter, setter, expr=expression))
+        if def_setter:
+            setattr(cls, field, hybrid_property(getter, default_setter, expr=expression))
+        else:
+            setattr(cls, field, hybrid_property(getter, setter, expr=expression))
 
 
     def closure(cls):
@@ -114,15 +120,19 @@ def multilingual(cls):
         for field in localized_names:
             create_property(cls, cls_localized, columns, field)
 
-        def create(self, **kwargs):
+        def create(cls, commit=True, **kwargs):
             lang = _get_locale()
 
-            obj = db.session.execute(cls.__table__.insert(), kwargs)
-            obj_id = obj.inserted_primary_key[-1]
+            for field in localized_names:
+                create_property(cls, cls_localized, columns, field, def_setter=True)
 
-            cols = [c.key for c in cls_localized.__table__._columns]
-            kwargs = dict(filter(lambda col: col[0] in cols, kwargs.items()))
-            instance = cls_localized.create(parent_id=obj_id, locale=lang, **kwargs)
+            obj = cls(**kwargs).save(commit)
+
+            for field in localized_names:
+                create_property(cls, cls_localized, columns, field)
+
+            kwargs = dict(filter(lambda col: col[0] in localized_names, kwargs.items()))
+            instance = cls_localized.create(parent=obj, locale=lang, **kwargs)
             return instance
 
         cls.create = hybrid_method(create)
