@@ -89,7 +89,7 @@ class OrderMixin(CRUDMixin):
 
     @classmethod
     def _prepare_address(cls, addr_type, address_instance):
-        exclude_fields = ['customer_id', 'created_at', 'id']
+        exclude_fields = ['customer_id', 'created_at', 'id', 'type']
         address_dict = address_instance.as_dict(exclude=exclude_fields)
         return dict(('{}_{}'.format(addr_type, key), value)
                     for key, value in address_dict.iteritems())
