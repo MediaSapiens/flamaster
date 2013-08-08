@@ -57,17 +57,26 @@ def multilingual(cls):
             pass
 
         if lang is None:
-            lang = unicode(current_app.conf['BABEL_DEFAULT_LOCALE'])
+            lang = unicode(current_app.config['BABEL_DEFAULT_LOCALE'])
 
         return lang
 
     def create_property(cls, localized, columns, field, def_setter=False):
 
         def getter(self):
+
             lang = _get_locale()
             instance = localized.query.filter_by(parent_id=self.id,
                                                  locale=lang).first()
-            return instance and getattr(instance, field) or None
+            if instance and getattr(instance, field):
+                return instance and getattr(instance, field)
+            else:
+                if '_lang' in request.args:
+                    return ""
+                else:
+                    instance = localized.query.filter_by(parent_id=self.id,
+                                                         locale=current_app.config['BABEL_DEFAULT_LOCALE']).first()
+                    return instance and getattr(instance, field)
 
         def setter(self, value):
             lang = _get_locale()
