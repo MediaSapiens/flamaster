@@ -102,7 +102,8 @@ class SessionResource(Resource):
             'id': session['id'],
             'is_anonymous': current_user.is_anonymous(),
             'uid': session.get('user_id'),
-            'cuid': cuid
+            'cuid': cuid,
+            'locale': g.locale
         }
         response.update(kwargs)
         return response
