@@ -156,7 +156,7 @@ class CartMixin(CRUDMixin):
         """ Return all cart items unoredered within expected time period
             :param timedelta: datetime.datetime type for expirity marker
         """
-        return cls.query.filter(cls.created_at < timedelta,
+        return cls.query.filter(cls.created_at <= timedelta,
                                 cls.is_ordered == False)
 
     @classmethod

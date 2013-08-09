@@ -15,6 +15,8 @@ def drop_unordered_cart_items():
     for cart in expired_q:
         Shelf.query.filter_by(price_option_id=cart.price_option_id).\
             update({'quantity': Shelf.quantity + cart.amount})
+        related = cart_cls.for_customer(cart.customer)
+        related.delete()
     response = expired_q.count()
     carts_removed.send(
         response,
