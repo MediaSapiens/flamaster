@@ -224,6 +224,7 @@ class OrderResource(ModelResource):
             data = self._request_data
 
             if data['payment_method'] in current_app.config['REDIRECTED_PAYMENT_METHODS']:
+
                 return datastore.create_from_request(**data)
 
             try:

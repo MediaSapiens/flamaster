@@ -68,18 +68,21 @@ class PayPalPaymentMethod(BasePaymentMethod):
         counter = 0
         products_params = {}
         for item in cards:
-            vat = round_decimal(Decimal(item.unit_price*item.vat/100))
+            vat = round_decimal(Decimal(item.unit_price * item.vat / 100))
             price = round_decimal(Decimal(item.unit_price - vat))
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
             products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = price
             products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = round_decimal(Decimal(item.amount))
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
-
             counter += 1
+
         if self.order_data['total_discount']:
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
             products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = round_decimal(Decimal((-self.order_data['total_discount'])))
-            counter += 1
+
+        goods_price_net = self.order_data['goods_price_net']
+        goods_price = self.order_data['goods_price']
+        vat = goods_price - goods_price_net
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -88,9 +91,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
-            'PAYMENTREQUEST_0_ITEMAMT':  round_decimal(Decimal(self.order_data['goods_price'])),
+            'PAYMENTREQUEST_0_ITEMAMT':  round_decimal(Decimal(goods_price_net)),
             #'PAYMENTREQUEST_0_DESC': "Text with order description",
-            'PAYMENTREQUEST_0_TAXAMT': round_decimal(Decimal(self.order_data['total_vat'])),
+            'PAYMENTREQUEST_0_TAXAMT': round_decimal(Decimal(vat)),
             'RETURNURL': request.url_root.rstrip('/') + url_for(
                                             'payment.process_payment',
                                             payment_method=self.method_name),
@@ -101,10 +104,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         request_params.update(products_params)
         response = self.__do_request(request_params)
-        from pprint import pprint
-        #
-        pprint (request_params)
-        pprint(response)
+
         if response['ACK'] == RESPONSE_OK:
             webface_url = self.__get_redirect_url(response)
             order = Order.create(**self.order_data)

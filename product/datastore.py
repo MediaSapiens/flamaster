@@ -48,7 +48,7 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
                                                            goods,
                                                            delivery_address)
 
-        goods_price_net, goods_price, total_vat, total_discount = \
+        goods_price_net, goods_price, total_discount = \
             self.get_customer_discount(customer_id, goods, **kwargs)
 
         delivery_free = self.get_cart_discount(goods_price_net)
@@ -69,7 +69,6 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
             'payment_fee': payment_fee,
             'total_price': total_price,
             'total_discount': total_discount,
-            'total_vat': total_vat,
             'delivery_free': delivery_free,
             'delivery_price': delivery_price,
             'state': OrderStates.created})
