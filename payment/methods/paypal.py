@@ -72,7 +72,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             price = round_decimal(Decimal(item.unit_price - vat))
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
             products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = price
-            products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = round_decimal(Decimal(item.amount))
+            products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = item.amount
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
             counter += 1
 

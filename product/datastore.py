@@ -43,7 +43,6 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
         if goods is None:
             goods = self.goods_ds.find(customer=customer, is_ordered=False)
 
-        # goods_price = self.goods_ds.get_price(goods)
         delivery_price = self.order_model.resolve_delivery(kwargs.pop('delivery_provider_id'),
                                                            goods,
                                                            delivery_address)
