@@ -9,7 +9,7 @@ from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
 from flamaster.core import db, http
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, round_decimal
 from flamaster.product.models import PaymentTransaction, Order, Cart
 from flamaster.product.datastore import PaymentTransactionDatastore, CartDatastore
 from flamaster.product.signals import order_created
@@ -67,16 +67,14 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         counter = 0
         products_params = {}
+        total_discount_net = 0
         for item in cards:
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
-            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.unit_price
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.discount_unit_price
             products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = item.amount
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
-
+            total_discount_net += item.discount_net_price * item.amount
             counter += 1
-        if self.order_data['total_discount']:
-            products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
-            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] =  "%.2f" % (-self.order_data['total_discount'])
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -85,7 +83,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
-            'PAYMENTREQUEST_0_ITEMAMT': self.order_data['goods_price'],
+            'PAYMENTREQUEST_0_ITEMAMT': round_decimal(self.order_data['goods_price']),
             #'PAYMENTREQUEST_0_DESC': "Text with order description",
 
             'RETURNURL': request.url_root.rstrip('/') + url_for(

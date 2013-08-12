@@ -60,6 +60,27 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
 
         total_price = round_decimal(goods_price + delivery_price + payment_fee)
 
+        discounts = self._get_discounts(customer_id)
+        prices = None
+
+        if discounts:
+            discount = discounts[0]
+            prices = self._get_prices_with_discount(discount)
+        else:
+            prices = {}
+            for good in goods:
+                prices[good.id] = {
+                    'gross': good.unit_price,
+                    'net': good.unit_price - good.product.get_vat().calculate(good.unit_price),
+                    'amount': good.amount
+                }
+
+        if goods and prices:
+            for good in goods:
+                good.update(discount_unit_price=prices[good.id]['gross'],
+                            discount_net_price=prices[good.id]['net'],
+                            discount_price=prices[good.id]['gross'] * good.amount)
+
         kwargs.update({
             'reference': str(uuid.uuid4().node),
             'delivery_method': 'dhl',
@@ -101,7 +122,9 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
         """
         goods, kwargs = self.__collect_data(customer_id, **kwargs)
 
-        method = self.order_model.resolve_payment(goods=goods, order_data=kwargs)
+        method = self.order_model.resolve_payment(goods=goods,
+                                                order_data=kwargs)
+
         return method.init_payment()
 
     def create_without_payment(self, customer_id, **kwargs):
