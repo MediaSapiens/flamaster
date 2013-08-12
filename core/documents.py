@@ -46,15 +46,16 @@ class DocumentMixin(Model):
         if attr in self.i18n:
             value_dict = value
             value = value_dict.get(self._lang)
-            if '_lang' in request.args:
-                if type(value) not in (unicode, str):
-                    value=""
-            else:
-                if (type(value) not in (unicode, str)
-                    or value is None
-                    or value==""
-                    and self._lang!=self._fallback_lang):
+            if value is None:
+                if '_lang' in request.args:
+                    value = ""
+                else:
                     value = value_dict.get(self._fallback_lang)
+            elif type(value) not in (unicode, type):
+                if '_lang' in request.args:
+                    value = ""
+                else:
+                    value = value.get(self._fallback_lang)
         return value
 
     @classproperty
