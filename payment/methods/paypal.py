@@ -70,11 +70,13 @@ class PayPalPaymentMethod(BasePaymentMethod):
         total_discount_net = 0
         for item in cards:
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
-            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.discount_unit_price
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.discount_net_price
             products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = item.amount
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
             total_discount_net += item.discount_net_price * item.amount
             counter += 1
+
+        total_discount_net = round_decimal(total_discount_net)
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -83,7 +85,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
-            'PAYMENTREQUEST_0_ITEMAMT': round_decimal(self.order_data['goods_price']),
+            'PAYMENTREQUEST_0_ITEMAMT': total_discount_net,
+            'PAYMENTREQUEST_0_TAXAMT': round_decimal(round_decimal(self.order_data['goods_price']) - total_discount_net),
             #'PAYMENTREQUEST_0_DESC': "Text with order description",
 
             'RETURNURL': request.url_root.rstrip('/') + url_for(
