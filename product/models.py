@@ -29,7 +29,10 @@ class Cart(db.Model, CRUDMixin):
     service = db.Column(db.String)
     amount = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(precision=18, scale=2))
+    discount_price = db.Column(db.Numeric(precision=18, scale=2))
     unit_price = db.Column(db.Numeric(precision=18, scale=2))
+    discount_unit_price = db.Column(db.Numeric(precision=18, scale=2))
+    discount_net_price = db.Column(db.Numeric(precision=18, scale=2))
     vat = db.Column(db.Numeric(precision=18, scale=2))
     is_ordered = db.Column(db.Boolean, default=False, index=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'),
