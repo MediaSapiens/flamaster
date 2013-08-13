@@ -15,17 +15,8 @@ class DiscountMixin(object):
     customer_model = Customer
 
     def __calculate_discount(self, good, discount):
-        """
-        Calculation of discount, net_price, vat, gross_price for one good
-        :param good: dict with goods params
-        :param discount: value of discount
-        :return:net_price, gross_price
-        """
-
         net_price = good['net_price'] - discount
-        vat = net_price*(good['vat'] / 100)
-        gross_price = net_price + vat
-
+        gross_price = net_price + (net_price * (good['vat'] / 100))
         return (net_price, gross_price)
 
     def _get_prices_with_discount(self, item):
@@ -62,7 +53,7 @@ class DiscountMixin(object):
         if not gross:
             return Decimal(total_gross)
 
-        return (Decimal(total_net), Decimal(total_gross), Decimal(total_discount))
+        return (Decimal(total_net), Decimal(total_gross))
 
     def _goods_as_dict(self, goods):
         goods_as_dict = []
@@ -98,13 +89,14 @@ class DiscountMixin(object):
         if items:
             max_discount = items[0]
             result = self.__get_discount(max_discount, gross=True)
+            result += (goods_net - result[0],)
         else:
-            # If we don`t have discount for customer
             result = (
                 Decimal(goods_net),
                 Decimal(goods_gross),
                 Decimal(0)
             )
+
         return result
 
     def get_cart_discount(self, goods_price):
