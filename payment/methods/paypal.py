@@ -9,7 +9,7 @@ from flask import redirect, url_for, request, json, Response
 from urlparse import parse_qsl
 
 from flamaster.core import db, http
-from flamaster.core.utils import jsonify_status_code
+from flamaster.core.utils import jsonify_status_code, round_decimal
 from flamaster.product.models import PaymentTransaction, Order, Cart
 from flamaster.product.datastore import PaymentTransactionDatastore, CartDatastore
 from flamaster.product.signals import order_created
@@ -68,15 +68,21 @@ class PayPalPaymentMethod(BasePaymentMethod):
         counter = 0
         products_params = {}
         for item in cards:
+            vat = round_decimal(Decimal(item.unit_price * item.vat / 100))
+            price = round_decimal(Decimal(item.unit_price - vat))
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = item.product.name
-            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = item.unit_price
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = price
             products_params['L_PAYMENTREQUEST_0_QTY%d' % counter] = item.amount
             #products_params['L_PAYMENTREQUEST_0_DESC%d' % counter] = item.product.description
-
             counter += 1
+
         if self.order_data['total_discount']:
             products_params['L_PAYMENTREQUEST_0_NAME%d' % counter] = 'discount'
-            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] =  "%.2f" % (-self.order_data['total_discount'])
+            products_params['L_PAYMENTREQUEST_0_AMT%d' % counter] = round_decimal(Decimal((-self.order_data['total_discount'])))
+
+        goods_price_net = self.order_data['goods_price_net']
+        goods_price = self.order_data['goods_price']
+        vat = goods_price - goods_price_net
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -85,9 +91,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
-            'PAYMENTREQUEST_0_ITEMAMT': self.order_data['goods_price'],
+            'PAYMENTREQUEST_0_ITEMAMT':  round_decimal(Decimal(goods_price_net)),
             #'PAYMENTREQUEST_0_DESC': "Text with order description",
-
+            'PAYMENTREQUEST_0_TAXAMT': round_decimal(Decimal(vat)),
             'RETURNURL': request.url_root.rstrip('/') + url_for(
                                             'payment.process_payment',
                                             payment_method=self.method_name),
