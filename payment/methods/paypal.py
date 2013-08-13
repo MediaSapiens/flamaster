@@ -85,7 +85,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_SHIPPINGAMT': self.order_data['delivery_price'],
             'PAYMENTREQUEST_0_ITEMAMT': round_decimal(self.order_data['goods_price']),
             #'PAYMENTREQUEST_0_DESC': "Text with order description",
-
+            'PAYMENTREQUEST_0_TAXAMT': round_decimal(Decimal(vat)),
             'RETURNURL': request.url_root.rstrip('/') + url_for(
                                             'payment.process_payment',
                                             payment_method=self.method_name),
