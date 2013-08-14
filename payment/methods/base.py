@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from flask import current_app, render_template, request, json, session
-from werkzeug.utils import import_string, redirect
+from flask import current_app, render_template, request, json
+import requests
+from werkzeug.utils import import_string
 
 from .. import payment
 
@@ -15,6 +16,7 @@ class BasePaymentMethod(object):
         self.settings = my_method.get('settings')
         self.sandbox = my_method['SANDBOX']
         self.order = order
+        self.session = requests.Session()
 
     def verify(self, data):
         raise NotImplementedError

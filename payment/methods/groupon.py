@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import trafaret as t
 import requests
-from flask import current_app
+from flask import current_app, session
 from flask.ext.babel import gettext as _
 from requests.auth import HTTPBasicAuth
 
@@ -64,6 +64,11 @@ class GrouponPaymentMethod(BasePaymentMethod):
         data = self.order.details
         data['status'] = 'OK'
         try:
+            option_id = session.pop('valid_option', None)
+            carts = self.order.goods.filter_by(price_option_id=option_id)
+            if carts.count() != self.order.carts.count():
+                raise t.DataError({'voucher': _('Invalid price option')})
+
             redemption = self.__redeem(voucher=data['voucher'],
                                        security=data['code'],
                                        deal=data['deal'])
@@ -119,6 +124,9 @@ class GrouponPaymentMethod(BasePaymentMethod):
             current_app.logger.info("Validation response: %s", validation)
             if validation.status_code != http.OK:
                 raise t.DataError({'voucher': _('Invalid voucher')})
+
+            session['valid_option'] = str(option.id)
+
             data.update({
                 'status': 'OK',
                 'seats': deal['number'],
