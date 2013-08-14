@@ -21,6 +21,7 @@ class DocumentMixin(Model):
 
     def __init__(self, initial=None, **kwargs):
         try:
+
             if '_lang' in request.args:
                 kwargs['_lang'] = request.args['_lang']
             elif request.json and '_lang' in request.json:
@@ -46,7 +47,7 @@ class DocumentMixin(Model):
         if attr in self.i18n:
             value_dict = value
             value = value_dict.get(self._lang)
-            if value is None:
+            if value is None or value=="":
                 if '_lang' in request.args or (request.json and '_lang' in request.json):
                     value = ""
                 else:
@@ -56,6 +57,7 @@ class DocumentMixin(Model):
                     value = ""
                 else:
                     value = value.get(self._fallback_lang)
+
         return value
 
     @classproperty
