@@ -66,7 +66,7 @@ class GrouponPaymentMethod(BasePaymentMethod):
         try:
             option_id = session.pop('valid_option', None)
             carts = self.order.goods.filter_by(price_option_id=option_id)
-            if carts.count() != self.order.carts.count():
+            if carts.count() != self.order.goods.count():
                 raise t.DataError({'voucher': _('Invalid price option')})
 
             redemption = self.__redeem(voucher=data['voucher'],
