@@ -142,7 +142,7 @@ def multilingual(cls):
 
             kwargs = dict(filter(lambda col: col[0] in localized_names, kwargs.items()))
             instance = cls_localized.create(parent=obj, locale=lang, **kwargs)
-            return instance
+            return obj
 
         cls.create = hybrid_method(create)
 
