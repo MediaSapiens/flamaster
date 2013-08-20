@@ -17,8 +17,9 @@ def drop_unordered_cart_items():
             update({'quantity': Shelf.quantity + cart.amount})
         # TODO: need to implement cartSession entity to massively remove
         # stalled ones.
-        related = cart_cls.for_customer(cart.customer)
-        related.delete()
+        if cart.customer is not None:
+            related = cart_cls.for_customer(cart.customer)
+            related.delete()
     response = expired_q.count()
     carts_removed.send(
         response,
