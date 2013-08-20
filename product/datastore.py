@@ -83,7 +83,7 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
 
         kwargs.update({
             'reference': str(uuid.uuid4().node),
-            'delivery_method': 'dhl',
+            'delivery_method': 'gls',
             'customer': customer,
             'goods_price': goods_price,
             'goods_price_net': goods_price_net,
