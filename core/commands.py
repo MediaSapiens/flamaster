@@ -32,7 +32,7 @@ class MigratePriceOptions(Command):
     def reassign_price(self, item):
         collection = self.get_collection('product_variants')
         collection.update(
-            {'_id': item['id']},
+            {'_id': item['_id']},
             {'$set': {'price_options': item['_price_options']}}
         )
 
