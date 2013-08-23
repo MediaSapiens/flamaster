@@ -21,9 +21,9 @@ class Discount(db.Model, CRUDMixin):
     free_delivery - user dosen`t pay for the delivery, if this field is true
     """
     group_name = db.Column(db.String(255))
-    discount_type = db.Column(db.Enum(PERCENT_CHOICE, CURRENCY_CHOICE))
+    discount_type = db.Column(db.Enum(PERCENT_CHOICE, CURRENCY_CHOICE, name='discount_type'))
     amount = db.Column(db.Numeric(precision=18, scale=2))
-    group_type = db.Column(db.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, CART_CHOICE))
+    group_type = db.Column(db.Enum(CATEGORY_CHOICE, USER_CHOICE, PRODUCT_CHOICE, CART_CHOICE, name='group_type'))
     date_from = db.Column(db.Date)
     date_to = db.Column(db.Date)
     shop_id = db.Column(db.Integer(), db.ForeignKey('shops.id'))
