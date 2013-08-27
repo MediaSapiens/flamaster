@@ -5,12 +5,12 @@ from flamaster.extensions import db
 
 
 class ProductDelivery(db.Model, CRUDMixin):
-    delivery_type = db.Column(db.String(128), nullable=False)
+    delivery_type = db.Column(db.String(128), nullable=True)
     variant_id = db.Column(db.String(255), nullable=False, index=True)
     cost = db.Column(db.Numeric(precision=18, scale=2))
 
     country_id = db.Column(db.Integer, db.ForeignKey('countries.id'),
-                           nullable=False)
+                           nullable=True)
     country = db.relationship('Country')
 
     __table_args__ = (db.UniqueConstraint('delivery_type', 'variant_id',
