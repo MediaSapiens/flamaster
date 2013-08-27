@@ -5,6 +5,8 @@ from flamaster.core.datastore import AbstractDatastore
 from flamaster.core.utils import round_decimal
 from flamaster.core.mixins import DiscountMixin
 
+from flask import current_app
+
 from operator import attrgetter
 
 from . import OrderStates
@@ -93,6 +95,9 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
             'delivery_free': delivery_free,
             'delivery_price': delivery_price,
             'state': OrderStates.created})
+
+        if kwargs['payment_method'] in current_app.config['MANUAL_PAYMENT_METHODS']:
+            kwargs['state'] = OrderStates.expect_payment
 
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))
