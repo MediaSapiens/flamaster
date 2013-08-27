@@ -5,6 +5,7 @@ from flamaster.extensions import db
 
 
 class ProductDelivery(db.Model, CRUDMixin):
+    delivery_type = db.Column(db.String(128), nullable=False)
     variant_id = db.Column(db.String(255), nullable=False, index=True)
     cost = db.Column(db.Numeric(precision=18, scale=2))
 
@@ -12,10 +13,6 @@ class ProductDelivery(db.Model, CRUDMixin):
                            nullable=False)
     country = db.relationship('Country')
 
-    @classmethod
-    def collect_delivery_options(cls, order):
-        variant_ids = map(attrgetter('product_variant_id'), order.goods)
-        country_filtered = cls.query.filter_by(
-                                country_id=order.delivery_country_id)
-        by_variant = country_filtered.filter(cls.variant_id.in_(variant_ids))
-        return by_variant
+    __table_args__ = (db.UniqueConstraint('delivery_type', 'variant_id',
+                                          'country_id',
+                                          name='uq_type_variant_country'))
