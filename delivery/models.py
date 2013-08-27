@@ -15,4 +15,4 @@ class ProductDelivery(db.Model, CRUDMixin):
 
     __table_args__ = (db.UniqueConstraint('delivery_type', 'variant_id',
                                           'country_id',
-                                          name='uq_type_variant_country'))
+                                          name='uq_type_variant_country'),)
