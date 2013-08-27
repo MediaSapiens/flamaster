@@ -1,15 +1,10 @@
 from __future__ import absolute_import
-from flamaster.core.decorators import api_resource
-from flamaster.core.resources import Resource
-from werkzeug import import_string
-from . import bp
+from flamaster.core.resources import ModelResource
+from flamaster.delivery.models import ProductDelivery
 
 
-@api_resource(bp, 'options', {'id': int})
-class DeliveryResource(Resource):
-
-    def get(self, id=None):
-        pass
+class ProductDeliveryResource(ModelResource):
+    model = ProductDelivery
 
     def put(self, id=None):
         raise NotImplementedError()
