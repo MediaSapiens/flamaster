@@ -5,7 +5,7 @@ from flamaster.core.decorators import api_resource
 from flamaster.core.resources import Resource
 from flamaster.core.utils import jsonify_status_code
 
-from werkzeug import import_string
+from werkzeug.utils import import_string
 from . import bp
 
 
