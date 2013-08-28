@@ -18,6 +18,7 @@ from flask.ext.security.utils import verify_password, encrypt_password
 from flask.ext.security.confirmable import (confirm_email_token_status,
                                             confirm_user, requires_confirmation)
 from flask.ext.security.registerable import register_user
+from flask.ext.security.recoverable import send_reset_password_instructions
 
 from sqlalchemy import or_
 
@@ -31,8 +32,9 @@ __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 class SessionResource(Resource):
     validation = t.Dict({
         'email': t.Email,
-        'password': t.Or(t.String(allow_blank=True), t.Null)
-    }).make_optional('password').ignore_extra('*')
+        'password': t.Or(t.String(allow_blank=True), t.Null),
+        'reset': t.Bool
+    }).make_optional('password', 'reset').ignore_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
@@ -58,11 +60,24 @@ class SessionResource(Resource):
 
         try:
             cleaned_data = self.clean(request.json)
-            self._authenticate(cleaned_data)
-            response = self._get_response()
-
         except t.DataError as e:
-            response, status = e.as_dict(), http.NOT_FOUND
+            return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
+
+        if cleaned_data.pop('reset', False):
+            user = User.query.filter_by(email=cleaned_data['email']).all()
+
+            if user:
+                send_reset_password_instructions(user[0])
+                response = {'status': 'success'}
+                return jsonify_status_code(response, status)
+            return jsonify_status_code({'email': _("This email is not found")},
+                                                                http.NOT_FOUND)
+        try:
+            self._authenticate(cleaned_data)
+        except t.DataError as e:
+            response, status = e.as_dict(), http.BAD_REQUEST
+        else:
+            response = self._get_response()
 
         return jsonify_status_code(response, status)
 
