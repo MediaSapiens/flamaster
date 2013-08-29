@@ -159,7 +159,10 @@ THUMBNAIL_FORMAT = 'PNG'
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~Payment settings~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DELIVERY_TYPES = ['eticket', 'hard_copy']
+DELIVERY_HARD = 'hard_copy'
+DELIVERY_ETICKET = 'eticket'
+
+DELIVERY_TYPES = [DELIVERY_HARD, DELIVERY_ETICKET]
 
 DELIVERY_OPTIONS = {
     'standard': {
