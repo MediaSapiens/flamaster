@@ -30,7 +30,7 @@ __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
            'OrderResource']
 
 
-@api_resource(bp, 'categories', {'id': int})
+# @api_resource(bp, 'categories', {'id': int})
 class CategoryResource(SlugResource):
 
     model = Category
