@@ -9,7 +9,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from flask import current_app, render_template, request
 from flask.ext.mail import Message
-from flask.helpers import json
+from flask import json
 
 from importlib import import_module
 from os.path import abspath, dirname, join

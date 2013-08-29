@@ -158,7 +158,7 @@ class SessionResource(Resource):
         return response
 
 
-@api_resource(bp, 'profiles', {'id': int})
+# @api_resource(bp, 'profiles', {'id': int})
 class ProfileResource(ModelResource):
 
     validation = t.Dict({'first_name': t.String,
