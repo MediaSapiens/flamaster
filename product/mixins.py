@@ -36,7 +36,7 @@ class OrderMixin(CRUDMixin):
     payment_method = db.Column(db.String, nullable=False, index=True)
     state = db.Column(db.Integer, index=True)
     # stored cost for the order delivery
-    delivery_method = db.Column(db.String, nullable=False, index=True)
+    #delivery_method = db.Column(db.String, nullable=False, index=True)
     delivery_price = db.Column(db.Numeric(precision=18, scale=2))
 
     @declared_attr
