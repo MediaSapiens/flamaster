@@ -6,7 +6,8 @@ from trafaret import extras as te
 from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
-from flamaster.core.utils import jsonify_status_code, null_fields_filter
+from flamaster.core.utils import (jsonify_status_code, null_fields_filter,
+                                                                    send_email)
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
@@ -18,7 +19,9 @@ from flask.ext.security.utils import verify_password, encrypt_password
 from flask.ext.security.confirmable import (confirm_email_token_status,
                                             confirm_user, requires_confirmation)
 from flask.ext.security.registerable import register_user
-from flask.ext.security.recoverable import send_reset_password_instructions
+from flask.ext.security.recoverable import (generate_reset_password_token,
+                                            reset_password_token_status)
+from flask.ext.security.signals import reset_password_instructions_sent
 
 from sqlalchemy import or_
 
@@ -33,8 +36,11 @@ class SessionResource(Resource):
     validation = t.Dict({
         'email': t.Email,
         'password': t.Or(t.String(allow_blank=True), t.Null),
+        'confirm_password': t.Or(t.String(allow_blank=True), t.Null),
+        'token': t.Or(t.String(allow_blank=True), t.Null),
         'reset': t.Bool
-    }).make_optional('password', 'reset').ignore_extra('*')
+    }).make_optional('password', 'confirm_password', 'token',
+                    'reset').ignore_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
@@ -55,6 +61,48 @@ class SessionResource(Resource):
             response, status = e.as_dict(), http.BAD_REQUEST
         return jsonify_status_code(response, status)
 
+    def __change_password(self, password, confirm_password, token):
+        expired, invalid, user = reset_password_token_status(token)
+        if invalid or expired:
+            return jsonify_status_code({'token': _("Wrong token")},
+                                                        http.BAD_REQUEST)
+
+        if password != confirm_password:
+            return jsonify_status_code(
+                        {'confirm_password': _("Passwords do not match")},
+                        http.BAD_REQUEST
+                    )
+
+        user.update(password=password)
+        login_user(user)
+        return jsonify_status_code({'status': 'success'}, http.ACCEPTED)
+
+    def __reset_password(self, email):
+        user = User.query.filter_by(email=email).all()
+
+        if user:
+            token = generate_reset_password_token(user[0])
+            url = 'reset_password/%s' % token
+            reset_link = request.url_root + url
+
+            subject = "Reset password"
+            recipient = user[0].email
+            template = "reset_password"
+            params = {
+                'user': user[0].first_name or user[0].email,
+                'reset_link': reset_link
+            }
+            send_email(subject, recipient, template, **params)
+
+            reset_password_instructions_sent.send(
+                                    current_app._get_current_object(),
+                                    user=user[0], token=token
+                                )
+            response = {'status': 'success'}
+            return jsonify_status_code(response, http.ACCEPTED)
+        return jsonify_status_code({'email': _("This email is not found")},
+                                                                http.NOT_FOUND)
+
     def put(self, id):
         status = http.ACCEPTED
 
@@ -63,15 +111,15 @@ class SessionResource(Resource):
         except t.DataError as e:
             return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
 
-        if cleaned_data.pop('reset', False):
-            user = User.query.filter_by(email=cleaned_data['email']).all()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        token = cleaned_data.get('token')
+        if None not in (confirm_password, token):
+            return self.__change_password(password, confirm_password, token)
 
-            if user:
-                send_reset_password_instructions(user[0])
-                response = {'status': 'success'}
-                return jsonify_status_code(response, status)
-            return jsonify_status_code({'email': _("This email is not found")},
-                                                                http.NOT_FOUND)
+        if cleaned_data.pop('reset', False):
+            return self.__reset_password(cleaned_data['email'])
+
         try:
             self._authenticate(cleaned_data)
         except t.DataError as e:
