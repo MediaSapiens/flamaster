@@ -29,8 +29,9 @@ class BaseMixin(object):
         result = dict()
         for field in exportable_fields:
             value = getattr(self, field)
-            result[field] = callable(value) and value() or value
-            
+            if hasattr(value, '__call__'):
+                value = value()
+            result[field] = value
         return result
 
     @classmethod
