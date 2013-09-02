@@ -40,7 +40,7 @@ class SessionResource(Resource):
         'token': t.Or(t.String(allow_blank=True), t.Null),
         'reset': t.Bool
     }).make_optional('password', 'confirm_password', 'token',
-                    'reset').ignore_extra('*')
+                    'reset', 'email').ignore_extra('*')
 
     def get(self, id=None):
         return jsonify_status_code(self._get_response())
