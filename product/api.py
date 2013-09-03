@@ -30,7 +30,7 @@ __all__ = ['CategoryResource', 'CountriesResource', 'CartResource',
            'OrderResource']
 
 
-@api_resource(bp, 'categories', {'id': int})
+# @api_resource(bp, 'categories', {'id': int})
 class CategoryResource(SlugResource):
 
     model = Category
@@ -44,7 +44,8 @@ class CategoryResource(SlugResource):
         'image': t.String(allow_blank=True),
         'images': t.List(t.String),
         'slug': t.String,
-        'shop_id': t.Int,
+        #'shop_id': t.Int,
+        'shops': t.List(t.Int),
         t.Key('show_on_homepage', default=False): t.Bool,
         'is_visible': t.Bool,
         'is_visible_in_nav': t.Bool
