@@ -2,4 +2,6 @@ from flask import Blueprint
 
 bp = Blueprint('account', __name__, url_prefix='/account')
 
-import signals, api
+import signals
+import api
+import views

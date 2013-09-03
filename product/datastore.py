@@ -5,7 +5,7 @@ from flamaster.core.datastore import AbstractDatastore
 from flamaster.core.utils import round_decimal
 from flamaster.core.mixins import DiscountMixin
 
-from operator import attrgetter
+from flask import current_app
 
 from . import OrderStates
 from .signals import order_created
@@ -93,6 +93,9 @@ class OrderDatastore(AbstractDatastore, DiscountMixin):
             'delivery_free': delivery_free,
             'delivery_price': delivery_price,
             'state': OrderStates.created})
+
+        if kwargs['payment_method'] in current_app.config['MANUAL_PAYMENT_METHODS']:
+            kwargs['state'] = OrderStates.expect_payment
 
         kwargs.update(self.__prepare_address('delivery', delivery_address))
         kwargs.update(self.__prepare_address('billing', billing_address))
@@ -189,4 +192,5 @@ class PaymentTransactionDatastore(AbstractDatastore):
         if tnx.status == self.transaction_model.ACCEPTED:
             # Attach cart items to order and mark as ordered
             self.goods_ds.mark_ordered(goods, order)
-            order.mark_paid()
+            if order.payment_method not in current_app.config['MANUAL_PAYMENT_METHODS']:
+                order.mark_paid()

@@ -8,7 +8,7 @@ from . import core
 __all__ = ['index', 'template']
 
 
-@core.route('/')
+# @core.route('/')
 def index():
     return render_template('base.html', **{})
 

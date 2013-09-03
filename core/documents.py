@@ -52,7 +52,7 @@ class DocumentMixin(Model):
                     value = ""
                 else:
                     value = value_dict.get(self._fallback_lang)
-            elif type(value) not in (unicode, type):
+            elif type(value) not in (unicode, str, type):
                 if '_lang' in request.args or (request.json and '_lang' in request.json):
                     value = ""
                 else:
