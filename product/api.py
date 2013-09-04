@@ -231,7 +231,10 @@ class OrderResource(ModelResource):
             try:
                 instance = datastore.create_from_api(**data)
                 response = self.serialize(instance)
-            except Exception:
+            except Exception as e:
+                klarna_error = getattr(e, 'faultString', None)
+                if klarna_error is not None:
+                    raise t.DataError({'payment_method': klarna_error})
                 raise t.DataError({'payment_method': _('Unknown error')})
 
         except t.DataError as err:
