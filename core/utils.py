@@ -187,9 +187,9 @@ def send_email(subject, recipient, template, attachments=None, **context):
         html_body=render_template('{0}/{1}.html'.format(*ctx), **context),
     )
     message.recipients.extend(isinstance(recipient, basestring) and [recipient] or recipient)
-    if attachments is not None:
-        message.attachments.extend(attachments)
+    attachments and message.attachments.extend(attachments)
     message.save()
+    # Pass message to celery
     send_message_from_queue.delay(message.id)
 
 
