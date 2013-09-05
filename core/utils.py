@@ -183,7 +183,7 @@ def send_email(subject, recipient, template, attachments=None, **context):
     ctx = ('email', template)
     message = StoredMail(
         subject=subject,
-        text_body=render_template('{0}/{1}.txt'.format(*ctx), **context),
+        # text_body=render_template('{0}/{1}.txt'.format(*ctx), **context),
         html_body=render_template('{0}/{1}.html'.format(*ctx), **context),
     )
     message.recipients.extend(isinstance(recipient, basestring) and [recipient] or recipient)
