@@ -2,9 +2,9 @@ from .base import BasePaymentMethod
 from flamaster.product.models import PaymentTransaction
 
 
-class BankTransferPaymentMethod(BasePaymentMethod):
-    method_name = 'bank_transfer'
+class DirectPaymentMethod(BasePaymentMethod):
+    method_name = 'direct_payment'
 
     def process_payment(self, **kwargs):
         return PaymentTransaction.create(status=PaymentTransaction.ACCEPTED,
-                                details='bank_transfer: %s' % self.order_data.__str__())
+                                details='direct_payment: %s' % self.order_data.__str__())

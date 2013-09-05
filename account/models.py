@@ -74,6 +74,10 @@ class Customer(db.Model, CRUDMixin):
     _delivery_address = db.relationship("Address", cascade='all, delete',
                         primaryjoin="Customer.delivery_address_id==Address.id",
                         post_update=True)
+    direct_debit = db.Column(db.Boolean, default=False)
+    swift = db.Column(db.String(80), default='')
+    account_number = db.Column(db.String(80), default='')
+    blz = db.Column(db.String(80), default='')
 
     def __unicode__(self):
         return "{0.first_name} {0.last_name}".format(self)
