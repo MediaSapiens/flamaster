@@ -74,10 +74,6 @@ class Customer(db.Model, CRUDMixin):
     _delivery_address = db.relationship("Address", cascade='all, delete',
                         primaryjoin="Customer.delivery_address_id==Address.id",
                         post_update=True)
-    direct_debit = db.Column(db.Boolean, default=False)
-    swift = db.Column(db.String(80), default='')
-    account_number = db.Column(db.String(80), default='')
-    blz = db.Column(db.String(80), default='')
 
     def __unicode__(self):
         return "{0.first_name} {0.last_name}".format(self)
@@ -161,6 +157,11 @@ class User(db.Model, CRUDMixin, UserMixin):
     current_login_at = db.Column(db.DateTime)
     current_login_ip = db.Column(db.String(128))
     login_count = db.Column(db.Integer)
+    direct_debit = db.Column(db.Boolean, default=False)
+    swift = db.Column(db.String(80), default='')
+    account_number = db.Column(db.String(80), default='')
+    blz = db.Column(db.String(80), default='')
+    iban = db.Column(db.String(80), default='')
 
     roles = db.relationship('Role', secondary=user_roles,
                                 backref=db.backref('users', lazy='dynamic'))
