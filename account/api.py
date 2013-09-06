@@ -228,9 +228,13 @@ class ProfileResource(ModelResource):
             'fax': t.String(allow_blank=True),
             'company': t.String(allow_blank=True),
             'role_id': t.Int,
+            'direct_debit': t.Bool,
+            'swift': t.String(allow_blank=True),
+            'account_number': t.String(allow_blank=True),
+            'blz': t.String(allow_blank=True),
+            'iban': t.String(allow_blank=True),
             te.KeysSubset('password', 'confirmation'): self._cmp_pwds,
-            }).append(self._change_role(id)).make_optional('role_id'). \
-            ignore_extra('*')
+            }).append(self._change_role(id)).make_optional('role_id').ignore_extra('*')
 
     def put(self, id):
         """ we should check for password matching if
@@ -325,7 +329,8 @@ class ProfileResource(ModelResource):
         include = ["first_name", "last_name", "created_at", "phone",
                    "current_login_at", "active", "billing_address",
                    "delivery_address", "logged_at", 'is_superuser', "birth_date",
-                   "fax", "company", "gender", "id"]
+                   "fax", "company", "gender", "id", "direct_debit", "swift",
+                   "account_number", "blz", "iban"]
         # include = ['is_superuser']
 
         if g.user.is_anonymous() or instance.is_anonymous():
@@ -489,13 +494,8 @@ class CustomerResource(ModelResource):
         'fax': t.String(allow_blank=True),
         'company': t.String(allow_blank=True),
         'gender': t.String,
-        'birth_date': t.DateTime,
-        'direct_debit': t.Bool,
-        'swift': t.String,
-        'account_number': t.String,
-        'blz': t.String
-    }).make_optional('phone', 'notes', 'fax', 'company', 'birth_date',
-                     'direct_debit', 'swift', 'account_number', 'blz')\
+        'birth_date': t.DateTime
+    }).make_optional('phone', 'notes', 'fax', 'company', 'birth_date')\
         .ignore_extra('*')
 
     # IE CORS Hack
