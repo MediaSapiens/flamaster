@@ -37,7 +37,7 @@ class CategoryResource(SlugResource):
 
     validation = t.Dict({
         'name': t.String,
-        'description': t.String,
+        'description': t.String(allow_blank=True),
         'category_type': t.String,
         'parent_id': t.Int | t.Null,
         'order': t.Int,
