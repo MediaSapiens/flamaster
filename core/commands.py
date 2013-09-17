@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
 from flask import current_app
+from flask.ext.s3 import create_all
 from flask.ext.script import Command, Option
 
 from flamaster.core.indexer import index
-from flamaster.extensions import db, es, mongo
+from flamaster.extensions import db, es
 
 from pyelasticsearch import ElasticHttpNotFoundError
 # from tests.initial_data import Requirements
@@ -24,6 +25,10 @@ class DropAll(Command):
         db.drop_all()
 
 
+class UpdateS3(Command):
+
+    def run(self):
+        create_all(current_app)
 
 # class RunTests(Command):
 
