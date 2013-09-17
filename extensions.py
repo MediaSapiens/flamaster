@@ -27,4 +27,4 @@ es = ElasticSearch()
 redis = Redis()
 security = Security()
 social = Social()
-s3 = FlaskS3
+s3 = FlaskS3()
