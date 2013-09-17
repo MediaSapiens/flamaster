@@ -4,6 +4,8 @@ import requests
 from werkzeug.utils import import_string
 
 from .. import payment
+from flamaster.product.mixins import OrderMixin
+from flamaster.product.utils import get_order_class
 
 
 class BasePaymentMethod(object):
@@ -52,6 +54,10 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
+    token = request.args.get('token')
+
+    get_order_class().cancel_payment(payment_method=payment_method, token=token)
+
     return render_template('payment/cancel.html')
 
 
