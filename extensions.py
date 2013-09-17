@@ -8,6 +8,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security
 from flask.ext.social import Social
 from flask.ext.elasticsearch import ElasticSearch
+from flask.ext.s3 import FlaskS3
 
 
 def register_jinja_helpers(app):
@@ -26,3 +27,4 @@ es = ElasticSearch()
 redis = Redis()
 security = Security()
 social = Social()
+s3 = FlaskS3
