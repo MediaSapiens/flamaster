@@ -10,6 +10,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from flask import current_app, render_template, request
 from flask.ext.mail import Message
 from flask import json
+from flask.ext.babel import lazy_gettext as _
 
 from importlib import import_module
 from os.path import abspath, dirname, join
@@ -217,4 +218,26 @@ def null_fields_filter(fields=[], data=None):
             data.pop(field)
 
     return data
+
+def trafaret_translate(error):
+    def _replace(err):
+        if type(err) is dict:
+            for k, v in err.iteritems():
+                error = getattr(v, 'error', None)
+                if error is None:
+                    v = _(v)
+                elif type(error) is dict:
+                    v.error = _replace(error)
+                else:
+                    v.error = _(error)
+
+                err[k] = v
+        else:
+            err = _(err)
+
+        return err
+
+    error.error = _replace(error.error)
+
+    return error
 

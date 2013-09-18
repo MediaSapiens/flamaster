@@ -7,7 +7,7 @@ from flask.views import MethodView
 
 
 from . import http
-from .utils import jsonify_status_code, slugify
+from .utils import jsonify_status_code, slugify, trafaret_translate
 
 import re
 
@@ -176,6 +176,7 @@ class ModelResource(Resource):
             data = self.clean(data)
             response = self.serialize(self.model.create(**data))
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -189,6 +190,7 @@ class ModelResource(Resource):
             instance = self.get_object(id).update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -261,6 +263,7 @@ class SlugResource(ModelResource):
             instance = self.model.create(**data)
             response = self.serialize(instance)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -281,6 +284,7 @@ class SlugResource(ModelResource):
             instance.update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -298,7 +302,7 @@ class SlugResource(ModelResource):
         if not self.slug_is_unique(instance, slug):
             response = {'slug': 'Slug is not unique'}
 
-        prog = re.compile('^[a-z,0-9,-]*$', flags=re.I)
+        prog = re.compile('^[a-z,0-9,-,_]*$', flags=re.I)
 
         if not prog.match(slug):
             response = {'slug': 'Slug contains invalid characters'}

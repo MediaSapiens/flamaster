@@ -7,7 +7,7 @@ from flamaster.core import http, _security
 from flamaster.core.decorators import login_required, api_resource
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import (jsonify_status_code, null_fields_filter,
-                                                                    send_email)
+                                    send_email, trafaret_translate)
 from flamaster.product.models import Cart
 
 from flask import abort, request, session, g, current_app, json
@@ -58,6 +58,7 @@ class SessionResource(Resource):
             response, status = self._get_response(), http.CREATED
 
         except t.DataError as e:
+            e = trafaret_translate(e)
             response, status = e.as_dict(), http.BAD_REQUEST
         return jsonify_status_code(response, status)
 
@@ -109,8 +110,7 @@ class SessionResource(Resource):
         try:
             cleaned_data = self.clean(request.json)
         except t.DataError as e:
-            if e.as_dict() == {'email': 'value is not a valid email address'}:
-                e = t.DataError({'email': _('Value is not a valid email address')})
+            e = trafaret_translate(e)
             return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
 
         password = cleaned_data.get('password')
@@ -125,6 +125,7 @@ class SessionResource(Resource):
         try:
             self._authenticate(cleaned_data)
         except t.DataError as e:
+            e = trafaret_translate(e)
             response, status = e.as_dict(), http.BAD_REQUEST
         else:
             response = self._get_response()
@@ -255,6 +256,7 @@ class ProfileResource(ModelResource):
             instance = self.get_object(id).update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -390,6 +392,7 @@ class AddressResource(ModelResource):
 
             response = self.serialize(address)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
@@ -510,6 +513,7 @@ class CustomerResource(ModelResource):
             customer.update(**data)
             response = self.serialize(customer)
         except t.DataError as err:
+            err = trafaret_translate(err)
             status, response = http.BAD_REQUEST, err.as_dict()
 
         return jsonify_status_code(response, status)
@@ -521,6 +525,7 @@ class CustomerResource(ModelResource):
             instance = self.get_object(id).update(with_reload=True, **data)
             response = self.serialize(instance)
         except t.DataError as e:
+            e = trafaret_translate(e)
             status, response = http.BAD_REQUEST, e.as_dict()
 
         return jsonify_status_code(response, status)
