@@ -10,12 +10,14 @@ from decimal import Decimal, ROUND_HALF_UP
 from flask import current_app, render_template, request
 from flask.ext.mail import Message
 from flask import json
+from flask.ext.babel import lazy_gettext as _
 
 from importlib import import_module
 from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
+import trafaret as t
 
 from . import mail
 
@@ -217,4 +219,32 @@ def null_fields_filter(fields=[], data=None):
             data.pop(field)
 
     return data
+
+def trafaret_translate(error):
+    print error.__dict__
+    def _replace(err):
+        for k, v in err.iteritems():
+            error = getattr(v, 'error', None)
+            if error is None:
+                pass
+            elif type(error) == dict:
+                v.error = _replace(error)
+            elif error == 'value is not a valid email address':
+                v.error = _('Value is not a valid email address')
+            elif error == 'blank value is not allowed':
+                v.error = _('Blank value is not allowed')
+            elif error == 'value can\'t be converted to int':
+                v.error = _('Value can\'t be converted to int')
+            elif error == 'value should be None':
+                v.error = _('Value should be None')
+            elif error == 'is required':
+                v.error = _('Is required')
+
+            err[k] = v
+
+        return err
+
+    error.error = _replace(error.error)
+
+    return error
 
