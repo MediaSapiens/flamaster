@@ -109,6 +109,8 @@ class SessionResource(Resource):
         try:
             cleaned_data = self.clean(request.json)
         except t.DataError as e:
+            if e.as_dict() == {'email': 'value is not a valid email address'}:
+                e = t.DataError({'email': _('Value is not a valid email address')})
             return jsonify_status_code(e.as_dict(), http.BAD_REQUEST)
 
         password = cleaned_data.get('password')
