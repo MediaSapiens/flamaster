@@ -17,7 +17,6 @@ from os.path import abspath, dirname, join
 from speaklater import _LazyString
 from unidecode import unidecode
 from werkzeug import import_string, cached_property
-import trafaret as t
 
 from . import mail
 
@@ -222,24 +221,19 @@ def null_fields_filter(fields=[], data=None):
 
 def trafaret_translate(error):
     def _replace(err):
-        for k, v in err.iteritems():
-            error = getattr(v, 'error', None)
-            if error is None:
-                pass
-            elif type(error) == dict:
-                v.error = _replace(error)
-            elif error == 'value is not a valid email address':
-                v.error = _('Value is not a valid email address')
-            elif error == 'blank value is not allowed':
-                v.error = _('Blank value is not allowed')
-            elif error == 'value can\'t be converted to int':
-                v.error = _('Value can\'t be converted to int')
-            elif error == 'value should be None':
-                v.error = _('Value should be None')
-            elif error == 'is required':
-                v.error = _('Is required')
+        if type(err) is dict:
+            for k, v in err.iteritems():
+                error = getattr(v, 'error', None)
+                if error is None:
+                    v = _(v)
+                elif type(error) is dict:
+                    v.error = _replace(error)
+                else:
+                    v.error = _(error)
 
-            err[k] = v
+                err[k] = v
+        else:
+            err = _(err)
 
         return err
 
