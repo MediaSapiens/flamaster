@@ -221,7 +221,6 @@ def null_fields_filter(fields=[], data=None):
     return data
 
 def trafaret_translate(error):
-    print error.__dict__
     def _replace(err):
         for k, v in err.iteritems():
             error = getattr(v, 'error', None)
