@@ -302,7 +302,7 @@ class SlugResource(ModelResource):
         if not self.slug_is_unique(instance, slug):
             response = {'slug': 'Slug is not unique'}
 
-        prog = re.compile('^[a-z,0-9,-,_]*$', flags=re.I)
+        prog = re.compile('^[a-z,0-9,\-,_]*$', flags=re.I)
 
         if not prog.match(slug):
             response = {'slug': 'Slug contains invalid characters'}
