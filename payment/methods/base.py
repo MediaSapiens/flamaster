@@ -54,9 +54,8 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
-    token = request.args.get('token')
-
-    get_order_class().cancel_payment(payment_method=payment_method, token=token)
+    get_order_class().cancel_payment(payment_method=payment_method,
+                                     **request.args.to_dict())
 
     return render_template('payment/cancel.html')
 
