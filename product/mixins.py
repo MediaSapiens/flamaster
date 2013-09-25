@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
+from datetime import datetime
 
 from flamaster.core import lazy_cascade
 from flamaster.core.models import CRUDMixin
@@ -14,6 +15,8 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.utils import import_string
 
 from . import OrderStates, order_paid
+from flamaster.product.utils import get_cart_class
+
 
 class OrderMixin(CRUDMixin):
     shop_id = db.Column(db.String(128), default=SHOP_ID)
@@ -107,6 +110,30 @@ class OrderMixin(CRUDMixin):
         :param kwargs: additional params passed to identify the payment
         """
         raise NotImplementedError()
+
+    def cancel_by_merchant(self):
+        """ Cancels order as if merchant decided to do so, e.g.
+        when customer didn't pay in time
+        """
+        self._delete_carts()
+        self.update(state=OrderStates.merchant_canceled)
+
+    def _delete_carts(self):
+        cart_cls = get_cart_class()
+        carts = cart_cls.query.filter_by(order_id=self.id)
+
+        # we don't use bulk delete, because there's a special Cart.delete()
+        for cart in carts:
+            cart.delete()
+
+    @classmethod
+    def expired(cls, timedelta):
+        """ Return all order items unpaid for within expected time period
+            :param timedelta: datetime.datetime type for expirity marker
+        """
+        min_created_at = datetime.utcnow() - timedelta
+        return cls.query.filter(cls.created_at <= min_created_at,
+                                cls.state == OrderStates.created)
 
 
 class CartMixin(CRUDMixin):
