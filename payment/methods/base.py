@@ -4,7 +4,6 @@ import requests
 from werkzeug.utils import import_string
 
 from .. import payment
-from flamaster.product.mixins import OrderMixin
 from flamaster.product.utils import get_order_class
 
 
