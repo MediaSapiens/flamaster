@@ -104,7 +104,7 @@ class OrderMixin(CRUDMixin):
     @classmethod
     def cancel_payment(cls, payment_method, **kwargs):
         """
-        This method is called when payment is cancelled by customer. Override it
+        This method is called when payment is canceled by customer. Override it
 
         :param payment_method: string which identifies payment method
         :param kwargs: additional params passed to identify the payment

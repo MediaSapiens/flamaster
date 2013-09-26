@@ -9,6 +9,7 @@ import requests
 from flask import redirect, url_for, request, session, current_app
 
 from flamaster.core.utils import jsonify_status_code
+from flamaster.product import OrderStates
 from flamaster.product.documents import BaseProduct
 from flamaster.product.utils import get_order_class
 from . import PAYPAL
@@ -107,7 +108,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         self.order = order_cls.get_by_payment_details(
             {'token': response['TOKEN']}
         )
-        if self.order is None:
+        if self.order is None or self.order.state is not OrderStates.created:
             return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
 
