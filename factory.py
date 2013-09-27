@@ -160,6 +160,10 @@ def show_page_not_found(error):
 
 def get_locale(app):
     def closure():
+        client_locale = request.headers.get('X-Client-Locale')
+        if client_locale:
+            return client_locale
+
         languages = app.config['ACCEPT_LANGUAGES']
         matched = request.accept_languages.best_match(languages)
         language = session.get(app.config['LOCALE_KEY'], matched)
