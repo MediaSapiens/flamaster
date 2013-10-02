@@ -10,8 +10,7 @@ from .signals import carts_removed
 
 def drop_unordered_cart_items():
     cart_cls = get_cart_class()
-    expirity_marker = datetime.utcnow() - timedelta(minutes=20)
-    expired_carts = cart_cls.expired(expirity_marker)
+    expired_carts = cart_cls.expired(max_age=timedelta(minutes=20))
 
     for cart in expired_carts:
         Shelf.query.filter_by(price_option_id=cart.price_option_id).\
