@@ -99,7 +99,7 @@ def jsonify_status_code(data=None, status=200, mimetype='application/json'):
 
 
 def slugify(text, separator='-', prefix=True):
-    text = unidecode(smart_str(text))
+    text = unidecode(text)
     text = re.sub('[^\w\s]', '', text)
     text = re.sub('[^\w]', separator, text)
     if prefix:
