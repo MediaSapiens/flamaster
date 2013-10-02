@@ -33,7 +33,7 @@ def drop_unordered_cart_items():
 
 def drop_unpaid_order_items():
     order_cls = get_order_class()
-    expired_orders = order_cls.expired(timedelta(minutes=10))
+    expired_orders = order_cls.expired(max_age=timedelta(minutes=10))
 
     for order in expired_orders:
         order.cancel_by_merchant()
