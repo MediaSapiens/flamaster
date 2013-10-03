@@ -127,11 +127,11 @@ class OrderMixin(CRUDMixin):
             cart.delete()
 
     @classmethod
-    def expired(cls, timedelta):
-        """ Return all order items unpaid for within expected time period
-            :param timedelta: datetime.datetime type for expirity marker
+    def expired(cls, max_age):
+        """ Returns all order items in 'created' state with age >= max_age
+            :param max_age: timedelta object
         """
-        min_created_at = datetime.utcnow() - timedelta
+        min_created_at = datetime.utcnow() - max_age
         return cls.query.filter(cls.created_at <= min_created_at,
                                 cls.state == OrderStates.created)
 
@@ -189,11 +189,12 @@ class CartMixin(CRUDMixin):
                                    is_ordered=is_ordered)
 
     @classmethod
-    def expired(cls, timedelta):
-        """ Return all cart items unoredered within expected time period
-            :param timedelta: datetime.datetime type for expirity marker
+    def expired(cls, max_age):
+        """ Returns all unordered carts with age >= max_age
+            :param max_age: timedelta object
         """
-        return cls.query.filter(cls.created_at <= timedelta,
+        min_created_at = datetime.utcnow() - max_age
+        return cls.query.filter(cls.created_at <= min_created_at,
                                 cls.is_ordered == False)
 
     @classmethod
