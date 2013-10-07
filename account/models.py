@@ -95,7 +95,7 @@ class Customer(db.Model, CRUDMixin):
                         primaryjoin="Customer.delivery_address_id==Address.id")
 
     def __unicode__(self):
-        return "{0.first_name} {0.last_name}".format(self)
+        return u"{0.first_name} {0.last_name}".format(self)
 
     @property
     def __addresses_ids(self):
