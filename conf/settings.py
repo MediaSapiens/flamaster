@@ -18,7 +18,8 @@ EXTENSIONS = [
     'flamaster.extensions.security',
     'flamaster.extensions.social',
     'flamaster.extensions.redis',
-    'flamaster.extensions.s3'
+    'flamaster.extensions.s3',
+    'flamaster.extensions.sentry'
 ]
 # Blueprint instances to register
 BLUEPRINTS = [
