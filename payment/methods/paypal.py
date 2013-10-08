@@ -42,7 +42,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
         request_params.update(self.settings)
-        sentry.captureMessage('paypal request', data=request_params)
+        sentry.captureMessage('paypal request', extra=request_params)
         resp = requests.get(self.endpoint, params=request_params)
         return dict(parse_qsl(resp.text))
 
@@ -55,7 +55,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Authorization.
         """
         session.update(payment_details)
-        sentry.captureMessage('paypal details', data=payment_details)
+        sentry.captureMessage('paypal details', extra=payment_details)
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -63,17 +63,15 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             # FIXME: BuildError
-            'RETURNURL': request.url_root.rstrip('/') + url_for(
-                'payment.process_payment',
-                payment_method=self.method_name),
-            'CANCELURL': request.url_root.rstrip('/') + url_for(
-                'payment.cancel_payment',
-                payment_method=self.method_name)
+            'RETURNURL': url_for('payment.process_payment',
+                                 payment_method=self.method_name),
+            'CANCELURL': url_for('payment.cancel_payment',
+                                 payment_method=self.method_name)
         }
         # include description for items added to cart
         request_params.update(self.__prepare_cart_items())
         sentry.captureMessage('paypal set checkout details',
-                              data=request_params)
+                              extra=request_params)
 
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
