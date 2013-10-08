@@ -11,6 +11,7 @@ from flamaster.core.utils import jsonify_status_code
 from flamaster.product import OrderStates
 from flamaster.product.documents import BaseProduct
 from flamaster.product.utils import get_order_class
+
 from . import PAYPAL
 from .base import BasePaymentMethod
 
@@ -41,7 +42,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
         request_params.update(self.settings)
-        logger.info('paypal request', extra={
+        logging.info('paypal request', extra={
             'data': request_params
         })
         resp = requests.get(self.endpoint, params=request_params)
