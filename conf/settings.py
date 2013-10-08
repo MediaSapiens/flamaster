@@ -166,6 +166,12 @@ DELIVERY_ETICKET = 'eticket'
 
 DELIVERY_TYPES = [DELIVERY_HARD, DELIVERY_ETICKET]
 
+# Internal delivery to paypal categories mapping
+DELIVERY_TO_PAYPAL = {
+    DELIVERY_HARD: 'Physical',
+    DELIVERY_ETICKET: 'Digital'
+}
+
 DELIVERY_OPTIONS = {
     'standard': {
         'module': 'flamaster.delivery.methods.StandardDelivery',

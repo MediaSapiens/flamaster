@@ -65,6 +65,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             'NOSHIPPING': 1,
+            'REQCONFIRMSHIPPING': 0,
             # FIXME: BuildError
             'RETURNURL': self.url_root + url_for('payment.process_payment',
                                  payment_method=self.method_name),
@@ -98,8 +99,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
         for idx, item in enumerate(self.order.goods):
             product = BaseProduct.objects(pk=item.product_id).first()
+            item_category = current_app.config['DELIVERY_TO_PAYPAL'][item.details.delivery]
             cart_items_request_params.update({
-                'L_PAYMENTREQUEST_0_ITEMCATEGORY{}'.format(idx): 'Digital',
+                'L_PAYMENTREQUEST_0_ITEMCATEGORY{}'.format(idx): item_category,
                 'L_PAYMENTREQUEST_0_TAXAMT{}'.format(idx): Decimal(tax),
                 'L_PAYMENTREQUEST_0_QTY{}'.format(idx): item.amount,
                 'L_PAYMENTREQUEST_0_AMT{}'.format(idx): item.price,
