@@ -5,9 +5,10 @@ from decimal import Decimal
 from urlparse import parse_qsl
 
 import requests
-from flask import redirect, url_for, request, session, current_app, logging
+from flask import redirect, url_for, request, session, current_app
 
 from flamaster.core.utils import jsonify_status_code
+from flamaster.extensions import sentry
 from flamaster.product import OrderStates
 from flamaster.product.documents import BaseProduct
 from flamaster.product.utils import get_order_class
@@ -22,7 +23,6 @@ SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
 DO_PAYMENT = 'DoExpressCheckoutPayment'
 RESPONSE_OK = 'Success'
-logger = logging.getLogger(__name__)
 
 
 class PayPalPaymentMethod(BasePaymentMethod):
@@ -42,9 +42,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
         request_params.update(self.settings)
-        logger.info('paypal request', extra={
-            'data': request_params
-        })
+        sentry.captureMessage('paypal request', data=request_params)
         resp = requests.get(self.endpoint, params=request_params)
         return dict(parse_qsl(resp.text))
 
@@ -57,9 +55,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Authorization.
         """
         session.update(payment_details)
-        logger.info('paypal details', extra={
-            'data': payment_details
-        })
+        sentry.captureMessage('paypal details', data=payment_details)
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -76,10 +72,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         # include description for items added to cart
         request_params.update(self.__prepare_cart_items())
-        logger.info('paypal set checkout', extra={
-            'data': request_params,
-            'stack': True
-        })
+        sentry.captureMessage('paypal set checkout details',
+                              data=request_params)
+
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
