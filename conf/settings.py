@@ -169,7 +169,10 @@ DELIVERY_TYPES = [DELIVERY_HARD, DELIVERY_ETICKET]
 # Internal delivery to paypal categories mapping
 DELIVERY_TO_PAYPAL = {
     DELIVERY_HARD: 'Physical',
-    DELIVERY_ETICKET: 'Digital'
+    #DELIVERY_ETICKET: 'Digital'
+    # TODO: this type should be mapped to Digital product, but for now we have
+    # no permissions of this type on our business account
+    DELIVERY_ETICKET: 'Physical'
 }
 
 DELIVERY_OPTIONS = {
