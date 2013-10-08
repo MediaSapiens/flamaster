@@ -56,6 +56,11 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Step 2 contained. Redirect the Customer to PayPal for
             Authorization.
         """
+        session.update(payment_details)
+        logger.info('paypal details', extra={
+            'data': payment_details
+        })
+
         request_params = {
             'METHOD': SET_CHECKOUT,
             'PAYMENTREQUEST_0_AMT': amount,
@@ -71,6 +76,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
         # include description for items added to cart
         request_params.update(self.__prepare_cart_items())
+        logger.info('paypal set checkout', extra={
+            'data': request_params,
+            'stack': True
+        })
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
@@ -160,7 +169,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Initialization payment process.
         """
         assert isinstance(payment_details, Mapping)
-        session.update(payment_details)
         return self.__set_checkout(self.order.total_price, payment_details)
 
     def process_payment(self):
