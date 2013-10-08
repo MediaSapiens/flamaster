@@ -63,9 +63,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
             # FIXME: BuildError
-            'RETURNURL': url_for('payment.process_payment',
+            'RETURNURL': self.url_root + url_for('payment.process_payment',
                                  payment_method=self.method_name),
-            'CANCELURL': url_for('payment.cancel_payment',
+            'CANCELURL': self.url_root + url_for('payment.cancel_payment',
                                  payment_method=self.method_name)
         }
         # include description for items added to cart
@@ -86,7 +86,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         return {
             'action': 'redirect',
-            'target': url_for('payment.error_payment',
+            'target': self.url_root + url_for('payment.error_payment',
                               payment_method=self.method_name)
         }
 
@@ -114,7 +114,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             {'token': response['TOKEN']}
         )
         if self.order is None or self.order.state is not OrderStates.created:
-            return redirect(url_for('payment.error_payment',
+            return redirect(self.url_root + url_for('payment.error_payment',
                                     payment_method=self.method_name))
 
         request_params = {
@@ -131,10 +131,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
             self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
 
-            return redirect(url_for('payment.success_payment',
+            return redirect(self.url_root + url_for('payment.success_payment',
                                     payment_method=self.method_name))
 
-        return redirect(url_for('payment.error_payment',
+        return redirect(self.url_root + url_for('payment.error_payment',
                                 payment_method=self.method_name,
                                 order_id=self.order.id))
 
@@ -155,7 +155,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         if response['ACK'] == RESPONSE_OK:
             return self.__capture_payment(response)
 
-        return redirect(url_for('payment.error_payment',
+        return redirect(self.url_root + url_for('payment.error_payment',
                                 payment_method=self.method_name))
 
     def init_payment(self, payment_details=None):

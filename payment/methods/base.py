@@ -4,6 +4,7 @@ import requests
 from werkzeug.utils import import_string
 
 from .. import payment
+from flamaster.extensions import sentry
 from flamaster.product.utils import get_order_class
 
 
@@ -31,6 +32,10 @@ class BasePaymentMethod(object):
     def precess_payment_response(self, *args, **kwargs):
         raise NotImplementedError
 
+    @property
+    def url_root(self):
+        return request.url_root.rstrip('/')
+
 
 def resolve_payment_method(payment_method):
     method = current_app.config['PAYMENT_METHODS'][payment_method]
@@ -53,6 +58,7 @@ def process_payment(payment_method):
 
 @payment.route('/<payment_method>/cancel/')
 def cancel_payment(payment_method):
+    sentry.captureMessage('Payment cancelled')
     get_order_class().cancel_payment(payment_method=payment_method,
                                      **request.args.to_dict())
 
@@ -66,4 +72,5 @@ def success_payment(payment_method):
 
 @payment.route('/<payment_method>/error/')
 def error_payment(payment_method):
+    sentry.captureMessage('Payment error')
     return render_template('payment/error.html')
