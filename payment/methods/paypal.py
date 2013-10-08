@@ -44,7 +44,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         request_params.update(self.settings)
         sentry.captureMessage('paypal request', extra=request_params)
         resp = requests.get(self.endpoint, params=request_params)
-        return dict(parse_qsl(resp.text))
+        response_parsed = dict(parse_qsl(resp.text))
+        sentry.captureMessage('paypal response', extra=response_parsed)
+        return response_parsed
 
     def __set_checkout(self, amount, payment_details):
         """ When a customer is ready to check out, use the SetExpressCheckout
@@ -62,6 +64,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYMENTREQUEST_0_AMT': amount,
             'PAYMENTREQUEST_0_PAYMENTACTION': ACTION,
             'PAYMENTREQUEST_0_CURRENCYCODE': CURRENCY,
+            'NOSHIPPING': 1,
             # FIXME: BuildError
             'RETURNURL': self.url_root + url_for('payment.process_payment',
                                  payment_method=self.method_name),
