@@ -9,7 +9,7 @@ from flask.ext.security import Security
 from flask.ext.social import Social
 from flask.ext.elasticsearch import ElasticSearch
 from flask.ext.s3 import FlaskS3
-
+from raven.contrib.flask import Sentry
 
 def register_jinja_helpers(app):
     app.jinja_env.globals.update({
@@ -28,3 +28,4 @@ redis = Redis()
 security = Security()
 social = Social()
 s3 = FlaskS3()
+sentry = Sentry()

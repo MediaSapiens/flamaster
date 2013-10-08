@@ -42,6 +42,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         """ Directly request
         """
         request_params.update(self.settings)
+        logger.info('paypal request', extra={
+            'data': request_params
+        })
         resp = requests.get(self.endpoint, params=request_params)
         return dict(parse_qsl(resp.text))
 
