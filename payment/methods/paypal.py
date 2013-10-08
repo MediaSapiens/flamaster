@@ -1,12 +1,11 @@
 # -*- encoding: utf-8 -*-
 from __future__ import absolute_import
 from collections import Mapping
-import logging
 from decimal import Decimal
 from urlparse import parse_qsl
 
 import requests
-from flask import redirect, url_for, request, session, current_app
+from flask import redirect, url_for, request, session, current_app, logging
 
 from flamaster.core.utils import jsonify_status_code
 from flamaster.product import OrderStates
