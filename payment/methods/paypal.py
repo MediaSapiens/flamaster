@@ -6,6 +6,7 @@ from urlparse import parse_qsl
 
 import requests
 from flask import redirect, url_for, request, session, current_app
+from flask.ext.babel import gettext as _
 
 from flamaster.core.utils import jsonify_status_code
 from flamaster.extensions import sentry
@@ -97,11 +98,14 @@ class PayPalPaymentMethod(BasePaymentMethod):
     def __prepare_cart_items(self):
         cart_items_request_params = {}
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
+        item_delivery = None
         for idx, item in enumerate(self.order.goods):
             product = BaseProduct.objects(pk=item.product_id).first()
-            item_delivery = item.details['delivery']
+            # FIXME: hack for delivery type fallback if none
+            item_delivery = item.details.get('delivery', item_delivery)
             item_category = current_app.config['DELIVERY_TO_PAYPAL'][item_delivery]
             cart_items_request_params.update({
+                'PAYMENTREQUEST_n_DESC': _('Tickets for {}').format(product.name),
                 'L_PAYMENTREQUEST_0_ITEMCATEGORY{}'.format(idx): item_category,
                 'L_PAYMENTREQUEST_0_TAXAMT{}'.format(idx): Decimal(tax),
                 'L_PAYMENTREQUEST_0_QTY{}'.format(idx): item.amount,
