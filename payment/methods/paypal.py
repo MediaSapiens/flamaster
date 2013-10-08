@@ -99,7 +99,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
         for idx, item in enumerate(self.order.goods):
             product = BaseProduct.objects(pk=item.product_id).first()
-            item_category = current_app.config['DELIVERY_TO_PAYPAL'][item.details.delivery]
+            item_delivery = item.details['delivery']
+            item_category = current_app.config['DELIVERY_TO_PAYPAL'][item_delivery]
             cart_items_request_params.update({
                 'L_PAYMENTREQUEST_0_ITEMCATEGORY{}'.format(idx): item_category,
                 'L_PAYMENTREQUEST_0_TAXAMT{}'.format(idx): Decimal(tax),
