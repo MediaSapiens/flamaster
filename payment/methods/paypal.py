@@ -66,15 +66,24 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'NOSHIPPING': 1,
             'REQCONFIRMSHIPPING': 0,
             # FIXME: BuildError
-            'RETURNURL': self.url_root + url_for('payment.process_payment',
-                                 payment_method=self.method_name),
-            'CANCELURL': self.url_root + url_for('payment.cancel_payment',
-                                 payment_method=self.method_name)
+            'RETURNURL': url_for('payment.process_payment',
+                                 payment_method=self.method_name,
+                                 _external=True),
+            'CANCELURL': url_for('payment.cancel_payment',
+                                 payment_method=self.method_name,
+                                 _external=True)
         }
         # include description for items added to cart
-        request_params.update(self.__prepare_cart_items())
-        sentry.captureMessage('paypal set checkout details',
-                              extra=request_params)
+        try:
+            request_params.update(self.__prepare_cart_items())
+        except AttributeError as e:
+            sentry.captureException()
+            return {
+                'action': 'redirect',
+                'target': url_for('payment.error_payment',
+                                  payment_method=self.method_name,
+                                  _external=True)
+            }
 
         response = self.__do_request(request_params)
         if response['ACK'] == RESPONSE_OK:
@@ -89,12 +98,14 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         return {
             'action': 'redirect',
-            'target': self.url_root + url_for('payment.error_payment',
-                              payment_method=self.method_name)
+            'target': url_for('payment.error_payment',
+                              payment_method=self.method_name,
+                              _external=True)
         }
 
     def __prepare_cart_items(self):
         cart_items_request_params = {}
+
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
         for vidx, variant_id in enumerate(self.order.product_variants_ids):
             product = BaseProduct.objects(__raw__={
@@ -132,7 +143,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             {'token': response['TOKEN']}
         )
         if self.order is None or self.order.state is not OrderStates.created:
-            return redirect(self.url_root + url_for('payment.error_payment',
+            return redirect(url_for('payment.error_payment',
                                     payment_method=self.method_name))
         request_params = {
             'METHOD': DO_PAYMENT,
@@ -153,10 +164,10 @@ class PayPalPaymentMethod(BasePaymentMethod):
             self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
 
-            return redirect(self.url_root + url_for('payment.success_payment',
+            return redirect(url_for('payment.success_payment',
                                     payment_method=self.method_name))
 
-        return redirect(self.url_root + url_for('payment.error_payment',
+        return redirect(url_for('payment.error_payment',
                                 payment_method=self.method_name,
                                 order_id=self.order.id))
 
