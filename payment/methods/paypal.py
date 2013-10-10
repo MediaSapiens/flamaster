@@ -113,13 +113,19 @@ class PayPalPaymentMethod(BasePaymentMethod):
             }).first()
             goods, delivery = self.order.get_goods_delivery_for_variant(variant_id)
             amount = sum(map(lambda i: i.price, goods))
+
+            description = _('Tickets for {}').format(product.name)
+            for item in goods:
+                description += '\n  ' + item.details_verbose
+
             cart_items_request_params.update({
                 'PAYMENTREQUEST_{}_AMT'.format(vidx): amount,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(vidx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(vidx): CURRENCY,
-                'PAYMENTREQUEST_{}_DESC'.format(vidx): _('Tickets for {}').format(product.name),
+                'PAYMENTREQUEST_{}_DESC'.format(vidx): description,
                 'PAYMENTREQUEST_{}_INVNUM'.format(vidx): self.order.id
             })
+
             for idx, item in enumerate(goods):
                 item_category = current_app.config['DELIVERY_TO_PAYPAL'][delivery]
 
