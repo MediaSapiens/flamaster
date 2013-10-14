@@ -118,7 +118,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
         variant_id = list(variant_ids)[0]
         cart_items_request_params = {}
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
-        formatter = lambda item: _("Row {rowNumber} Seat {seatNumber}").format(**item.details)
         product = BaseProduct.objects(__raw__={
             'product_variants.$id': ObjectId(variant_id)
         }).first()
@@ -127,8 +126,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         for idx, item in enumerate(goods):
             item_category = current_app.config['DELIVERY_TO_PAYPAL'][delivery]
 
-            items_description = ", ".join(map(formatter, goods))
-            description = "{} [{}]".format(product.name, items_description)
+            item_descr = _("Row {rowNumber} Seat {seatNumber}").format(**item.details)
+            description = "{} [{}]".format(product.name, item_descr)
+
             invoice_id = self.gen_invoice_id(self.order.id, item.id)
 
             cart_items_request_params.update({
@@ -139,7 +139,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'PAYMENTREQUEST_{}_INVNUM'.format(idx): invoice_id,
                 'L_PAYMENTREQUEST_{}_ITEMCATEGORY1'.format(idx): item_category,
                 'L_PAYMENTREQUEST_{}_TAXAMT1'.format(idx): Decimal(tax),
-                'L_PAYMENTREQUEST_{}_QTY1'.format(idx): item.amount,
+                'L_PAYMENTREQUEST_{}_QTY1'.format(idx): 1,
                 'L_PAYMENTREQUEST_{}_AMT1'.format(idx): item.price,
                 'L_PAYMENTREQUEST_{}_NAME1'.format(idx): product.name,
                 'L_PAYMENTREQUEST_{}_DESC1'.format(idx): item.details_verbose,
