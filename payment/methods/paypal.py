@@ -8,7 +8,6 @@ from bson import ObjectId
 import requests
 from flask import redirect, url_for, request, session, current_app
 from flask.ext.babel import gettext as _
-import time
 
 from flamaster.core.utils import jsonify_status_code
 from flamaster.extensions import sentry
@@ -25,7 +24,11 @@ ACTION = 'SALE'
 SET_CHECKOUT = 'SetExpressCheckout'
 GET_CHECKOUT = 'GetExpressCheckoutDetails'
 DO_PAYMENT = 'DoExpressCheckoutPayment'
-RESPONSE_OK = 'Success'
+RESPONSE_OK = ['Success', 'SuccessWithWarning']
+
+
+class PaypalDataError(Exception):
+    pass
 
 
 class PayPalPaymentMethod(BasePaymentMethod):
@@ -77,7 +80,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         # include description for items added to cart
         try:
             request_params.update(self.__prepare_cart_items())
-        except AttributeError as e:
+        except AttributeError:
             sentry.captureException()
             return {
                 'action': 'redirect',
@@ -87,7 +90,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             }
 
         response = self.__do_request(request_params)
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'] in RESPONSE_OK:
             self.order.set_payment_details(token=response['TOKEN'])
             webface_url = self.__get_redirect_url(response)
             response = self.order.as_dict()
@@ -104,41 +107,42 @@ class PayPalPaymentMethod(BasePaymentMethod):
                               _external=True)
         }
 
+    def gen_invoice_id(self, *args):
+        return "FE".join(args)
+
     def __prepare_cart_items(self):
+        variant_ids = self.order.product_variants_ids
+        if len(variant_ids) > 1:
+            raise PaypalDataError("Ordered more then 1 variant: %r" %
+                                  variant_ids)
+        variant_id = variant_ids[0]
         cart_items_request_params = {}
-
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
-        for vidx, variant_id in enumerate(self.order.product_variants_ids):
-            product = BaseProduct.objects(__raw__={
-                'product_variants.$id': ObjectId(variant_id)
-            }).first()
-            goods, delivery = self.order.get_goods_delivery_for_variant(variant_id)
-            amount = sum(map(lambda i: i.price, goods))
+        formatter = lambda item: _("Row {rowNumber} Seat {seatNumber}").format(**item.details)
+        product = BaseProduct.objects(__raw__={
+            'product_variants.$id': ObjectId(variant_id)
+        }).first()
+        goods, delivery = self.order.get_goods_delivery_for_variant(variant_id)
 
-            description = _('Tickets for {}').format(product.name)
-            for item in goods:
-                description += '\n  ' + item.details_verbose
+        for idx, item in enumerate(goods):
+            item_category = current_app.config['DELIVERY_TO_PAYPAL'][delivery]
 
-            invoice_id = '{}_{}'.format(self.order.id, int(time.time()))
+            items_description = ", ".join(map(formatter, goods))
+            description = "{} [{}]".format(product.name, items_description)
+            invoice_id = self.gen_invoice_id(self.order.id, item.id)
 
             cart_items_request_params.update({
-                'PAYMENTREQUEST_{}_AMT'.format(vidx): amount,
-                'PAYMENTREQUEST_{}_PAYMENTACTION'.format(vidx): ACTION,
-                'PAYMENTREQUEST_{}_CURRENCYCODE'.format(vidx): CURRENCY,
-                'PAYMENTREQUEST_{}_DESC'.format(vidx): description,
-                'PAYMENTREQUEST_{}_INVNUM'.format(vidx): invoice_id
-            })
-
-            for idx, item in enumerate(goods):
-                item_category = current_app.config['DELIVERY_TO_PAYPAL'][delivery]
-
-                cart_items_request_params.update({
-                    'L_PAYMENTREQUEST_{}_ITEMCATEGORY{}'.format(vidx, idx): item_category,
-                    'L_PAYMENTREQUEST_{}_TAXAMT{}'.format(vidx, idx): Decimal(tax),
-                    'L_PAYMENTREQUEST_{}_QTY{}'.format(vidx, idx): item.amount,
-                    'L_PAYMENTREQUEST_{}_AMT{}'.format(vidx, idx): item.price,
-                    'L_PAYMENTREQUEST_{}_NAME{}'.format(vidx, idx): item.details_verbose,
-                    'L_PAYMENTREQUEST_{}_DESC{}'.format(vidx, idx): product.name,
+                'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
+                'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
+                'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
+                'PAYMENTREQUEST_{}_DESC'.format(idx): description,
+                'PAYMENTREQUEST_{}_INVNUM'.format(idx): invoice_id,
+                'L_PAYMENTREQUEST_{}_ITEMCATEGORY1'.format(idx): item_category,
+                'L_PAYMENTREQUEST_{}_TAXAMT1'.format(idx): Decimal(tax),
+                'L_PAYMENTREQUEST_{}_QTY1'.format(idx): item.amount,
+                'L_PAYMENTREQUEST_{}_AMT1'.format(idx): item.price,
+                'L_PAYMENTREQUEST_{}_NAME1'.format(idx): product.name,
+                'L_PAYMENTREQUEST_{}_DESC1'.format(idx): item.details_verbose,
                 })
 
         return cart_items_request_params
@@ -160,7 +164,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'PAYERID': response['PAYERID'],
         }
         for vidx, variant_id in enumerate(self.order.product_variants_ids):
-            goods, _ = self.order.get_goods_delivery_for_variant(variant_id)
+            goods, trash = self.order.get_goods_delivery_for_variant(variant_id)
             amount = sum(map(lambda i: i.price, goods))
             request_params.update({
                 'PAYMENTREQUEST_{}_AMT'.format(vidx): amount,
@@ -169,7 +173,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             })
 
         response = self.__do_request(request_params)
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'] in RESPONSE_OK:
             self.order.set_payment_details(token=unicode(response))
             self.order.mark_paid()
 
@@ -194,11 +198,11 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
         response = self.__do_request(request_params)
 
-        if response['ACK'] == RESPONSE_OK:
+        if response['ACK'] in RESPONSE_OK:
             return self.__capture_payment(response)
 
         return redirect(self.url_root + url_for('payment.error_payment',
-                                payment_method=self.method_name))
+                        payment_method=self.method_name))
 
     def init_payment(self, payment_details=None):
         """ Initialization payment process.
