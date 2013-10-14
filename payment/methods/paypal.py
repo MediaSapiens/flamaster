@@ -108,7 +108,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         }
 
     def gen_invoice_id(self, *args):
-        return "FE".join(args)
+        return "FE".join(map(lambda arg: str(arg), args))
 
     def __prepare_cart_items(self):
         variant_ids = self.order.product_variants_ids
