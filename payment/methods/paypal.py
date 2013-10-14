@@ -115,7 +115,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
         if len(variant_ids) > 1:
             raise PaypalDataError("Ordered more then 1 variant: %r" %
                                   variant_ids)
-        variant_id = variant_ids[0]
+        variant_id = list(variant_ids)[0]
         cart_items_request_params = {}
         tax = current_app.config['SHOPS'][current_app.config['SHOP_ID']]['tax']
         formatter = lambda item: _("Row {rowNumber} Seat {seatNumber}").format(**item.details)
