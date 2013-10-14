@@ -63,7 +63,6 @@ class PayPalPaymentMethod(BasePaymentMethod):
             Authorization.
         """
         session.update(payment_details)
-        sentry.captureMessage('paypal details', extra=payment_details)
 
         request_params = {
             'METHOD': SET_CHECKOUT,
@@ -132,6 +131,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             invoice_id = self.gen_invoice_id(self.order.id, item.id)
 
             cart_items_request_params.update({
+                'PAYMENTREQUEST_{}_PAYMENTREQUESTID'.format(idx): invoice_id,
                 'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['USER'],
                 'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
@@ -173,7 +173,9 @@ class PayPalPaymentMethod(BasePaymentMethod):
         goods, trash = self.order.get_goods_delivery_for_variant(variant_id)
 
         for idx, item in enumerate(goods):
+            invoice_id = self.gen_invoice_id(self.order.id, item.id)
             request_params.update({
+                'PAYMENTREQUEST_{}_PAYMENTREQUESTID'.format(idx): invoice_id,
                 'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
