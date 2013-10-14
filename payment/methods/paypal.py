@@ -8,6 +8,7 @@ from bson import ObjectId
 import requests
 from flask import redirect, url_for, request, session, current_app
 from flask.ext.babel import gettext as _
+import time
 
 from flamaster.core.utils import jsonify_status_code
 from flamaster.extensions import sentry
@@ -118,12 +119,14 @@ class PayPalPaymentMethod(BasePaymentMethod):
             for item in goods:
                 description += '\n  ' + item.details_verbose
 
+            invoice_id = '{}_{}'.format(self.order.id, int(time.time()))
+
             cart_items_request_params.update({
                 'PAYMENTREQUEST_{}_AMT'.format(vidx): amount,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(vidx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(vidx): CURRENCY,
                 'PAYMENTREQUEST_{}_DESC'.format(vidx): description,
-                'PAYMENTREQUEST_{}_INVNUM'.format(vidx): self.order.id
+                'PAYMENTREQUEST_{}_INVNUM'.format(vidx): invoice_id
             })
 
             for idx, item in enumerate(goods):
