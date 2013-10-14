@@ -137,13 +137,13 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
                 'PAYMENTREQUEST_{}_DESC'.format(idx): description,
-                'PAYMENTREQUEST_{}_INVNUM'.format(idx): invoice_id,
-                'L_PAYMENTREQUEST_{}_ITEMCATEGORY1'.format(idx): item_category,
-                'L_PAYMENTREQUEST_{}_TAXAMT1'.format(idx): Decimal(tax),
-                'L_PAYMENTREQUEST_{}_QTY1'.format(idx): 1,
-                'L_PAYMENTREQUEST_{}_AMT1'.format(idx): item.price,
-                'L_PAYMENTREQUEST_{}_NAME1'.format(idx): product.name,
-                'L_PAYMENTREQUEST_{}_DESC1'.format(idx): item.details_verbose,
+                'PAYMENTREQUEST_{}_INVNUM'.format(idx): invoice_id
+                # 'L_PAYMENTREQUEST_{}_ITEMCATEGORY1'.format(idx): item_category,
+                # 'L_PAYMENTREQUEST_{}_TAXAMT1'.format(idx): Decimal(tax),
+                # 'L_PAYMENTREQUEST_{}_QTY1'.format(idx): 1,
+                # 'L_PAYMENTREQUEST_{}_AMT1'.format(idx): item.price,
+                # 'L_PAYMENTREQUEST_{}_NAME1'.format(idx): product.name,
+                # 'L_PAYMENTREQUEST_{}_DESC1'.format(idx): item.details_verbose,
                 })
 
         return cart_items_request_params
