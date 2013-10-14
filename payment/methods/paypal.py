@@ -132,6 +132,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             invoice_id = self.gen_invoice_id(self.order.id, item.id)
 
             cart_items_request_params.update({
+                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['USER'],
                 'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
@@ -163,13 +164,20 @@ class PayPalPaymentMethod(BasePaymentMethod):
             'TOKEN': response['TOKEN'],
             'PAYERID': response['PAYERID'],
         }
-        for vidx, variant_id in enumerate(self.order.product_variants_ids):
-            goods, trash = self.order.get_goods_delivery_for_variant(variant_id)
-            amount = sum(map(lambda i: i.price, goods))
+        variant_ids = self.order.product_variants_ids
+        if len(variant_ids) > 1:
+            raise PaypalDataError("Ordered more then 1 variant: %r" %
+                                  variant_ids)
+        variant_id = list(variant_ids)[0]
+
+        goods, trash = self.order.get_goods_delivery_for_variant(variant_id)
+
+        for idx, item in enumerate(goods):
             request_params.update({
-                'PAYMENTREQUEST_{}_AMT'.format(vidx): amount,
-                'PAYMENTREQUEST_{}_PAYMENTACTION'.format(vidx): ACTION,
-                'PAYMENTREQUEST_{}_CURRENCYCODE'.format(vidx): CURRENCY,
+                'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
+                'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
+                'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
+                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['USER'],
             })
 
         response = self.__do_request(request_params)
