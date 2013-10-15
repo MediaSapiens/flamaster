@@ -132,7 +132,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
 
             cart_items_request_params.update({
                 'PAYMENTREQUEST_{}_PAYMENTREQUESTID'.format(idx): invoice_id,
-                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['USER'],
+                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['EMAIL'],
                 'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
@@ -179,7 +179,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'PAYMENTREQUEST_{}_AMT'.format(idx): item.price,
                 'PAYMENTREQUEST_{}_PAYMENTACTION'.format(idx): ACTION,
                 'PAYMENTREQUEST_{}_CURRENCYCODE'.format(idx): CURRENCY,
-                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['USER'],
+                'PAYMENTREQUEST_{}_SELLERPAYPALACCOUNTID'.format(idx): self.settings['EMAIL'],
             })
 
         response = self.__do_request(request_params)
