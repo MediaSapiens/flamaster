@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.utils import import_string
 
 from . import OrderStates, order_paid
-from flamaster.product.utils import get_cart_class
+from flamaster.product.utils import get_cart_class, get_order_class
 
 
 class OrderMixin(CRUDMixin):
@@ -207,3 +207,8 @@ class CartMixin(CRUDMixin):
     def mark_ordered(cls, carts_query, order):
         assert isinstance(order, OrderMixin)
         return carts_query.update({'is_ordered': True, 'order_id': order.id})
+
+    def order_is_paid(self):
+        order_cls = get_order_class()
+        order = order_cls.query.get(self.order_id)
+        return order and order.state == OrderStates.paid
