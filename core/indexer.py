@@ -9,8 +9,8 @@ from flamaster.core.utils import CustomEncoder
 from flamaster.extensions import es
 
 
-
 logger = logging.getLogger('indexer')
+
 
 @signals.post_save.connect
 def put_on_index(cls, document, created):
@@ -84,10 +84,10 @@ class Index(object):
         self.registry = {}
 
     def add(self, cls, index_cls):
-        if cls in self.registry:
-            raise Exception('Model already registered')
-        else:
+        if cls not in self.registry:
             self.registry[cls] = index_cls()
+        else:
+            logger.info("Double registration for %s", cls)
 
     def remove(self, cls):
         if cls in self.registry:
@@ -115,7 +115,7 @@ class Index(object):
             try:
                 applicator(index_cls)
             except ConnectionError as err:
-                logger.critical('ElasticSearch node unreachable')
+                logger.critical('ElasticSearch node unreachable, %s', err)
 
         else:
             pass
