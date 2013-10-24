@@ -59,6 +59,7 @@ def add_api_rule(bp, endpoint, pk_def, import_name):
     bp.add_url_rule(item_url, view_func=resource, endpoint=endpoint,
                     methods=item_methods)
 
+
 def add_url_rule(blueprint, namespace, path, method, **kwargs):
     method_path = ".".join([namespace, method])
     return blueprint.add_url_rule(path, view_func=LazyView(method_path),
@@ -240,4 +241,27 @@ def x_accel_gridfs(file_field):
 
 
 class ResourceBlueprint(Blueprint):
-    pass
+
+    def add_resource(self, endpoint, pk_def, class_name):
+        import_path = "{}.api.{}".format(self.import_name, class_name)
+        resource = LazyResource(import_path, endpoint)
+        collection_url = "/{}/".format(endpoint)
+
+        # collection endpoint
+        collection_methods = ['GET', 'PUT', 'POST']
+        item_methods = ['GET', 'PUT', 'DELETE']
+
+        pk = pk_def.keys()[0]
+        pk_type = pk_def[pk] and pk_def[pk].__name__ or None
+
+        if pk_type is None:
+            item_url = "{}<{}>".format(collection_url, pk)
+        else:
+            item_url = "{}<{}:{}>".format(collection_url, pk_type, pk)
+
+        self.add_url_rule(collection_url, view_func=resource, endpoint=endpoint, methods=collection_methods)
+        self.add_url_rule(item_url, view_func=resource, endpoint=endpoint, methods=item_methods)
+
+    def add_view(self, path, method, **kwargs):
+        import_path = "{}.views.{}".format(self.import_name, method)
+        return self.add_url_rule(path, view_func=LazyView(import_path), **kwargs)
