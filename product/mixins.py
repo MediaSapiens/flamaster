@@ -209,6 +209,9 @@ class CartMixin(CRUDMixin):
         return carts_query.update({'is_ordered': True, 'order_id': order.id})
 
     def order_is_paid(self):
+        if self.order_id is None:
+            return False
+
         order_cls = get_order_class()
         order = order_cls.query.get(self.order_id)
         return order and order.state == OrderStates.paid
