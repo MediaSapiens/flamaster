@@ -243,7 +243,10 @@ def x_accel_gridfs(file_field):
 class ResourceBlueprint(Blueprint):
 
     def add_resource(self, endpoint, pk_def, class_name):
-        import_path = "{}.api.{}".format(self.import_name, class_name)
+        if class_name.startswith('.'):
+            import_path = "{}.api{}".format(self.import_name, class_name)
+        else:
+            import_path = class_name
         resource = LazyResource(import_path, endpoint)
         collection_url = "/{}/".format(endpoint)
 
