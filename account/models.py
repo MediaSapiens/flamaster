@@ -3,6 +3,7 @@ from datetime import datetime
 
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin
+from sqlalchemy.orm import validates
 from flamaster.account.signals import billing_data_changed
 
 from flamaster.core.models import CRUDMixin
@@ -67,7 +68,13 @@ user_roles = db.Table('user_roles', db.metadata,
 )
 
 
+class CustomerIsTooOldError(Exception):
+    pass
+
+
 class Customer(db.Model, CRUDMixin):
+    MIN_BIRTHDATE_YEAR = 1900
+
     sex = db.Column(db.Unicode(1), index=True)
     birthdate = db.Column(db.DateTime, index=True)
     first_name = db.Column(db.Unicode(255), default=u'')
@@ -93,6 +100,15 @@ class Customer(db.Model, CRUDMixin):
                         use_alter=True, name='fk_delivery_address'))
     _delivery_address = db.relationship("Address", cascade='all, delete',
                         primaryjoin="Customer.delivery_address_id==Address.id")
+
+
+    @validates('birthdate')
+    def validate_birthdate(self, key, value):
+        min_date = datetime(self.MIN_BIRTHDATE_YEAR, 1, 1)
+        if value < min_date:
+            raise CustomerIsTooOldError()
+
+        return value
 
     def __unicode__(self):
         return u"{0.first_name} {0.last_name}".format(self)

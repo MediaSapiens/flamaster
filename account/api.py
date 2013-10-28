@@ -22,7 +22,8 @@ from flamaster.core.decorators import method_wrapper
 from flamaster.core.resources import Resource, ModelResource
 from flamaster.core.utils import jsonify_status_code
 
-from .models import User, Role, BankAccount, Address, Customer
+from .models import User, Role, BankAccount, Address, Customer, \
+    CustomerIsTooOldError
 
 __all__ = ['SessionResource', 'ProfileResource', 'RoleResource']
 
@@ -290,11 +291,28 @@ class CustomerResource(ModelResource, CustomerMixin):
         'birthdate': t.DateTime,
     }).make_optional('phone', 'notes').ignore_extra('*')
 
+    @method_wrapper(http.CREATED)
+    def post(self):
+        try:
+            return super(CustomerResource, self).post()
+        except CustomerIsTooOldError:
+            self._raise_too_old_customer_error()
+
     @method_wrapper(http.ACCEPTED)
     def put(self, id):
         data = self.clean(g.request_data)
-        instance = self.get_object(id).update(with_reload=True, **data)
-        return self.serialize(instance)
+
+        try:
+            instance = self.get_object(id).update(with_reload=True, **data)
+            return self.serialize(instance)
+        except CustomerIsTooOldError:
+            self._raise_too_old_customer_error()
+
+    def _raise_too_old_customer_error(self):
+        raise t.DataError({
+            'birthdate': _('must not be earlier than {}'.format(
+                Customer.MIN_BIRTHDATE_YEAR))
+        })
 
     def get_objects(self, **kwargs):
         if current_user.is_anonymous() or not current_user.is_superuser():
