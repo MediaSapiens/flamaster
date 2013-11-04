@@ -198,12 +198,3 @@ SHOPS = [
         'tax': "0.00",
     }
 ]
-
-
-try:
-    ls = importlib.import_module('flamaster.conf.local_settings')
-    for attr in dir(ls):
-        if '__' not in attr:
-            setattr(sys.modules[__name__], attr, getattr(ls, attr))
-except ImportError:
-    print "local_settings undefined"
