@@ -157,8 +157,8 @@ class CartMixin(CRUDMixin):
 
     @declared_attr
     def customer(cls):
-        db.relationship('Customer',
-                        backref=db.backref('carts', **lazy_cascade))
+        return db.relationship('Customer',
+                               backref=db.backref('carts', **lazy_cascade))
 
     @classmethod
     def create(cls, commit=True, **kwargs):
