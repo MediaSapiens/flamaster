@@ -12,6 +12,8 @@ class OrderStates(object):
     complete = 3
     customer_canceled = 5
     merchant_canceled = 7
+    processing = 11
+    refund = 13
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
