@@ -12,10 +12,10 @@ class OrderStates(object):
     paid = 1
     delivered = 2
     complete = 3
-    customer_canceled = 4
-    merchant_canceled = 5
-    processing = 6
-    refund = 7
+    processing = 4
+    customer_canceled = 5
+    refund = 6
+    merchant_canceled = 7
 
     _TRANSLATIONS = {
         created: _('created'),
