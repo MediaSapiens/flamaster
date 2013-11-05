@@ -37,7 +37,7 @@ class CustomerMixin(object):
         if current_user.is_anonymous():
             customer_id = session.get('customer_id')
             if customer_id is None:
-                abort(http.BAD_REQUEST)
+                abort(http.FORBIDDEN)
             customer = Customer.query.get_or_404(customer_id)
         else:
             customer = current_user.customer
