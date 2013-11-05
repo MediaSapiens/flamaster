@@ -4,16 +4,34 @@ from flamaster.core.utils import add_api_rule
 from .exceptions import ShelfNotAvailable
 from .signals import *
 
+from flask.ext.babel import lazy_gettext as _
+
 
 class OrderStates(object):
     created = 0
     paid = 1
     delivered = 2
     complete = 3
-    customer_canceled = 5
-    merchant_canceled = 7
-    processing = 11
-    refund = 13
+    customer_canceled = 4
+    merchant_canceled = 5
+    processing = 6
+    refund = 7
+
+    _TRANSLATIONS = {
+        created: _('created'),
+        paid: _('paid'),
+        delivered: _('delivered'),
+        complete: _('complete'),
+        customer_canceled: _('canceled by customer'),
+        merchant_canceled: _('canceled by merchant'),
+        processing: _('processing'),
+        refund: _('refund')
+    }
+
+    @classmethod
+    def translate(cls, state):
+        return cls._TRANSLATIONS[state]
+
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
