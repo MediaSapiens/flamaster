@@ -126,7 +126,7 @@ class PayPalPaymentMethod(BasePaymentMethod):
             item_category = current_app.config['DELIVERY_TO_PAYPAL'][delivery]
 
             item_descr = _("Row {rowNumber} Seat {seatNumber}").format(**item.details)
-            description = "{} [{}]".format(product.name, item_descr)
+            description = u'{} [{}]'.format(product.name, item_descr)
 
             invoice_id = self.gen_invoice_id(self.order.id, item.id)
 
@@ -143,8 +143,8 @@ class PayPalPaymentMethod(BasePaymentMethod):
                 'L_PAYMENTREQUEST_{}_QTY0'.format(idx): 1,
                 'L_PAYMENTREQUEST_{}_AMT0'.format(idx): item.price,
                 'L_PAYMENTREQUEST_{}_NAME0'.format(idx): product.name,
-                'L_PAYMENTREQUEST_{}_DESC0'.format(idx): item.details_verbose,
-                })
+                'L_PAYMENTREQUEST_{}_DESC0'.format(idx): item.details_verbose
+            })
 
         return cart_items_request_params
 
