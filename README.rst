@@ -37,3 +37,9 @@ You should implement your own Cart and Order models based on `flamaster.product.
           'order': 'findevent.vending.models.Order'
       }
   ]
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/MediaSapiens/flamaster/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
