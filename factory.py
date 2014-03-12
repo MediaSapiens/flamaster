@@ -8,6 +8,7 @@ from logging.handlers import SMTPHandler
 
 from flask import (Flask, abort, g, request, session, render_template,
                    current_app)
+from flask_s3 import FlaskS3, create_all
 from flask.ext.babel import get_locale as babel_locale
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.utils import import_string
@@ -46,6 +47,9 @@ class AppFactory(object):
         self._bind_extensions(app)
         self._register_blueprints(app)
         self._register_hooks(app)
+
+        s3 = FlaskS3()
+        s3.init_app(app)
 
         app.session_interface = RedisSessionInterface()
         app.wsgi_app = ProxyFix(app.wsgi_app)
