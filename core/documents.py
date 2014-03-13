@@ -96,6 +96,7 @@ class StoredMail(DocumentMixin, mongo.Document):
     def send(self):
         msg = Message(self.subject, recipients=list(self.recipients),
                       body=self.text_body, html=self.html_body)
+
         if self.attachments:
             for file_id in self.attachments:
                 file_instance = FileModel.find_one(id=file_id)
@@ -183,9 +184,13 @@ class FileModel(mongo.Document, DocumentMixin):
         instance.save()
 
         if settings.USE_S3:
+            file_format = instance.name.split('.')[-1].lower()
+
             key = cls.bucket.new_key(instance.pk)
             key.set_contents_from_file(image)
-            key.set_acl('public-read')
+
+            # Set ticket files as private
+            key.set_acl('public-read' if file_format != 'pdf' else 'private')
 
         else:
             filepath = os.path.join(settings.BASE_DIR, str(instance.pk))
