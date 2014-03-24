@@ -223,14 +223,14 @@ class ModelResource(Resource):
         """
         if self.model is None:
             abort(http.BAD_REQUEST)
-        query_args = self._filter(kwargs)
+        query_args = ModelResource._filter(self, kwargs)
         return self.model.query.filter_by(**query_args)
 
     def get_object(self, id):
         """ Method for extracting single object for requested id regarding
             on previous filters applied
         """
-        return self.get_objects(id=id).first_or_404()
+        return ModelResource.get_objects(self, id=id).first_or_404()
 
     def paginate(self, **kwargs):
         paging = self._prepare_pagination(**kwargs)
